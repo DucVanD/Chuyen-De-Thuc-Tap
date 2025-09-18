@@ -1,24 +1,20 @@
-import { useState } from 'react'
-import './index.css'
+import "./index.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Userroute from "./routers/user.js";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <h1 className="text-3xl font-bold text-red-500">Hello Tailwind + React!</h1>
-      <div className="mt-4">
-        <button
-          onClick={() => setCount(count + 1)}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition"
-        >
-          Count is {count}
-        </button>
-
-        <h1 className='text-red-600'>kaksaks</h1>
-      </div>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        {Userroute.map((route, index) => {
+          const Component = route.component;
+          return (
+            <Route key={index} path={route.path} element={<Component />} />
+          );
+        })}
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
