@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+@keyframes zoomInOut {
+  0%{
+   
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: red;
+  }
+  100% {
+    background-color: orangered;
+  }
+
+}
+
+.animate-zoom {
+  animation: zoomInOut 1.3s ease-in-out infinite;
+}

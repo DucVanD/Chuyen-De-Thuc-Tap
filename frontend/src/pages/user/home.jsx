@@ -1,246 +1,427 @@
+import logo from "../../assets/images/logo.png";
+import { CiSearch } from "react-icons/ci";
+import { SiHomeassistantcommunitystore } from "react-icons/si";
+import { LuShuffle, LuHeart, LuShoppingBag } from "react-icons/lu";
+import { Link } from "react-router-dom";
+import { BiAlignLeft } from "react-icons/bi";
+import slide from "../../assets/images/slide.png";
+import thitheo from "../../assets/images/thitheo.png";
+import rau from "../../assets/images/rau.png"; // hoặc tên file đúng
+
+import { MdArrowBackIos, MdArrowForwardIos } from "react-icons/md";
+
+const menuItems = [
+  {
+    label: "Hệ thống",
+    count: 8,
+    icon: <SiHomeassistantcommunitystore className="h-6 w-6" />,
+    href: "/system",
+  },
+  {
+    label: "So sánh",
+    count: 0,
+    icon: <LuShuffle className="h-6 w-6" />,
+    href: "/compare",
+  },
+  {
+    label: "Yêu thích",
+    count: 0,
+    icon: <LuHeart className="h-6 w-6" />,
+    href: "/wishlist",
+  },
+  {
+    label: "Giỏ hàng",
+    count: 0,
+    icon: <LuShoppingBag className="h-6 w-6" />,
+    href: "/cart",
+  },
+];
+
 const Home = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <header className="w-full shadow-sm">
-        {/* Top bar: Logo + Search + Actions */}
-        <div className="w-full max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          {/* Logo */}
-          <a href="/" className="shrink-0 flex items-center gap-3">
-            <img
-              src="/src/assets/images/logo.png"
-              alt="Bean Farm"
-              className="h-10 w-auto object-contain"
-            />
-          </a>
-
-          {/* Search */}
-          <div className="flex-1">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Trái cây"
-                className="w-full rounded-full border border-gray-200 bg-gray-50 pl-5 pr-12 py-3 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-              <button
-                type="button"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full flex items-center justify-center text-gray-600 hover:text-emerald-600"
-                aria-label="Tìm kiếm"
-              >
-                {/* Search icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                  <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 4.243 11.943l3.782 3.782a.75.75 0 1 0 1.06-1.06l-3.782-3.783A6.75 6.75 0 0 0 10.5 3.75Zm-5.25 6.75a5.25 5.25 0 1 1 10.5 0 5.25 5.25 0 0 1-10.5 0Z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-3">
-            {[
-              { label: "Hệ thống", count: 8, icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-6 w-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5h18M3 12h18M3 16.5h18" />
-                </svg>
-              ) },
-              { label: "So sánh", count: 0, icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-6 w-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 8.25H5.25A2.25 2.25 0 0 0 3 10.5v8.25h6V8.25Zm12 0H15a2.25 2.25 0 0 0-2.25 2.25v8.25h6V8.25ZM9 5.25V3m6 2.25V3" />
-                </svg>
-              ) },
-              { label: "Yêu thích", count: 0, icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-                  <path d="M11.645 20.91l-.007-.003-.023-.012a15.247 15.247 0 0 1-.383-.214 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 3 13.154 3 10.5 3 8.015 5.015 6 7.5 6c1.63 0 3.058.806 3.952 2.03A4.725 4.725 0 0 1 15.405 6C17.89 6 19.905 8.015 19.905 10.5c0 2.654-1.688 4.86-3.988 6.01a25.178 25.178 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.214l-.023.012-.007.003a.75.75 0 0 1-.672 0Z" />
-                </svg>
-              ) },
-              { label: "Giỏ hàng", count: 0, icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-6 w-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386a1.5 1.5 0 0 1 1.447 1.106l.383 1.434M7.5 14.25h9.75m-9.75 0L6.028 7.54a1.5 1.5 0 0 1 1.463-1.79h10.693a1.5 1.5 0 0 1 1.463 1.79l-1.472 6.71m-9.675 0L8.25 18a2.25 2.25 0 0 0 2.205 1.8h3.09A2.25 2.25 0 0 0 15.75 18l.75-3.75M6 21.75h.008v.008H6v-.008Zm12 0h.008v.008H18v-.008Z" />
-                </svg>
-              ) },
-            ].map((item, idx) => (
-              <button
-                key={idx}
-                type="button"
-                className="relative inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 bg-white hover:bg-gray-50 text-gray-800"
-              >
-                <span className="relative">
-                  {item.icon}
-                  {typeof item.count === "number" && (
-                    <span className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 rounded-full bg-emerald-600 text-white text-xs leading-5 text-center">
-                      {item.count}
-                    </span>
-                  )}
-                </span>
-                <span className="text-sm font-medium">{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom nav */}
-        <div className="border-t border-gray-100">
-          <div className="w-full max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-            {/* Categories button */}
-            <button className="inline-flex items-center gap-3 rounded-md bg-amber-400 text-gray-900 px-4 py-2 font-medium">
-              <span className="text-xl">≡</span>
-              <span>Danh mục sản phẩm</span>
-            </button>
-
-            {/* Links */}
-            <nav className="flex items-center gap-2 flex-1">
-              {[
-                "Trang chủ",
-                "Giới thiệu",
-                "Sản phẩm",
-                "Câu hỏi thường gặp",
-                "Tin tức",
-                "Liên hệ",
-              ].map((label, idx) => (
-                <a
-                  key={idx}
-                  href="#"
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${
-                    label === "Trang chủ"
-                      ? "bg-emerald-600 text-white"
-                      : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                  }`}
-                >
-                  {label}
-                </a>
-              ))}
-            </nav>
-
-            {/* Quick buy */}
-            <button className="rounded-full bg-red-600 text-white px-5 py-2 font-semibold hover:bg-red-700">
-              Mua hàng nhanh
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 py-10">
-        {/* Danh mục nổi bật */}
-        <section className="space-y-6">
-          <h2 className="text-3xl font-semibold tracking-tight">Danh mục nổi bật</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-6">
-            {[
-              { name: "Rau củ", count: 17 },
-              { name: "Trái cây", count: 12 },
-              { name: "Thịt", count: 10 },
-              { name: "Trứng", count: 8 },
-              { name: "Đồ uống", count: 11 },
-              { name: "Bánh và sữa", count: 0 },
-              { name: "Hải sản", count: 10 },
-              { name: "Bánh mì", count: 3 },
-            ].map((cat, idx) => (
-              <a
-                key={idx}
-                href="#"
-                className="group rounded-2xl border border-gray-200 bg-white p-4 text-center hover:shadow-md transition-shadow"
-              >
-                <div className="mx-auto mb-3 h-24 w-24 rounded-full bg-emerald-50 flex items-center justify-center text-3xl">
-                  🥗
-                </div>
-                <div className="space-y-1">
-                  <div className="font-medium">{cat.name}</div>
-                  <div className="text-sm text-gray-500">{cat.count} sản phẩm</div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        {/* Khối sản phẩm và banner */}
-        <section className="mt-12">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch">
-            {/* Banner bên trái */}
-            <div className="rounded-2xl bg-gradient-to-br from-amber-300 to-emerald-300 p-6 flex flex-col justify-between min-h-[360px]">
-              <div>
-                <h3 className="text-2xl font-semibold leading-snug">Bán chạy nhất hàng ngày</h3>
-                <p className="mt-3 text-emerald-900">
-                  Ưu đãi độc quyền - Giảm giá 20%
-                </p>
-                <p className="mt-3 text-sm text-emerald-900/80 max-w-xs">
-                  Mua sắm thoải mái chỉ từ 20.000 VNĐ. Chỉ trong tuần này, đừng bỏ lỡ.
-                </p>
+    <>
+      <div>
+        <header className="w-full bg-gray-300">
+          <div className="flex px-30 justify-center items-center gap-0">
+            <div className="basis-6/12  flex py-5">
+              {/*  */}
+              <div className="basis-4/12">
+                <img src={logo} alt="" width={200} />
               </div>
-              <button className="self-start mt-6 rounded-full bg-white text-emerald-700 px-5 py-2 font-medium shadow hover:shadow-md">
-                Mua ngay
+              {/*  */}
+              <div className="relative w-full max-w-sm basis-8/12">
+                <input
+                  type="text"
+                  placeholder="Trái cây"
+                  className="w-95 ml-8 rounded-full border border-gray-200 bg-gray-50 
+                   pl-4 pr-10 py-2.5 sm:py-3 outline-none 
+                   focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 
+                   text-sm sm:text-base"
+                />
+                <CiSearch className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5" />
+              </div>
+              {/*  */}
+            </div>
+            <div className="basis-6/12">
+              <div className="flex gap-4 justify-around">
+                {menuItems.map((item, index) => (
+                  <Link
+                    key={index}
+                    to={item.href}
+                    className="relative flex items-center gap-2 px-4 py-2 rounded-full 
+                 border border-gray-200 bg-white hover:shadow"
+                  >
+                    {/* Icon + badge */}
+                    <div className="relative">
+                      {item.icon}
+                      {item.count > -1 && (
+                        <span
+                          className="absolute -top-2 -right-2 bg-emerald-600 text-white 
+                           text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                        >
+                          {item.count}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Label */}
+                    <span className="text-sm text-gray-700 font-medium">
+                      {item.label}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* nav */}
+          <nav className="flex px-30 justify-center items-center gap-0 border-b border-gray-300 shadow-xl h-[100px] bg-amber-400">
+            <div className="basis-3/12">
+              {/* Nút mở danh mục */}
+              <button className="flex items-center gap-2 w-full bg-amber-400 text-gray-800 font-medium px-4 py-3 rounded-t-md">
+                <BiAlignLeft className="h-5 w-5" />
+                <span>Danh mục sản phẩm</span>
               </button>
+
+              {/* Danh sách menu con */}
+              {/* <ul className="bg-white shadow border rounded-b-md divide-y">
+                <li className="flex items-center justify-between px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                  <span className="flex items-center gap-2">
+                    <img
+                      src="/icons/vegetable.png"
+                      alt="Rau củ quả"
+                      className="h-5 w-5"
+                    />
+                    Rau củ quả
+                  </span>
+                  <span>›</span>
+                </li>
+               
+              </ul> */}
             </div>
 
-            {/* Lưới sản phẩm */}
-            <div className="lg:col-span-3 grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-              {[
-                {
-                  name: "Hành tây",
-                  oldPrice: "145.000₫",
-                  price: "120.000₫",
-                  discount: 17,
-                  isNew: false,
-                },
-                {
-                  name: "Ngò rí",
-                  oldPrice: "25.000₫",
-                  price: "21.000₫",
-                  discount: 16,
-                  isNew: true,
-                },
-                {
-                  name: "Đậu cove",
-                  oldPrice: "55.000₫",
-                  price: "47.000₫",
-                  discount: 15,
-                  isNew: false,
-                },
-              ].map((p, idx) => (
-                <div key={idx} className="relative rounded-2xl border border-gray-200 bg-white p-5 flex flex-col">
-                  {/* Nhãn giảm giá / mới */}
-                  <div className="absolute left-4 top-4 flex gap-2">
-                    {p.discount ? (
-                      <span className="rounded-full bg-red-500 text-white text-xs px-2 py-1">
-                        {p.discount}%
-                      </span>
-                    ) : null}
-                    {p.isNew ? (
-                      <span className="rounded-full bg-amber-200 text-amber-900 text-xs px-2 py-1">
-                        Mới
-                      </span>
-                    ) : null}
-                  </div>
+            <div className="basis-7/12">
+              <ul className="flex justify-around">
+                <li className="bg-green-600 py-1 px-4 rounded-full">
+                  <Link>Trang chủ</Link>
+                </li>
+                <li className="bg-gray-200 py-1 px-4 rounded-full">
+                  <Link>Giới thiệu</Link>
+                </li>
+                <li className="bg-gray-200 py-1 px-4 rounded-full">
+                  <Link>Sản phẩm</Link>
+                </li>
+                <li className="bg-gray-200 py-1 px-4 rounded-full">
+                  <Link>Câu hỏi thường gặp</Link>
+                </li>
+                <li className="bg-gray-200 py-1 px-4 rounded-full">
+                  <Link>Tin tức</Link>
+                </li>
+                <li className="bg-gray-200 py-1 px-4 rounded-full">
+                  <Link>Liên hệ</Link>
+                </li>
+              </ul>
+            </div>
+            <div className="basis-2/12 text-center">
+              <Link className="bg-red-600 py-1 px-4 rounded-full text-white animate-zoom">
+                Mua hàng nhanh
+              </Link>
+            </div>
+          </nav>
+        </header>
+        <main className="max-w-7xl mx-auto px-4 py-10">
+          <section className="slide flex justify-center mt-3">
+            <img
+              src={slide}
+              alt=""
+              className="w-full object-cover h-auto rounded-sm"
+            />
+          </section>
 
-                  {/* Ảnh sản phẩm */}
-                  <div className="my-8 flex-1 flex items-center justify-center">
-                    <div className="h-40 w-40 rounded-full bg-gray-50 flex items-center justify-center text-5xl">🥬</div>
-                  </div>
+          <section className="mt-10">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+              <div>
+                <Link className="text-[25px] font-medium">
+                  Danh mục nổi bật
+                </Link>
+              </div>
+              <div className="flex gap-4 overflow-x-auto">
+                <Link className="whitespace-nowrap">Trái cây</Link>
+                <Link className="whitespace-nowrap">Rau củ quả</Link>
+                <Link className="whitespace-nowrap">Thực phẩm sạch</Link>
+              </div>
+              <div className="flex gap-3 justify-end">
+                {/* Nút Prev */}
+                <button
+                  onClick={() =>
+                    document
+                      .getElementById("category-list")
+                      .scrollBy({ left: -200, behavior: "smooth" })
+                  }
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 shadow"
+                >
+                  <MdArrowBackIos className="text-gray-600" />
+                </button>
 
-                  {/* Tên + giá */}
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-lg">{p.name}</h4>
-                    <div className="flex items-baseline gap-3">
-                      <span className="text-gray-400 line-through text-sm">{p.oldPrice}</span>
-                      <span className="text-emerald-600 font-semibold">{p.price}</span>
+                {/* Nút Next */}
+                <button
+                  onClick={() =>
+                    document
+                      .getElementById("category-list")
+                      .scrollBy({ left: 200, behavior: "smooth" })
+                  }
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 shadow"
+                >
+                  <MdArrowForwardIos className="text-gray-600" />
+                </button>
+              </div>
+            </div>
+
+            {/* Slider */}
+            <div className="relative">
+              <div
+                id="category-list"
+                className="flex gap-4 overflow-x-auto scroll-smooth pb-2 scrollbar-hide"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {/* Card sản phẩm */}
+
+                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                  <img
+                    src={thitheo}
+                    alt="Nước uống"
+                    className="h-20 object-contain mb-2"
+                  />
+                  <h3 className="text-sm font-medium text-gray-800">
+                    Nước uống
+                  </h3>
+                  <p className="text-xs text-gray-500">9 sản phẩm</p>
+                </div>
+                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                  <img
+                    src={thitheo}
+                    alt="Nước uống"
+                    className="h-20 object-contain mb-2"
+                  />
+                  <h3 className="text-sm font-medium text-gray-800">
+                    Nước uống
+                  </h3>
+                  <p className="text-xs text-gray-500">9 sản phẩm</p>
+                </div>
+                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                  <img
+                    src={thitheo}
+                    alt="Nước uống"
+                    className="h-20 object-contain mb-2"
+                  />
+                  <h3 className="text-sm font-medium text-gray-800">
+                    Nước uống
+                  </h3>
+                  <p className="text-xs text-gray-500">9 sản phẩm</p>
+                </div>
+                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                  <img
+                    src={thitheo}
+                    alt="Nước uống"
+                    className="h-20 object-contain mb-2"
+                  />
+                  <h3 className="text-sm font-medium text-gray-800">
+                    Nước uống
+                  </h3>
+                  <p className="text-xs text-gray-500">9 sản phẩm</p>
+                </div>
+                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                  <img
+                    src={thitheo}
+                    alt="Nước uống"
+                    className="h-20 object-contain mb-2"
+                  />
+                  <h3 className="text-sm font-medium text-gray-800">
+                    Nước uống
+                  </h3>
+                  <p className="text-xs text-gray-500">9 sản phẩm</p>
+                </div>
+                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                  <img
+                    src={thitheo}
+                    alt="Nước uống"
+                    className="h-20 object-contain mb-2"
+                  />
+                  <h3 className="text-sm font-medium text-gray-800">
+                    Nước uống
+                  </h3>
+                  <p className="text-xs text-gray-500">9 sản phẩm</p>
+                </div>
+                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                  <img
+                    src={rau}
+                    alt="Nước uống"
+                    className="h-20 object-contain mb-2"
+                  />
+                  <h3 className="text-sm font-medium text-gray-800">
+                    Nước uống
+                  </h3>
+                  <p className="text-xs text-gray-500">9 sản phẩm</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/*  */}
+
+          <section className="mt-12">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch">
+              {/* Banner bên trái */}
+              <div className="lg:col-span-1 rounded-2xl bg-gradient-to-br from-amber-300 to-emerald-300 p-5 sm:p-6 flex flex-col justify-between min-h-[220px] sm:min-h-[360px]">
+                <div>
+                  <h3 className="text-lg sm:text-2xl font-semibold leading-snug">
+                    Bán chạy nhất hàng ngày
+                  </h3>
+                  <p className="mt-2 sm:mt-3 text-emerald-900 text-sm sm:text-base">
+                    Ưu đãi độc quyền - Giảm giá 20%
+                  </p>
+                  <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-emerald-900/80 max-w-xs">
+                    Mua sắm thoải mái chỉ từ 20.000 VNĐ. Chỉ trong tuần này,
+                    đừng bỏ lỡ.
+                  </p>
+                </div>
+                <button className="self-start mt-4 sm:mt-6 rounded-full bg-white text-emerald-700 px-4 sm:px-5 py-2 text-sm sm:text-base font-medium shadow hover:shadow-md">
+                  Mua ngay
+                </button>
+              </div>
+
+              {/* Lưới sản phẩm */}
+              <div className="lg:col-span-3">
+                {/* Header với nút điều hướng */}
+                <div className="flex gap-3 justify-end">
+                  {/* Nút Prev */}
+                  <button
+                    onClick={() =>
+                      document
+                        .getElementById("product-list")
+                        .scrollBy({ left: -200, behavior: "smooth" })
+                    }
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 shadow"
+                  >
+                    <MdArrowBackIos className="text-gray-600" />
+                  </button>
+
+                  {/* Nút Next */}
+                  <button
+                    onClick={() =>
+                      document
+                        .getElementById("product-list")
+                        .scrollBy({ left: 200, behavior: "smooth" })
+                    }
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 shadow"
+                  >
+                    <MdArrowForwardIos className="text-gray-600" />
+                  </button>
+                </div>
+
+                {/* Danh sách sản phẩm */}
+                <div className="relative">
+                  <div
+                    id="product-list"
+                    className="flex gap-4 overflow-x-auto scroll-smooth pb-2 scrollbar-hide"
+                    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                  >
+                    <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                      <img
+                        src={thitheo}
+                        alt="Nước uống"
+                        className="h-20 object-contain mb-2"
+                      />
+                      <h3 className="text-sm font-medium text-gray-800">
+                        Nước uống
+                      </h3>
+                      <p className="text-xs text-gray-500">9 sản phẩm</p>
+                    </div>
+                    <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                      <img
+                        src={thitheo}
+                        alt="Nước uống"
+                        className="h-20 object-contain mb-2"
+                      />
+                      <h3 className="text-sm font-medium text-gray-800">
+                        Nước uống
+                      </h3>
+                      <p className="text-xs text-gray-500">9 sản phẩm</p>
+                    </div>
+                    <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                      <img
+                        src={thitheo}
+                        alt="Nước uống"
+                        className="h-20 object-contain mb-2"
+                      />
+                      <h3 className="text-sm font-medium text-gray-800">
+                        Nước uống
+                      </h3>
+                      <p className="text-xs text-gray-500">9 sản phẩm</p>
+                    </div>
+                    <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                      <img
+                        src={thitheo}
+                        alt="Nước uống"
+                        className="h-20 object-contain mb-2"
+                      />
+                      <h3 className="text-sm font-medium text-gray-800">
+                        Nước uống
+                      </h3>
+                      <p className="text-xs text-gray-500">9 sản phẩm</p>
+                    </div>
+                    <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                      <img
+                        src={thitheo}
+                        alt="Nước uống"
+                        className="h-20 object-contain mb-2"
+                      />
+                      <h3 className="text-sm font-medium text-gray-800">
+                        Nước uống
+                      </h3>
+                      <p className="text-xs text-gray-500">9 sản phẩm</p>
+                    </div>
+                    <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
+                      <img
+                        src={thitheo}
+                        alt="Nước uống"
+                        className="h-20 object-contain mb-2"
+                      />
+                      <h3 className="text-sm font-medium text-gray-800">
+                        Nước uống
+                      </h3>
+                      <p className="text-xs text-gray-500">9 sản phẩm</p>
                     </div>
                   </div>
-
-                  {/* Hành động */}
-                  <div className="mt-5 grid grid-cols-2 gap-3">
-                    <button className="col-span-1 rounded-full bg-emerald-600 text-white px-4 py-2 text-sm font-medium hover:bg-emerald-700">
-                      Thêm vào giỏ
-                    </button>
-                    <button className="col-span-1 rounded-full border border-emerald-200 text-emerald-700 px-4 py-2 text-sm font-medium hover:bg-emerald-50">
-                      Tùy chọn
-                    </button>
-                  </div>
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        </section>
-      </main>
+          </section>
+        </main>
 
-      <footer className="py-10" />
-    </div>
+        <footer></footer>
+      </div>
+    </>
   );
 };
 
