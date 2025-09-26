@@ -1,12 +1,13 @@
 // import React, { useState, useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import apiProduct from "../../api/apiProduct";
 import { Play, X } from "lucide-react";
-import logo from "../../assets/images/logo.png";
-import { CiSearch } from "react-icons/ci";
-import { SiHomeassistantcommunitystore } from "react-icons/si";
-import { LuShuffle, LuHeart, LuShoppingBag } from "react-icons/lu";
+// import logo from "../../assets/images/logo.png";
+// import { CiSearch } from "react-icons/ci";
+// import { SiHomeassistantcommunitystore } from "react-icons/si";
+// import { LuShuffle, LuHeart, LuShoppingBag } from "react-icons/lu";
 import { Link } from "react-router-dom";
-import { BiAlignLeft } from "react-icons/bi";
+// import { BiAlignLeft } from "react-icons/bi";
 import slide from "../../assets/images/slide.png";
 import thitheo from "../../assets/images/thitheo.png";
 import rau from "../../assets/images/rau.png"; // hoặc tên file đúng
@@ -22,32 +23,6 @@ import bannerproduct5 from "../../assets/images/img_banner_index.webp";
 
 import { MdArrowBackIos, MdArrowForwardIos } from "react-icons/md";
 
-const menuItems = [
-  {
-    label: "Hệ thống",
-    count: 8,
-    icon: <SiHomeassistantcommunitystore className="h-6 w-6" />,
-    href: "/system",
-  },
-  {
-    label: "So sánh",
-    count: 0,
-    icon: <LuShuffle className="h-6 w-6" />,
-    href: "/compare",
-  },
-  {
-    label: "Yêu thích",
-    count: 0,
-    icon: <LuHeart className="h-6 w-6" />,
-    href: "/wishlist",
-  },
-  {
-    label: "Giỏ hàng",
-    count: 0,
-    icon: <LuShoppingBag className="h-6 w-6" />,
-    href: "/cart",
-  },
-];
 
 //
 const videos = [
@@ -73,117 +48,45 @@ const videos = [
   },
 ];
 
+// api lấy sản phẩm
+
+
+
+// 
+
 const Home = () => {
+
+const [products, setProducts] = useState([]);
+
+useEffect(() => {
+  apiProduct.getAll()
+    .then((res) => {
+      setProducts(res.data);
+      console.log("Sản phẩm:", res.data);
+    })
+    .catch((err) => {
+      console.error("Lỗi khi lấy sản phẩm:", err);
+    });
+}, []);
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <>
       <div>
-        <header className="w-full bg-gray-300">
-          <div className="flex px-30 justify-center items-center gap-0">
-            <div className="basis-6/12  flex py-5">
-              {/*  */}
-              <div className="basis-4/12">
-                <img src={logo} alt="" width={200} />
-              </div>
-              {/*  */}
-              <div className="relative w-full max-w-sm basis-8/12">
-                <input
-                  type="text"
-                  placeholder="Trái cây"
-                  className="w-95 ml-8 rounded-full border border-gray-200 bg-gray-50 
-                   pl-4 pr-10 py-2.5 sm:py-3 outline-none 
-                   focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 
-                   text-sm sm:text-base"
-                />
-                <CiSearch className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5" />
-              </div>
-              {/*  */}
-            </div>
-            <div className="basis-6/12">
-              <div className="flex gap-4 justify-around">
-                {menuItems.map((item, index) => (
-                  <Link
-                    key={index}
-                    to={item.href}
-                    className="relative flex items-center gap-2 px-4 py-2 rounded-full 
-                 border border-gray-200 bg-white hover:shadow"
-                  >
-                    {/* Icon + badge */}
-                    <div className="relative">
-                      {item.icon}
-                      {item.count > -1 && (
-                        <span
-                          className="absolute -top-2 -right-2 bg-emerald-600 text-white 
-                           text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                        >
-                          {item.count}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Label */}
-                    <span className="text-sm text-gray-700 font-medium">
-                      {item.label}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-          {/* nav */}
-          <nav className="flex px-40 justify-center items-center gap-0 border-b border-gray-300 shadow-xl h-[80px] bg-gray-100">
-            <div className="basis-2/12">
-              {/* Nút mở danh mục */}
-              <button className="flex items-center gap-2 w-full bg-amber-400 text-gray-800 font-medium px-4 py-3 rounded-t-md">
-                <BiAlignLeft className="h-5 w-5" />
-                <span>Danh mục sản phẩm</span>
-              </button>
-
-              {/* Danh sách menu con */}
-              {/* <ul className="bg-white shadow border rounded-b-md divide-y">
-                <li className="flex items-center justify-between px-4 py-2 hover:bg-gray-50 cursor-pointer">
-                  <span className="flex items-center gap-2">
-                    <img
-                      src="/icons/vegetable.png"
-                      alt="Rau củ quả"
-                      className="h-5 w-5"
-                    />
-                    Rau củ quả
-                  </span>
-                  <span>›</span>
-                </li>
-               
-              </ul> */}
-            </div>
-
-            <div className="basis-8/12">
-              <ul className="flex justify-evenly">
-                <li className="bg-green-600 py-1 px-4 rounded-full">
-                  <Link>Trang chủ</Link>
-                </li>
-                <li className="bg-gray-200 py-1 px-4 rounded-full">
-                  <Link>Giới thiệu</Link>
-                </li>
-                <li className="bg-gray-200 py-1 px-4 rounded-full">
-                  <Link>Sản phẩm</Link>
-                </li>
-                <li className="bg-gray-200 py-1 px-4 rounded-full">
-                  <Link>Câu hỏi thường gặp</Link>
-                </li>
-                <li className="bg-gray-200 py-1 px-4 rounded-full">
-                  <Link>Tin tức</Link>
-                </li>
-                <li className="bg-gray-200 py-1 px-4 rounded-full">
-                  <Link>Liên hệ</Link>
-                </li>
-              </ul>
-            </div>
-            <div className="basis-2/12 text-center">
-              <Link className="bg-red-600 py-1 px-4 rounded-full text-white animate-zoom">
-                Mua hàng nhanh
-              </Link>
-            </div>
-          </nav>
-        </header>
+        {/* Header Responsive */}
+       
+        {/* main */}
         <main className="max-w-7xl mx-auto px-4 py-10">
           {/* slide */}
           <section className="slide flex justify-center mt-3">
@@ -1549,8 +1452,6 @@ const Home = () => {
 
           {/* banner */}
           <section className="mt-12">
-           
-
             <div className="overflow-hidden rounded-lg mb-3">
               <img
                 className="w-full h-full object-cover transform transition-transform duration-600 ease-in-out hover:scale-110"
@@ -1656,143 +1557,7 @@ const Home = () => {
           {/*  */}
         </main>
 
-        <footer className="mt-12 border-t border-gray-100 bg-white">
-          <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-            {/* Brand + contact */}
-            <div>
-              <div className="flex items-center gap-3">
-                <img
-                  src="/src/assets/images/logo.png"
-                  alt="Bean Farm"
-                  className="h-10 w-auto"
-                />
-              </div>
-              <p className="mt-4 text-gray-700 leading-relaxed">
-                Bean Farm - Siêu thị trực tuyến mua sắm nông sản, chất lượng,
-                tươi xanh.
-              </p>
-              <p className="mt-2 text-emerald-700 font-medium">
-                Giá siêu tốt - Giao siêu tốc.
-              </p>
-              <div className="mt-4 space-y-2 text-sm">
-                <p>
-                  <span className="font-medium">Địa chỉ:</span> 70 Lữ Gia,
-                  Phường 15, Quận 11, TP.HCM
-                </p>
-                <p>
-                  <span className="font-medium">Điện thoại:</span>{" "}
-                  <a
-                    href="tel:19006750"
-                    className="text-emerald-700 font-semibold"
-                  >
-                    1900 6750
-                  </a>
-                </p>
-                <p>
-                  <span className="font-medium">Email:</span>{" "}
-                  <a
-                    href="mailto:support@sapo.vn"
-                    className="text-emerald-700 font-semibold"
-                  >
-                    support@sapo.vn
-                  </a>
-                </p>
-              </div>
-            </div>
-
-            {/* Policies */}
-            <div>
-              <h4 className="font-semibold text-lg">Chính sách</h4>
-              <ul className="mt-4 space-y-3 text-gray-700">
-                {[
-                  "Chính sách thành viên",
-                  "Chính sách thanh toán",
-                  "Chính sách đổi sản phẩm",
-                  "Chính sách bảo mật",
-                  "Chính sách cộng tác viên",
-                  "Chính sách bảo hành",
-                ].map((t, i) => (
-                  <li key={i}>
-                    <a href="#" className="hover:text-emerald-700">
-                      {t}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Guide */}
-            <div>
-              <h4 className="font-semibold text-lg">Hướng dẫn</h4>
-              <ul className="mt-4 space-y-3 text-gray-700">
-                {[
-                  "Hướng dẫn mua hàng",
-                  "Hướng dẫn đổi trả",
-                  "Hướng dẫn thanh toán",
-                  "Chương trình cộng tác viên",
-                  "Tìm kiếm",
-                  "Liên hệ",
-                ].map((t, i) => (
-                  <li key={i}>
-                    <a href="#" className="hover:text-emerald-700">
-                      {t}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Social + payment + Zalo */}
-            <div>
-              <h4 className="font-semibold text-lg">Kết nối với chúng tôi</h4>
-              <div className="mt-4 flex gap-2">
-                {["facebook", "twitter", "youtube", "instagram"].map((n, i) => (
-                  <a
-                    key={i}
-                    href="#"
-                    className="h-9 w-9 rounded-md bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-700"
-                  >
-                    <span className="sr-only">{n}</span>
-                    {/* simple dots as icon placeholders */}
-                    <span className="h-1.5 w-1.5 bg-white rounded-full" />
-                  </a>
-                ))}
-              </div>
-
-              <h4 className="mt-6 font-semibold text-lg">
-                Hình thức thanh toán
-              </h4>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {["₫", "↔", "VISA", "MOMO"].map((t, i) => (
-                  <div
-                    key={i}
-                    className="px-3 py-1.5 rounded-md border text-sm text-gray-700"
-                  >
-                    {t}
-                  </div>
-                ))}
-              </div>
-
-              <h4 className="mt-6 font-semibold text-lg">Zalo Mini Apps</h4>
-              <div className="mt-3 flex items-center gap-3">
-                <div className="h-20 w-20 rounded-md border flex items-center justify-center text-xs text-gray-500">
-                  QR
-                </div>
-                <p className="text-sm text-gray-600">
-                  Quét mã QR để mua hàng nhanh chóng
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-emerald-700 text-white">
-            <div className="max-w-7xl mx-auto px-4 py-3 text-sm text-center">
-              © Bản quyền thuộc về{" "}
-              <span className="font-semibold">Mr. Bean</span> | Cung cấp bởi{" "}
-              <span className="font-semibold">Sapo</span>
-            </div>
-          </div>
-        </footer>
+     
       </div>
     </>
   );
