@@ -3,6 +3,7 @@ import { FaPlus, FaTrash, FaToggleOn, FaToggleOff, FaEye, FaEdit } from "react-i
 import { useState, useEffect } from "react";
 import apiProduct from "../../../api/apiProduct";
 import raucu from "../../../assets/images/raucu.png";
+import { imageURL } from "../../../api/config";
 
 const ListProduct = () => {
   const { page } = useParams();          // Lấy page từ URL
@@ -60,14 +61,14 @@ const ListProduct = () => {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              <th>ID</th>
-              <th>Hình ảnh</th>
-              <th>Tên sản phẩm</th>
-              <th>Danh mục</th>
-              <th>Thương hiệu</th>
-              <th>Giá</th>
-              <th>Trạng thái</th>
-              <th>Chức năng</th>
+              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Hình ảnh</th>
+              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sản phẩm</th>
+              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục</th>
+              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Thương hiệu</th>
+              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Chức năng</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -76,8 +77,9 @@ const ListProduct = () => {
                 <td>{product.id}</td>
                 <td className="py-2 flex justify-center">
                   <img
-                    className="h-14 w-20 object-cover border border-gray-200 rounded-md"
-                    src={raucu}
+                    className="h-24 w-40 object-cover border border-gray-200 rounded-md"
+                    // src={raucu}
+                     src={`${imageURL}/product/${product.thumbnail}`}
                     alt={product.name}
                   />
                 </td>

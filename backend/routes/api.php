@@ -44,6 +44,7 @@ route::prefix('product')->group(function () {
 route::resource('product', ProductController::class);
 
 // category
+Route::get('/category/all', [CategoryController::class, 'getAll']);
 route::prefix('category')->group(function () {
     route::get('trash', [CategoryController::class, 'trash'])->name('category.trash');
     route::get('delete/{category}', [CategoryController::class, 'delete'])->name('category.delete');

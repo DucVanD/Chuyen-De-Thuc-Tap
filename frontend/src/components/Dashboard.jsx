@@ -29,7 +29,7 @@ const Dashboard = () => {
               <ul className="space-y-1">
                 <li>
                   <Link
-                    to="/admin/products"
+                    to="products"
                     className="flex items-center text-[15px] px-4 py-2.5 rounded-md hover:bg-gray-700 font-medium transition duration-200"
                   >
                     <i className="fas fa-box mr-3 text-indigo-400"></i> Sản phẩm
@@ -37,7 +37,7 @@ const Dashboard = () => {
                 </li>
                 <li>
                   <Link
-                    to="/admin/categories"
+                    to="categories"
                     className="flex items-center text-[15px] px-4 py-2.5 rounded-md hover:bg-gray-700 font-medium transition duration-200"
                   >
                     <i className="fas fa-tags mr-3 text-indigo-400"></i> Danh mục
@@ -45,7 +45,7 @@ const Dashboard = () => {
                 </li>
                 <li>
                   <Link
-                    to="/admin/brands"
+                    to="brands"
                     className="flex items-center text-[15px] px-4 py-2.5 rounded-md hover:bg-gray-700 font-medium transition duration-200"
                   >
                     <i className="fas fa-copyright mr-3 text-indigo-400"></i>{" "}

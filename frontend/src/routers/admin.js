@@ -17,7 +17,7 @@ import ShowUser from "../pages/admin/User/ShowUser";
 import DetailOrderUser from "../pages/admin/User/DetailOrderUser";
 
 const AdminRoute = [
-  { path: "/admin/categories/:page", component: ListCat },
+  { path: "categories/:page?", component: ListCat },
   { path: "/admin/addCat", component: AddCat },
   { path: "/admin/delCat/", component: DelCat },
   { path: "/admin/editCat/:id", component: EditCat },
@@ -30,7 +30,7 @@ const AdminRoute = [
   { path: "/admin/editProduct/:slug", component: EditProduct },
   { path: "/admin/addProduct", component: AddProduct },
 
-  { path: "/admin/brand", component: ListBrand },
+  { path: "brands", component: ListBrand },
 
   { path: "/admin/listUser", component: ListUser },
   { path: "/admin/listOrder", component: ListOrder },
