@@ -34,7 +34,7 @@ route::resource('user', UserController::class);
 
 // product
 Route::get('product/newest', [ProductController::class, 'newest']);
-
+Route::get('/product/all', [ProductController::class, 'getAll']);
 route::prefix('product')->group(function () {
     route::get('trash', [ProductController::class, 'trash'])->name('product.trash');
     route::get('delete/{product}', [ProductController::class, 'delete'])->name('product.delete');

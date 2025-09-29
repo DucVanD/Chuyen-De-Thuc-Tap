@@ -1,13 +1,7 @@
-// import React, { useState, useEffect } from "react";
 import { useEffect, useState } from "react";
 import apiProduct from "../../api/apiProduct";
 import { Play, X } from "lucide-react";
-// import logo from "../../assets/images/logo.png";
-// import { CiSearch } from "react-icons/ci";
-// import { SiHomeassistantcommunitystore } from "react-icons/si";
-// import { LuShuffle, LuHeart, LuShoppingBag } from "react-icons/lu";
 import { Link } from "react-router-dom";
-// import { BiAlignLeft } from "react-icons/bi";
 import slide from "../../assets/images/slide.png";
 import thitheo from "../../assets/images/thitheo.png";
 import rau from "../../assets/images/rau.png"; // hoặc tên file đúng
@@ -22,7 +16,8 @@ import bannerproduct4 from "../../assets/images/product3_img.webp";
 import bannerproduct5 from "../../assets/images/img_banner_index.webp";
 
 import { MdArrowBackIos, MdArrowForwardIos } from "react-icons/md";
-
+import apiCategory from "../../api/apiCategory";
+import { imageURL } from "../../api/config";
 
 //
 const videos = [
@@ -48,44 +43,31 @@ const videos = [
   },
 ];
 
-// api lấy sản phẩm
+// api lấy all danh muc
 
-
-
-// 
+//
 
 const Home = () => {
+  const [categorys, setcategorys] = useState([]);
 
-const [products, setProducts] = useState([]);
+  useEffect(() => {
+    apiCategory
+      .getAll()
+      .then((res) => {
+        setcategorys(res.data.data || []);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy danh muc:", err);
+      });
+  }, []);
 
-useEffect(() => {
-  apiProduct.getAll()
-    .then((res) => {
-      setProducts(res.data);
-      console.log("Sản phẩm:", res.data);
-    })
-    .catch((err) => {
-      console.error("Lỗi khi lấy sản phẩm:", err);
-    });
-}, []);
-
-
-
-
-
-
-
-
-
-
-
-
+  console.log("danh muc nex", categorys);
 
   return (
     <>
       <div>
         {/* Header Responsive */}
-       
+
         {/* main */}
         <main className="max-w-7xl mx-auto px-4 py-10">
           {/* slide */}
@@ -144,85 +126,23 @@ useEffect(() => {
                 className="flex gap-4 overflow-x-auto scroll-smooth pb-2 scrollbar-hide"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
-                {/* Card sản phẩm */}
+                {/* danh muc  */}
+                {categorys.map((category) => (
+                  <div
+                    key={category.id}
+                    className="h-50 w-40 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md"
+                  >
+                    <img
+                     src={`${imageURL}/category/${category.image}`}
+                      alt={category.name}
+                      className="h-20 object-contain mb-2"
+                    />
 
-                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
-                  <img
-                    src={thitheo}
-                    alt="Nước uống"
-                    className="h-20 object-contain mb-2"
-                  />
-                  <h3 className="text-sm font-medium text-gray-800">
-                    Nước uống
-                  </h3>
-                  <p className="text-xs text-gray-500">9 sản phẩm</p>
-                </div>
-                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
-                  <img
-                    src={thitheo}
-                    alt="Nước uống"
-                    className="h-20 object-contain mb-2"
-                  />
-                  <h3 className="text-sm font-medium text-gray-800">
-                    Nước uống
-                  </h3>
-                  <p className="text-xs text-gray-500">9 sản phẩm</p>
-                </div>
-                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
-                  <img
-                    src={thitheo}
-                    alt="Nước uống"
-                    className="h-20 object-contain mb-2"
-                  />
-                  <h3 className="text-sm font-medium text-gray-800">
-                    Nước uống
-                  </h3>
-                  <p className="text-xs text-gray-500">9 sản phẩm</p>
-                </div>
-                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
-                  <img
-                    src={thitheo}
-                    alt="Nước uống"
-                    className="h-20 object-contain mb-2"
-                  />
-                  <h3 className="text-sm font-medium text-gray-800">
-                    Nước uống
-                  </h3>
-                  <p className="text-xs text-gray-500">9 sản phẩm</p>
-                </div>
-                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
-                  <img
-                    src={thitheo}
-                    alt="Nước uống"
-                    className="h-20 object-contain mb-2"
-                  />
-                  <h3 className="text-sm font-medium text-gray-800">
-                    Nước uống
-                  </h3>
-                  <p className="text-xs text-gray-500">9 sản phẩm</p>
-                </div>
-                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
-                  <img
-                    src={thitheo}
-                    alt="Nước uống"
-                    className="h-20 object-contain mb-2"
-                  />
-                  <h3 className="text-sm font-medium text-gray-800">
-                    Nước uống
-                  </h3>
-                  <p className="text-xs text-gray-500">9 sản phẩm</p>
-                </div>
-                <div className="h-40 w-48 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md">
-                  <img
-                    src={rau}
-                    alt="Nước uống"
-                    className="h-20 object-contain mb-2"
-                  />
-                  <h3 className="text-sm font-medium text-gray-800">
-                    Nước uống
-                  </h3>
-                  <p className="text-xs text-gray-500">9 sản phẩm</p>
-                </div>
+                    <h3 className="text-sm font-medium text-gray-800">
+                      {category.name}
+                    </h3>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
@@ -1556,8 +1476,6 @@ useEffect(() => {
 
           {/*  */}
         </main>
-
-     
       </div>
     </>
   );

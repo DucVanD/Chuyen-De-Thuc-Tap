@@ -35,6 +35,16 @@ class ProductController extends Controller
         ]);
     }
 
+    public function getAll()
+    {
+        $list = Product::all();
+        return response()->json([
+            'status' => true,
+            'message' => 'Danh sách tất cả sản phẩm',
+            'data' => $list
+        ]);
+    }
+
     public function store(Request  $request)
     {
 

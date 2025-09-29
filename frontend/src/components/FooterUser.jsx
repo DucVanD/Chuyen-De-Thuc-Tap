@@ -2,7 +2,7 @@ const FooterUser = () => {
   return (
     <>
       <footer className="mt-12 border-t border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="lg:px-20 mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand + contact */}
           <div>
             <div className="flex items-center gap-3">
