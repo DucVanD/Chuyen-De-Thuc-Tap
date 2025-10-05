@@ -4,7 +4,7 @@ import AddCat from "../pages/admin/Category/AddCat";
 import EditCat from "../pages/admin/Category/EditCat";
 import ListProduct from "../pages/admin/Product/ListProduct";
 import DelProduct from "../pages/admin/Product/DelProduct";
-import EditProduct from "../pages/admin/Product/EditProduct";
+import EditProduct from "../pages/admin/Product/Editproduct";
 import AddProduct from "../pages/admin/Product/AddProduct";
 
 import Dashboard from "../pages/admin/Dashboard";
@@ -27,7 +27,9 @@ const AdminRoute = [
   { path: "products/:page?", component: ListProduct },
   { path: "/admin/products/:page", component: ListProduct },
   { path: "/admin/delProduct", component: DelProduct },
-  { path: "/admin/editProduct/:slug", component: EditProduct },
+  // { path: "/admin/editProduct/:slug", component: EditProduct },
+  { path: "/admin/editProduct/:id", component: EditProduct },
+
   { path: "/admin/addProduct", component: AddProduct },
 
   { path: "brands", component: ListBrand },

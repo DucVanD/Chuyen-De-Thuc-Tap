@@ -100,7 +100,7 @@ const ListProduct = () => {
                       {product.status ? <FaToggleOn className="text-xl" /> : <FaToggleOff className="text-xl" />}
                     </Link>
                     <Link to="#" className="text-indigo-500 hover:text-indigo-700"><FaEye className="text-lg" /></Link>
-                    <Link to={`/admin/editProduct/${product.slug}`} className="text-blue-500 hover:text-blue-700"><FaEdit className="text-lg" /></Link>
+                    <Link to={`/admin/editProduct/${product.id}`} className="text-blue-500 hover:text-blue-700"><FaEdit className="text-lg" /></Link>
                     <Link to="#" className="text-red-500 hover:text-red-700"><FaTrash className="text-lg" /></Link>
                   </div>
                 </td>

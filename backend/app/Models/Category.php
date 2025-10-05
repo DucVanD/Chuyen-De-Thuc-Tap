@@ -9,10 +9,15 @@ class Category extends Model
 {
     protected $table = 'category';
     use SoftDeletes;
-    
+
     public function products()
     {
         return $this->hasMany(Product::class);
     }
 
+    // Category.php
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'parent_id', 'id');
+    }
 }

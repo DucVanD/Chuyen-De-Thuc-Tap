@@ -1,6 +1,6 @@
 import Home from "../pages/user/home.jsx";
 import ProductDetail from "../pages/user/Detail.jsx";
-import Products from "../pages/user/products.jsx";
+import Products from "../pages/user/Products.jsx";
 import Posts from "../pages/user/post.jsx";
 import Registered from "../pages/user/Registered.jsx";
 import Contact from "../pages/user/Contact.jsx";
@@ -8,17 +8,21 @@ import About from "../pages/user/About.jsx";
 import Cart from "../pages/user/Cart.jsx";
 import System from "../pages/user/system.jsx";
 import Request from "../pages/user/request.jsx";
+import Checkout from "../pages/user/Checkout.jsx";
+import ProductByCat from "../pages/user/ProductByCat.jsx";
 const Userroute = [
   { path: "", component: Home },
   { path: "/products", component: Products },
-  { path: "product-detail/:slug", component: ProductDetail },
-  {path: "/registered", component: Registered},
-  {path: "/posts", component: Posts},
-  {path: "/contact", component: Contact},
-  {path: "/about", component: About},
-  {path: "/cart", component: Cart},
-  {path: "/system", component: System},
-  {path: "/request", component: Request},
+  { path: "product/:slug", component: ProductDetail },
+  { path: "/registered", component: Registered },
+  { path: "/posts", component: Posts },
+  { path: "/contact", component: Contact },
+  { path: "/about", component: About },
+  { path: "/cart", component: Cart },
+  { path: "/system", component: System },
+  { path: "/request", component: Request },
+  { path: "/checkout", component: Checkout },
+  { path: "/category/:slug", component: Products },
 ];
 
 export default Userroute;

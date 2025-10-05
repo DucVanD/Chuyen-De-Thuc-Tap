@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\BannerController;
-
+use App\Http\Controllers\Api\AuthController;
 
 
 
@@ -29,11 +29,19 @@ route::prefix('user')->group(function () {
     route::get('status/{user}', [UserController::class, 'status'])->name('user.status');
 });
 route::resource('user', UserController::class);
-
-
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
 
 // product
+Route::get('/product/category/slug/{slug}', [ProductController::class, 'getByCategorySlug']);
+Route::get('/product/search', [ProductController::class, 'search']);
 Route::get('product/newest', [ProductController::class, 'newest']);
+Route::get('product/salediscount', [ProductController::class, 'salediscount']);
+Route::get('product/slug/{slug}', [ProductController::class, 'getProductBySlug']);
 Route::get('/product/all', [ProductController::class, 'getAll']);
 route::prefix('product')->group(function () {
     route::get('trash', [ProductController::class, 'trash'])->name('product.trash');
@@ -44,6 +52,9 @@ route::prefix('product')->group(function () {
 route::resource('product', ProductController::class);
 
 // category
+// routes/api.php
+Route::get('/category/parents', [CategoryController::class, 'getParents']);
+Route::get('/category/parentsWithChildren', [CategoryController::class, 'parentsWithChildren']);
 Route::get('/category/all', [CategoryController::class, 'getAll']);
 route::prefix('category')->group(function () {
     route::get('trash', [CategoryController::class, 'trash'])->name('category.trash');
@@ -91,6 +102,9 @@ route::prefix('order')->group(function () {
     route::get('status/{order}', [OrderController::class, 'status'])->name('order.status');
 });
 route::resource('order', OrderController::class);
+// routes/api.php
+// ví dụ Laravel
+Route::post('/order/checkout', [OrderController::class, 'checkout']);
 
 // menu
 

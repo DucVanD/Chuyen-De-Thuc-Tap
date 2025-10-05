@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Http\Requests\StoreProductRequest;
+use Illuminate\Support\Facades\DB;
+use App\Models\Category;
+use App\Models\Brand;
+
 class ProductController extends Controller
 {
     public function index()
@@ -25,7 +29,7 @@ class ProductController extends Controller
         )
             ->Join('category', 'product.category_id', '=', 'category.id')
             ->Join('brand', 'product.brand_id', '=', 'brand.id')
-            ->orderBy('product.created_at', 'desc')
+            ->orderBy('product.id', 'asc')
             ->paginate(8);
 
         return response()->json([
@@ -47,8 +51,6 @@ class ProductController extends Controller
 
     public function store(Request  $request)
     {
-
-
 
         $product = new Product();
         $product->name = $request->name;
@@ -82,8 +84,6 @@ class ProductController extends Controller
             'message' => "Thêm sản phẩm $product->name thành công",
             'data' => $product
         ]);
-
-
     }
 
     public function show(string $id)
@@ -113,14 +113,64 @@ class ProductController extends Controller
         ]);
     }
 
+    //  form edit
+    public function edit(string $id)
+    {
 
+        $product = Product::find($id);
+        if ($product == null) {
+            return redirect()->route('product.index')->with('error', 'Sản phẩm không tồn tại');
+        }
+        $list_category = Category::select('id', 'name')
+            ->orderBy('sort_order', 'asc')
+            ->get();
+        $list_brand = Brand::select('id', 'name')
+            ->orderBy('sort_order', 'asc')
+            ->get();
+        return response()->json([
+            'status' => true,
+            'message' => "Chỉnh sửa sản phẩm $id",
+            'data' => [
+                'product' => $product,
+                'list_category' => $list_category,
+                'list_brand' => $list_brand,
+            ]
+        ]);
+    }
 
     public function update(Request $request, string $id)
     {
+        $product = Product::find($id);
+        if ($product == null) {
+            return redirect()->route('product.index')->with('error', 'Sản phẩm không tồn tại');
+        }
+        $product->name = $request->name;
+        $product->slug = Str::of($request->name)->slug('-');
+        $product->detail = $request->detail;
+        $product->price_root = $request->price_root;
+        $product->price_sale = $request->price_sale;
+        $product->qty = $request->qty;
+        $product->description = $request->description;
+        // Upload filex
+        if ($request->hasFile('thumbnail')) {
+            $file = $request->file('thumbnail');
+            $extension = $file->getClientOriginalExtension();
+            $filename = $product->slug . '.' . $extension;
+            $file->move(public_path('assets/images/product'), $filename);
+            $product->thumbnail =  $filename; // Lưu đường dẫn chính xác
+        }
+
+
+        $product->status = $request->status;
+        $product->created_at = now();
+        $product->created_by = Auth::id() ?? 1;
+        $product->category_id = $request->category_id;
+        $product->brand_id = $request->brand_id;
+        $product->save();
         return response()->json([
             'status' => true,
-            'message' => "Cập nhật sản phẩm $id thành công",
-            'data' => $request->all()
+            'message' => "Cập nhật sản phẩm $product->name thành công",
+            'data' => $product
         ]);
     }
 
@@ -136,12 +186,125 @@ class ProductController extends Controller
 
     public function newest()
     {
-        $products = Product::orderBy('created_at', 'desc')->take(5)->get();;
+        $products = Product::orderBy('created_at', 'desc')->take(10)->get();
 
         return response()->json([
             'status' => true,
             'message' => '5 sản phẩm mới nhất',
             'data' => $products
+        ]);
+    }
+
+    // san pham giam gia cao
+    public function salediscount()
+    {
+        $products = Product::select(
+            '*',
+            DB::raw('(price_root - price_sale) as discount'),
+            // Làm tròn xuống để tránh hiển thị 100% khi chưa thật sự free
+            DB::raw('LEAST(FLOOR(((price_root - price_sale) / price_root) * 100), 99) as discount_percent')
+        )
+            ->where('status', 1)
+            ->orderBy('discount', 'desc')
+            ->take(6)
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => '5 sản phẩm giảm giá cao nhất',
+            'data' => $products
+        ]);
+    }
+
+    public function getProductBySlug($slug)
+    {
+        $product = Product::select(
+            'product.id',
+            'product.name',
+            'product.slug',
+            'product.detail',
+            'product.description',
+            'product.thumbnail',
+            'product.status',
+            'product.price_root as price',
+            'product.price_sale as sale_price',
+            'category.name as category_name',
+            'brand.name as brand_name'
+        )
+            ->join('category', 'product.category_id', '=', 'category.id')
+            ->join('brand', 'product.brand_id', '=', 'brand.id')
+            ->where('product.slug', $slug)
+            ->first();
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => "Không tìm thấy sản phẩm với slug = $slug",
+                'data' => null
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => "Chi tiết sản phẩm với slug = $slug",
+            'data' => $product
+        ]);
+    }
+    // search
+    public function search(Request $request)
+    {
+        $keyword = $request->input('keyword'); // chỉ nhận 1 keyword thôi
+
+        $products = Product::with('category')
+            ->where(function ($query) use ($keyword) {
+                $query->where('name', 'LIKE', '%' . $keyword . '%') // tìm theo tên sản phẩm
+                    ->orWhereHas('category', function ($q) use ($keyword) {
+                        $q->where('name', 'LIKE', '%' . $keyword . '%') // tìm theo tên danh mục
+                            ->orWhere('slug', 'LIKE', '%' . $keyword . '%'); // thêm cả slug
+                    });
+            })
+            ->distinct()
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $products
+        ]);
+    }
+
+    public function getByCategorySlug($slug)
+    {
+        $category = Category::where('slug', $slug)->first();
+
+        if (!$category) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Danh mục không tồn tại'
+            ]);
+        }
+
+        // Nếu là cha (parent_id = 0) thì lấy cả con
+        if ($category->parent_id == 0) {
+            $childIds = Category::where('parent_id', $category->id)->pluck('id')->toArray();
+            $allIds = array_merge([$category->id], $childIds);
+
+            $products = Product::with('category')
+                ->whereIn('category_id', $allIds)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            // Nếu là con thì chỉ lấy đúng nó
+            $products = Product::with('category')
+                ->where('category_id', $category->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $products,
+            'category' => $category
         ]);
     }
 }

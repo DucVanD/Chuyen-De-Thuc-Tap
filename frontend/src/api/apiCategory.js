@@ -13,6 +13,25 @@ const apiCategory = {
     return res.data;
   },
 
+  // Lấy danh mục cha (parent_id = 0)
+  getParents: async () => {
+    const res = await axiosInstance.get(`/category/parents`);
+    return res.data;
+  },
+
+//
+getParentsWithChildren: async () => {
+  const res = await axiosInstance.get("/category/parentsWithChildren");
+  return res.data;
+},
+
+
+
+  getBySlug: async (slug) => {
+    const res = await axiosInstance.get(`/category/slug/${slug}`);
+    return res.data;
+  },
+  //
   Addcategory: async (FormData) => {
     axiosInstance.enableUploadFile(); // chuyển sang multipart/form-data
     const res = await axiosInstance.post("/category", FormData);
@@ -25,15 +44,15 @@ const apiCategory = {
     return res;
   },
 
- 
-
-editCategory: async (id, formData) => {
-  axiosInstance.enableUploadFile(); // BẮT BUỘC để gửi file
-  const res = await axiosInstance.post(`/category/${id}?_method=PUT`, formData);
-  axiosInstance.enableJson(); // đổi lại JSON cho các request sau
-  return res.data;
-},
-
+  editCategory: async (id, formData) => {
+    axiosInstance.enableUploadFile(); // BẮT BUỘC để gửi file
+    const res = await axiosInstance.post(
+      `/category/${id}?_method=PUT`,
+      formData
+    );
+    axiosInstance.enableJson(); // đổi lại JSON cho các request sau
+    return res.data;
+  },
 
   deleteCategory: async (id) => {
     const res = await axiosInstance.delete(`/category/${id}`);

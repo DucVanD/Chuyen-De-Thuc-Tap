@@ -15,7 +15,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $list = Category::orderBy('created_at', 'desc')->paginate(6);
+        $list = Category::orderBy('id', 'asc')->paginate(6);
         return response()->json([
             'status' => true,
             'message' => 'Danh sách danh mục',
@@ -148,5 +148,36 @@ class CategoryController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    // lấy danh mục cha
+    public function getParents()
+    {
+        $list = Category::where('parent_id', 0)
+            ->orderBy('sort_order', 'asc')
+            ->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'Danh sách danh mục cha',
+            'data' => $list
+        ]);
+    }
+
+
+    public function parentsWithChildren()
+    {
+        $categories = Category::with(['children' => function ($query) {
+            $query->where('status', 1);
+        }])
+            ->where('parent_id', 0)
+            ->where('status', 1)
+            ->orderBy('sort_order', 'ASC')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Danh mục cha và con',
+            'data' => $categories,
+        ]);
     }
 }

@@ -1,6 +1,52 @@
-import { Link } from "react-router-dom";
-import { FaTruck, FaUndoAlt, FaMoneyBillWave, FaHeadset, FaStar, FaHeart, FaShareAlt, FaCopy } from "react-icons/fa";
+import { Link, useParams } from "react-router-dom"; 
+import { imageURL } from "../../api/config";
+import {
+  FaTruck,
+  FaUndoAlt,
+  FaMoneyBillWave,
+  FaHeadset,
+  FaStar,
+  FaHeart,
+  FaShareAlt,
+  FaCopy,
+} from "react-icons/fa";
+import { useState, useEffect } from "react";
+import apiProduct from "../../api/apiProduct";
+
 const Detail = () => {
+  const { slug } = useParams(); // lấy slug từ URL
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+
+
+        const res = await apiProduct.getProductBySlug(slug); // gọi API
+        console.log("du lieu api",res);
+        if (res.status) {
+          setProduct(res.data); // backend trả về {status, message, data}
+        } else {
+          setError("Không tìm thấy sản phẩm.");
+        }
+      } catch (err) {
+        setError("Lỗi khi lấy thông tin sản phẩm.");
+        console.error(err);
+      }
+      setLoading(false);
+    };
+    fetchProduct();
+  }, [slug]);
+
+  if (loading) {
+    return <div className="text-center py-20">Đang tải...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-20 text-red-500">{error}</div>;
+  }
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 py-10">
@@ -17,76 +63,75 @@ const Detail = () => {
           <span className="text-gray-700 font-semibold">Thịt vai</span>
         </nav>
 
-        {/* Grid ảnh + thông tin */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Ảnh sản phẩm */}
-          <div className="space-y-3">
-            <div className="rounded-xl overflow-hidden border">
-              <img
-                src="/assets/images/thit-vai.jpg"
-                alt="Thịt vai"
-                className="w-full object-cover"
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Ảnh sản phẩm */}
+        <div className="space-y-3">
+          <div className="rounded-xl overflow-hidden border  justify-center flex border-gray-300">
+            <img
+              src={`${imageURL}/product/${product.thumbnail}`}
+              alt={product.name}
+              className="object-cover"
+            />
+          </div>
+        </div>
+
+        {/* Thông tin sản phẩm */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            {product.name}
+          </h1>
+
+          <p className="text-sm text-gray-500 mb-1">
+            Thương hiệu:{" "}
+            <span className="text-green-600">{product.brand?.name || "Đang cập nhật"}</span>{" "}
+            | Tình trạng:{" "}
+            <span className="text-green-600">
+              {product.stock > 0 ? "Còn hàng" : "Hết hàng"}
+            </span>
+          </p>
+
+          {/* Giá */}
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-3xl font-bold text-red-600">
+              {product.price.toLocaleString()}₫
+            </span>
+            {product.old_price && (
+              <>
+                <span className="text-gray-400 line-through">
+                  {product.old_price.toLocaleString()}₫
+                </span>
+                <span className="bg-red-500 text-white px-2 py-1 rounded text-xs">
+                  -{Math.round(((product.old_price - product.price) / product.old_price) * 100)}%
+                </span>
+              </>
+            )}
+          </div>
+
+          <p className="text-gray-600 text-sm mb-4">{product.description}</p>
+
+          {/* Số lượng + nút */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center border rounded-lg overflow-hidden">
+              <button className="px-3 py-2 hover:bg-gray-100">−</button>
+              <input
+                type="number"
+                className="w-16 text-center border-x py-2"
+                defaultValue={1}
               />
+              <button className="px-3 py-2 hover:bg-gray-100">+</button>
             </div>
-            {/* Icon chia sẻ */}
-            <div className="flex gap-2">
-              <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
-                <i className="fa-brands fa-facebook-f"></i>
-              </button>
-              <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
-                <i className="fa-brands fa-pinterest-p"></i>
-              </button>
-              <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
-                <i className="fa-brands fa-twitter"></i>
-              </button>
-            </div>
+            <button className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+              Thêm vào giỏ
+            </button>
           </div>
 
-          {/* Thông tin sản phẩm */}
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Thịt vai</h1>
+          <p className="text-sm text-gray-500">
+            <i className="fa-solid fa-shield-halved text-green-600 mr-2"></i>
+            Cam kết hàng tươi 100%
+          </p>
+        </div>
+      </div>
 
-            <p className="text-sm text-gray-500 mb-1">
-              Thương hiệu: <span className="text-green-600">Bean Farm</span> |
-              Tình trạng: <span className="text-green-600">Còn hàng</span>
-            </p>
-
-            {/* Giá */}
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-3xl font-bold text-red-600">100.000₫</span>
-              <span className="text-gray-400 line-through">120.000₫</span>
-              <span className="bg-red-500 text-white px-2 py-1 rounded text-xs">
-                -20%
-              </span>
-            </div>
-
-            <p className="text-gray-600 text-sm mb-4">
-              Thịt vai heo tươi, chất lượng cao, thích hợp cho món xào, kho và
-              nướng. Đảm bảo an toàn thực phẩm.
-            </p>
-
-            {/* Số lượng + nút */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center border rounded-lg overflow-hidden">
-                <button className="px-3 py-2 hover:bg-gray-100">−</button>
-                <input
-                  type="number"
-                  className="w-16 text-center border-x py-2"
-                  defaultValue={1}
-                />
-                <button className="px-3 py-2 hover:bg-gray-100">+</button>
-              </div>
-              <button className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
-                Thêm vào giỏ
-              </button>
-            </div>
-
-            <p className="text-sm text-gray-500">
-              <i className="fa-solid fa-shield-halved text-green-600 mr-2"></i>
-              Cam kết hàng tươi 100%
-            </p>
-          </div>
-          </div>
 
         {/* Mã giảm giá */}
         <div className="bg-green-50 rounded-xl p-4 my-8">
@@ -118,8 +163,7 @@ const Detail = () => {
         {/* Nội dung mô tả */}
         <div className="text-gray-700 leading-relaxed">
           <p>
-            Thịt vai heo được chọn lọc kỹ, tươi ngon, thích hợp cho nhiều món ăn
-            như kho, xào, nướng.
+            {product.detail}
           </p>
           <ul className="list-disc pl-6 mt-3 space-y-1">
             <li>Xuất xứ: Việt Nam</li>
