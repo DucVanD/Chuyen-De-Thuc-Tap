@@ -11,10 +11,10 @@ import Dashboard from "../pages/admin/Dashboard";
 
 import ListBrand from "../pages/admin/Brand/listBrand";
 
-import ListUser from "../pages/admin/User/ListUser";
-import ListOrder from "../pages/admin/Order/ListOrder";
-import ShowUser from "../pages/admin/User/ShowUser";
-import DetailOrderUser from "../pages/admin/User/DetailOrderUser";
+// import ListUser from "../pages/admin/User/listUser";
+// import ListOrder from "../pages/admin/Order/listOrder";
+// import ShowUser from "../pages/admin/User/ShowUser";
+// import DetailOrderUser from "../pages/admin/User/DetailOrderUser";
 
 const AdminRoute = [
   { path: "categories/:page?", component: ListCat },
@@ -34,10 +34,10 @@ const AdminRoute = [
 
   { path: "brands", component: ListBrand },
 
-  { path: "/admin/listUser", component: ListUser },
-  { path: "/admin/listOrder", component: ListOrder },
-  { path: "/admin/showUser/:id", component: ShowUser },
-  { path: "/admin/detailOrder/:id", component: DetailOrderUser },
+  // { path: "/admin/listUser", component: ListUser },
+  // { path: "/admin/listOrder", component: ListOrder },
+  // { path: "/admin/showUser/:id", component: ShowUser },
+  // { path: "/admin/detailOrder/:id", component: DetailOrderUser },
 ];
 
 export default AdminRoute;
