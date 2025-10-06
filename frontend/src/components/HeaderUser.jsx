@@ -197,7 +197,7 @@ const HeaderUser = () => {
 
   {/* Mega Menu */}
   {openMenu && (
-    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-full md:w-[700px] bg-white shadow-lg border border-gray-300 rounded-xl p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 z-50 mt-1 animate-fadeIn">
+    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-full md:w-[700px] bg-white shadow-lg border border-gray-300 rounded-xl p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 z-50 animate-fadeIn mt-[2px]" style={{ animationDelay: "0.9s" }}>
       {categories.length > 0 ? (
         categories.map((cat) => (
           <div key={cat.id}>

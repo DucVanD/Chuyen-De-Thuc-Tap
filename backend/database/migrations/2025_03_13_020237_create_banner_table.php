@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('banner', function (Blueprint $table) {
             $table->id();
             $table->string('name', 1000);
-            $table->string('image', 1000)->unique();
+           $table->string('image', 500)->unique();
             $table->string('link', 1000)->nullable();
             $table->unsignedInteger('sort_order')->default(1);
             $table->enum('position', ['slideshow', 'ads'])->default('slideshow');

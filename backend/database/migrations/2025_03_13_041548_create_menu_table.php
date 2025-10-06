@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('menu', function (Blueprint $table) {
             $table->id();
             $table->string('name', 1000);
-            $table->string('link', 1000)->unique();
+            $table->string('link', 500)->unique();
             $table->unsignedInteger('table_id')->nullable();
             $table->unsignedInteger('parent_id')->default(0);
             $table->unsignedInteger('sort_order')->default(0);

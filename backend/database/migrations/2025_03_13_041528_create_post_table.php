@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedInteger('topic_id')->nullable();
             $table->string('title', 1000);
-            $table->string('slug', 1000)->unique();
+           $table->string('slug', 500)->unique();
+
             $table->mediumText('detail');
             $table->string('thumbnail', 1000)->nullable();
             $table->enum('type', ['post', 'page'])->default('post');

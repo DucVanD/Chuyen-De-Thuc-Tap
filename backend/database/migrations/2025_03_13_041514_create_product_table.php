@@ -16,7 +16,8 @@ return new class extends Migration
             $table->unsignedInteger('category_id');
             $table->unsignedInteger('brand_id');
             $table->string('name', 1000);
-            $table->string('slug', 1000)->unique();
+           $table->string('slug', 500)->unique();
+
             $table->float('price_root');
             $table->float('price_sale');
             $table->string('thumbnail', 1000)->nullable();

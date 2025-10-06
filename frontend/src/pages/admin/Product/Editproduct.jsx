@@ -5,6 +5,7 @@ import apiProduct from "../../../api/apiProduct";
 import apiCategory from "../../../api/apiCategory";
 import apiBrand from "../../../api/apiBrand";
 import { imageURL } from "../../../api/config";
+// import { useLocation } from "react-router-dom";
 const EditProduct = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // lấy id từ URL
@@ -15,7 +16,7 @@ const EditProduct = () => {
   const [thumbPreview, setThumbPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
+  const savedPage = localStorage.getItem("currentProductPage") || 1;
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -45,54 +46,51 @@ const EditProduct = () => {
   }, []);
 
   // Load chi tiết sản phẩm cần sửa
-useEffect(() => {
-  const fetchProduct = async () => {
-    try {
-      const res = await apiProduct.getProductId(id);
-      console.log("Kết quả API product:", res.data);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await apiProduct.getProductId(id);
+        console.log("Kết quả API product:", res.data);
 
-      // nếu API có wrapper {status, message, data}
-      let product = null;
-      if (res.data && res.data.data) {
-        product = res.data.data;
-      } else {
-        // nếu API trả về trực tiếp object sản phẩm
-        product = res.data;
-      }
-
-      if (product) {
-        setFormData({
-          name: product.name || "",
-          description: product.description || "",
-          detail: product.detail || "",
-          price_root: product.price_root || "",
-          price_sale: product.price_sale || "",
-          qty: product.qty || 1,
-          category_id: product.category_id || "",
-          brand_id: product.brand_id || "",
-          status: product.status || 1,
-        });
-
-        if (product.thumbnail) {
-          setThumbPreview(
-            `${imageURL}/product/${product.thumbnail}?v=${Date.now()}`
-          );
+        // nếu API có wrapper {status, message, data}
+        let product = null;
+        if (res.data && res.data.data) {
+          product = res.data.data;
+        } else {
+          // nếu API trả về trực tiếp object sản phẩm
+          product = res.data;
         }
-      } else {
-        console.warn("API không trả về dữ liệu hợp lệ:", res.data);
+
+        if (product) {
+          setFormData({
+            name: product.name || "",
+            description: product.description || "",
+            detail: product.detail || "",
+            price_root: product.price_root || "",
+            price_sale: product.price_sale || "",
+            qty: product.qty || 1,
+            category_id: product.category_id || "",
+            brand_id: product.brand_id || "",
+            status: product.status || 1,
+          });
+
+          if (product.thumbnail) {
+            setThumbPreview(
+              `${imageURL}/product/${product.thumbnail}?v=${Date.now()}`
+            );
+          }
+        } else {
+          console.warn("API không trả về dữ liệu hợp lệ:", res.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
+        alert("Không load được sản phẩm");
+        navigate("/admin/products");
       }
-    } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
-      alert("Không load được sản phẩm");
-      navigate("/admin/products");
-    }
-  };
+    };
 
-  fetchProduct();
-}, [id, navigate]);
-
-
-
+    fetchProduct();
+  }, [id, navigate]);
 
   // Cleanup preview
   useEffect(() => {
@@ -135,7 +133,7 @@ useEffect(() => {
 
       const res = await apiProduct.EditProduct(id, data);
       alert(res.message || "Cập nhật sản phẩm thành công");
-      navigate("/admin/products/1");
+     navigate(`/admin/products/${savedPage}`);
     } catch (error) {
       if (error.response?.data?.errors) setErrors(error.response.data.errors);
       alert(
