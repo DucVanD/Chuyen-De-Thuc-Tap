@@ -2,31 +2,38 @@ import { Link } from "react-router-dom";
 
 const FooterAdmin = () => {
   return (
-    <>
-      {/* Footer của trang admin */}
-      <footer className="bg-white text-gray-600 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between">
-          {/* Text hiển thị tên panel */}
-          <span className="text-sm font-medium">
-            Siêu THị MiNi - Administration Panel
-          </span>
+    <footer className="bg-white text-gray-600 border-t border-gray-200 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row items-center justify-between">
+        {/* Tên panel */}
+        <span className="text-sm text-center md:text-left font-medium">
+          © 2025 <span className="text-indigo-600 font-semibold">Siêu Thị Mini</span> — Administration Panel
+        </span>
 
-          {/* Các liên kết hỗ trợ */}
-          <div className="mt-3 md:mt-0 space-x-4 text-sm font-medium">
-            {/* Dùng Link thay vì <a> để điều hướng nội bộ */}
-            <Link to="/support" className="hover:text-indigo-600 transition">
-              Hỗ trợ
-            </Link>
-            <Link to="/guide" className="hover:text-indigo-600 transition">
-              Hướng dẫn sử dụng
-            </Link>
-            <Link to="/version" className="hover:text-indigo-600 transition">
-              Phiên bản 1.0
-            </Link>
-          </div>
+        {/* Liên kết hỗ trợ */}
+        <div className="mt-2 md:mt-0 flex flex-wrap justify-center md:justify-end gap-3 text-sm font-medium">
+          <Link
+            to="/support"
+            className="hover:text-indigo-600 transition-colors duration-200"
+          >
+            Hỗ trợ
+          </Link>
+          <span className="hidden md:inline text-gray-400">|</span>
+          <Link
+            to="/guide"
+            className="hover:text-indigo-600 transition-colors duration-200"
+          >
+            Hướng dẫn sử dụng
+          </Link>
+          <span className="hidden md:inline text-gray-400">|</span>
+          <Link
+            to="/version"
+            className="hover:text-indigo-600 transition-colors duration-200"
+          >
+            Phiên bản 1.0
+          </Link>
         </div>
-      </footer>
-    </>
+      </div>
+    </footer>
   );
 };
 
