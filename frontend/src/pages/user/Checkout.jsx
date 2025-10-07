@@ -1,5 +1,5 @@
 // src/pages/user/Checkout.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import apiOrder from "../../api/apiOrder";
@@ -28,6 +28,7 @@ const Checkout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const cartItems = useSelector((state) => state.cart.items);
+  const user = useSelector((state) => state.auth.user); // user login
 
   const [form, setForm] = useState({
     email: "",
@@ -45,6 +46,18 @@ const Checkout = () => {
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedWard, setSelectedWard] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Tự động điền thông tin user khi có user login
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        email: user.email || "",
+        name: user.fullName || "",
+        phone: user.phone || "",
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,8 +81,16 @@ const Checkout = () => {
     if (loading) return;
     setLoading(true);
 
-    if (!cartItems.length) return alert("Giỏ hàng trống!");
-    if (!form.name || !form.email) return alert("Vui lòng điền tên và email!");
+    if (!cartItems.length) {
+      alert("Giỏ hàng trống!");
+      setLoading(false);
+      return;
+    }
+    if (!form.name || !form.email) {
+      alert("Vui lòng điền tên và email!");
+      setLoading(false);
+      return;
+    }
 
     const orderData = {
       ...form,

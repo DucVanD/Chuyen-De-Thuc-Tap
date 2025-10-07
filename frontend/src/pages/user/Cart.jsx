@@ -3,7 +3,7 @@ import { removeFromCart, updateQuantity } from "../../Redux/cartSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { imageURL } from "../../api/config";
 import React, { useState } from "react";
-
+import { toast } from "react-toastify";
 import {
   FaMinus,
   FaPlus,
@@ -21,10 +21,23 @@ const Cart = () => {
   const discountCodes = ["BEA50", "BEA15", "BEAN99K", "FREESHIP"];
 
   const cartItems = useSelector((state) => state.cart.items);
+  const isLoggedIn = useSelector((state) => !!state.auth.user);
   const dispatch = useDispatch();
-  console.log(cartItems);
-  const changeQuantity = (id, qty) => {
-    if (qty < 1) return;
+
+  const changeQuantity = (id, qty, maxQty) => {
+    if (qty < 1) qty = 1;
+    if (qty > maxQty) {
+      qty = maxQty;
+      toast.warn("Đã chọn số lượng tối đa trong kho!", {
+        position: "top-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
     dispatch(updateQuantity({ id, qty }));
   };
 
@@ -43,6 +56,14 @@ const Cart = () => {
   const navigate = useNavigate();
 
   const handleCheckout = () => {
+    if (!isLoggedIn) {
+      toast.warn("Vui lòng đăng nhập để tiến hành thanh toán!", {
+        position: "top-right",
+        autoClose: 1000,
+      });
+       navigate("/registered");
+      return;
+    }
     navigate("/checkout");
   };
 
@@ -111,11 +132,15 @@ const Cart = () => {
                         </span>
                       </div>
 
-                      <div className="col-span-2 flex items-center justify-center">
+                <div className="col-span-2 flex items-center justify-center">
                         <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                           <button
                             onClick={() =>
-                              changeQuantity(item.id, item.qty - 1)
+                              changeQuantity(
+                                item.id,
+                                item.qty - 1,
+                                item.product_qty
+                              )
                             }
                             className="p-2 hover:bg-gray-100 transition-colors"
                           >
@@ -127,15 +152,21 @@ const Cart = () => {
                             onChange={(e) =>
                               changeQuantity(
                                 item.id,
-                                parseInt(e.target.value) || 1
+                                parseInt(e.target.value) || 1,
+                                item.product_qty
                               )
                             }
                             className="w-12 text-center py-2 border-x border-gray-300 focus:outline-none"
                             min="1"
+                            max={item.product_qty}
                           />
                           <button
                             onClick={() =>
-                              changeQuantity(item.id, item.qty + 1)
+                              changeQuantity(
+                                item.id,
+                                item.qty + 1,
+                                item.product_qty
+                              )
                             }
                             className="p-2 hover:bg-gray-100 transition-colors"
                           >

@@ -10,9 +10,9 @@ import AddProduct from "../pages/admin/Product/AddProduct";
 import Dashboard from "../pages/admin/Dashboard";
 
 import ListBrand from "../pages/admin/Brand/listBrand";
-
-
-
+import listOrder from "../pages/admin/Order/listOrder";
+import EditOrder from "../pages/admin/Order/EditOrder";
+import OrderDetail from "../pages/admin/Order/detailOrder";
 const AdminRoute = [
   { path: "categories/:page?", component: ListCat },
   { path: "/admin/addCat", component: AddCat },
@@ -29,9 +29,10 @@ const AdminRoute = [
 
   { path: "/admin/addProduct", component: AddProduct },
 
-  { path: "brands", component: ListBrand },
-
- 
+  { path: "orders/:page?", component: listOrder },
+  { path: "orders", component: listOrder },
+  { path: "editOrder/:id", component: EditOrder }, // chỉnh sửa đơn hàng
+  {path: "orderDetail/:id", component: OrderDetail}, // chi tiết đơn hàng
 ];
 
 export default AdminRoute;

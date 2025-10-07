@@ -1,9 +1,15 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaFacebookF, FaGoogle } from "react-icons/fa";
+import apiUser from "../../api/apiUser";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../../Redux/authSlice";
 
 const Registered = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("login");
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,67 +20,104 @@ const Registered = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Xử lý đăng nhập/đăng ký
-    console.log("Form submitted:", formData);
+    setLoading(true);
+    try {
+      if (activeTab === "login") {
+        const res = await apiUser.loginUser({
+          email: formData.email,
+          password: formData.password,
+        });
+        if (res.status) {
+          dispatch(loginSuccess({ user: res.user, token: res.access_token }));
+          alert("Đăng nhập thành công!");
+          navigate("/");
+        }
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          alert("Mật khẩu và xác nhận không khớp!");
+          setLoading(false);
+          return;
+        }
+        const res = await apiUser.registerUser({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          password_confirmation: formData.confirmPassword,
+          phone: formData.phone,
+        });
+        if (res.status) {
+          dispatch(loginSuccess({ user: res.user, token: res.access_token }));
+          alert("Đăng ký thành công!");
+          navigate("/");
+        }
+      }
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        (err.response?.data?.errors &&
+          Object.values(err.response.data.errors).flat().join("\n")) ||
+        "Có lỗi xảy ra!";
+      alert(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-    return (
+  return (
     <>
       <div className="max-w-7xl mx-auto px-4 py-10">
+        {/* Breadcrumb */}
         <nav className="text-sm text-gray-500 mb-6">
           <Link to="/" className="hover:text-green-600">
             Trang chủ
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-700 font-semibold">Liên hệ</span>
+          <span className="text-gray-700 font-semibold">
+            {activeTab === "login" ? "Đăng nhập" : "Đăng ký"}
+          </span>
         </nav>
-      </div>
 
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          {/* Header với logo hoặc title */}
+        {/* Main Content */}
+        <div className="flex items-center justify-center">
+          <div className="w-full max-w-md">
+            {/* Tabs */}
+            <div className="flex justify-center space-x-8 border-b border-gray-200 mb-6">
+              <button
+                onClick={() => setActiveTab("login")}
+                className={`pb-2 text-base font-medium border-b-2 transition-colors ${
+                  activeTab === "login"
+                    ? "border-green-500 text-green-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                ĐĂNG NHẬP
+              </button>
+              <button
+                onClick={() => setActiveTab("register")}
+                className={`pb-2 text-base font-medium border-b-2 transition-colors ${
+                  activeTab === "register"
+                    ? "border-green-500 text-green-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                ĐĂNG KÝ
+              </button>
+            </div>
 
-          {/* Tabs */}
-          <div className="flex space-x-8 border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab("login")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === "login"
-                  ? "border-green-500 text-green-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              ĐĂNG NHẬP
-            </button>
-            <button
-              onClick={() => setActiveTab("register")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === "register"
-                  ? "border-green-500 text-green-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              ĐĂNG KÝ
-            </button>
-          </div>
-
-          {/* Form */}
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">
-                {activeTab === "login" ? "ĐĂNG NHẬP" : "ĐĂNG KÝ"}
+            {/* Form Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">
+                {activeTab === "login"
+                  ? "Đăng nhập tài khoản"
+                  : "Tạo tài khoản mới"}
               </h3>
 
-              {/* Form fields */}
-              <div className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {activeTab === "register" && (
                   <>
                     <div>
@@ -87,11 +130,10 @@ const Registered = () => {
                       <input
                         id="fullName"
                         name="fullName"
-                        type="text"
-                        required={activeTab === "register"}
+                        required
                         value={formData.fullName}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
                         placeholder="Nhập họ và tên"
                       />
                     </div>
@@ -107,10 +149,9 @@ const Registered = () => {
                         id="phone"
                         name="phone"
                         type="tel"
-                        required={activeTab === "register"}
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
                         placeholder="Nhập số điện thoại"
                       />
                     </div>
@@ -131,8 +172,8 @@ const Registered = () => {
                     required
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Email"
+                    className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
+                    placeholder="Nhập email của bạn"
                   />
                 </div>
 
@@ -150,8 +191,8 @@ const Registered = () => {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Mật khẩu"
+                    className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
+                    placeholder="Nhập mật khẩu"
                   />
                 </div>
 
@@ -167,87 +208,81 @@ const Registered = () => {
                       id="confirmPassword"
                       name="confirmPassword"
                       type="password"
-                      required={activeTab === "register"}
+                      required
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="Xác nhận mật khẩu"
+                      className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
+                      placeholder="Nhập lại mật khẩu"
                     />
                   </div>
                 )}
-              </div>
 
-              {/* Submit button */}
-              <button
-                type="submit"
-                className="w-full mt-6 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors font-medium"
-              >
-                {activeTab === "login" ? "Đăng nhập" : "Đăng ký"}
-              </button>
-
-              {/* Forgot password (chỉ hiển thị khi đăng nhập) */}
-              {activeTab === "login" && (
-                <div className="mt-4 text-center">
-                  <Link
-                    to="/forgot-password"
-                    className="text-sm text-gray-600 hover:text-green-600 transition-colors"
-                  >
-                    Quên mật khẩu?
-                  </Link>
-                </div>
-              )}
-
-              {/* Divider */}
-              <div className="mt-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300" />
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">
-                      Hoặc {activeTab === "login" ? "đăng nhập" : "đăng ký"}{" "}
-                      bằng
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Social login buttons */}
-              <div className="mt-6 grid grid-cols-2 gap-3">
                 <button
-                  type="button"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full py-2 mt-4 rounded-md font-semibold text-white transition-all ${
+                    loading
+                      ? "bg-gray-400"
+                      : "bg-green-500 hover:bg-green-600 focus:ring-2 focus:ring-green-400"
+                  }`}
                 >
-                  <FaFacebookF className="h-5 w-5 mr-2" />
-                  Facebook
+                  {loading
+                    ? activeTab === "login"
+                      ? "Đang đăng nhập..."
+                      : "Đang đăng ký..."
+                    : activeTab === "login"
+                    ? "Đăng nhập"
+                    : "Đăng ký"}
                 </button>
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+
+                {activeTab === "login" && (
+                  <div className="text-center mt-3">
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-gray-600 hover:text-green-600"
+                    >
+                      Quên mật khẩu?
+                    </Link>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 my-4">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <span className="text-sm text-gray-500">
+                    hoặc {activeTab === "login" ? "đăng nhập" : "đăng ký"} bằng
+                  </span>
+                  <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button className="flex items-center justify-center py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition">
+                    <FaFacebookF className="mr-2" /> Facebook
+                  </button>
+                  <button className="flex items-center justify-center py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition">
+                    <FaGoogle className="mr-2" /> Google
+                  </button>
+                </div>
+              </form>
+
+              <p className="text-xs sm:text-sm text-center text-gray-500 mt-6">
+                Bằng cách {activeTab === "login" ? "đăng nhập" : "đăng ký"}, bạn
+                đồng ý với{" "}
+                <Link
+                  to="/terms"
+                  className="text-green-600 hover:text-green-700"
                 >
-                  <FaGoogle className="h-5 w-5 mr-2" />
-                  Google
-                </button>
-              </div>
+                  Điều khoản
+                </Link>{" "}
+                và{" "}
+                <Link
+                  to="/privacy"
+                  className="text-green-600 hover:text-green-700"
+                >
+                  Chính sách bảo mật
+                </Link>
+                .
+              </p>
             </div>
-          </form>
-
-          {/* Footer links */}
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Bằng cách {activeTab === "login" ? "đăng nhập" : "đăng ký"}, bạn
-              đồng ý với{" "}
-              <Link to="/terms" className="text-green-600 hover:text-green-700">
-                Điều khoản sử dụng
-              </Link>{" "}
-              và{" "}
-              <Link
-                to="/privacy"
-                className="text-green-600 hover:text-green-700"
-              >
-                Chính sách bảo mật
-              </Link>
-            </p>
           </div>
         </div>
       </div>

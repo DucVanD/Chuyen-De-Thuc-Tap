@@ -34,6 +34,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
 });
 
 // product
@@ -104,7 +105,9 @@ route::prefix('order')->group(function () {
 route::resource('order', OrderController::class);
 // routes/api.php
 // ví dụ Laravel
-Route::post('/order/checkout', [OrderController::class, 'checkout']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/order/checkout', [OrderController::class, 'checkout']);
+});
 
 // menu
 
