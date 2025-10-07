@@ -11,7 +11,7 @@ import apiCategory from "../api/apiCategory";
 import { imageURL } from "../api/config";
 import { logout } from "../Redux/authSlice";
 import { toast } from "react-toastify";
-
+import { TbBrandShopee } from "react-icons/tb";
 const HeaderUser = () => {
   const [openMenu, setOpenMenu] = useState(false); // Menu mobile
   const [showDropdown, setShowDropdown] = useState(false); // Dropdown desktop
@@ -186,8 +186,11 @@ const HeaderUser = () => {
       </div>
 
       {/* --- MOBILE SEARCH BAR --- */}
-      <div className="md:hidden px-4 py-2 bg-gray-100 sadow">
-        <form onSubmit={handleSearch} className="relative">
+      {/* Thanh tìm kiếm + nút mua nhanh (Mobile Only) */}
+<div className="md:hidden px-4 py-2 bg-gray-100 shadow">
+      <form onSubmit={handleSearch} className="relative flex items-center gap-2">
+        {/* Ô tìm kiếm */}
+        <div className="relative flex-1">
           <input
             type="text"
             value={keyword}
@@ -198,8 +201,19 @@ const HeaderUser = () => {
           <button type="submit">
             <CiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5" />
           </button>
-        </form>
-      </div>
+        </div>
+
+        {/* Icon mua nhanh */}
+        <button
+          onClick={handleQuickCheckout}
+          className="bg-red-600 text-white p-2 rounded-full shadow hover:bg-red-700 transition animate-bounce  relative"  style={{ animationDuration: "0.8s" }} 
+          title="Mua hàng nhanh"
+        >
+          <TbBrandShopee className="h-5 w-5 " />
+        </button>
+      </form>
+    </div>
+
 
       {/* --- DESKTOP HEADER --- */}
       <div className="hidden md:flex items-center justify-between px-10 py-3 bg-gray-50">
@@ -365,7 +379,7 @@ const HeaderUser = () => {
 
         <button
           onClick={handleQuickCheckout}
-          className="bg-red-600 py-2 px-5 rounded-full text-white font-medium shadow hover:bg-red-700 transition animate-bounce"
+          className="bg-red-600 py-2 px-5 rounded-full text-white font-medium shadow hover:bg-red-700 transition animate-bounce" style={{ animationDuration: "0.7s" }} 
         >
           Mua hàng nhanh
         </button>
