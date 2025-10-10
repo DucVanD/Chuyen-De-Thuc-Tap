@@ -12,6 +12,8 @@ use App\Http\Requests\StoreProductRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\Category;
 use App\Models\Brand;
+use App\Models\OrderDetail;
+
 
 class ProductController extends Controller
 {
@@ -23,6 +25,7 @@ class ProductController extends Controller
             'product.slug',
             'product.thumbnail',
             'product.status',
+            'product.qty',
             'product.price_root as price',
             'category.name as category_name',
             'brand.name as brand_name'
@@ -39,13 +42,19 @@ class ProductController extends Controller
         ]);
     }
 
-    public function getAll()
+    public function getAllProductUser()
     {
-        $list = Product::all();
+        $products = Product::orderBy('id', 'asc')->paginate(12);
+
+
+        $products->getCollection()->transform(function ($product) {
+            return $product->append('discount_percent');
+        });
+
         return response()->json([
             'status' => true,
             'message' => 'Danh sách tất cả sản phẩm',
-            'data' => $list
+            'data' => $products
         ]);
     }
 
@@ -174,47 +183,69 @@ class ProductController extends Controller
         ]);
     }
 
-    public function destroy(string $id)
-    {
-        return response()->json([
-            'status' => true,
-            'message' => "Xóa sản phẩm $id thành công"
-        ]);
-    }
 
 
 
     public function newest()
     {
-        $products = Product::orderBy('created_at', 'desc')->take(10)->get();
+        $products = Product::orderBy('created_at', 'desc')
+            ->take(10)
+            ->get()
+            ->map(function ($product) {
+                // Nếu có giá khuyến mãi và nhỏ hơn giá gốc
+                if ($product->price_sale > 0 && $product->price_sale < $product->price_root) {
+                    $product->discount_percent = round((($product->price_root - $product->price_sale) / $product->price_root) * 100);
+                } else {
+                    $product->discount_percent = 0;
+                }
+
+                return $product;
+            });
 
         return response()->json([
             'status' => true,
-            'message' => '5 sản phẩm mới nhất',
+            'message' => '10 sản phẩm mới nhất (có tính % giảm giá)',
             'data' => $products
         ]);
     }
 
+
+
     // san pham giam gia cao
+    // Sản phẩm giảm giá cao nhất
     public function salediscount()
     {
         $products = Product::select(
             '*',
-            DB::raw('(price_root - price_sale) as discount'),
-            // Làm tròn xuống để tránh hiển thị 100% khi chưa thật sự free
-            DB::raw('LEAST(FLOOR(((price_root - price_sale) / price_root) * 100), 99) as discount_percent')
+            // Giảm theo tiền
+            DB::raw('CASE 
+                    WHEN price_sale IS NULL OR price_sale = 0 THEN 0 
+                    ELSE (price_root - price_sale) 
+                 END AS discount'),
+
+            // Giảm theo %
+            DB::raw('CASE 
+                    WHEN price_root > 0 
+                         AND price_sale > 0 
+                         AND price_sale < price_root 
+                    THEN LEAST(FLOOR(((price_root - price_sale) / price_root) * 100), 99)
+                    ELSE 0 
+                 END AS discount_percent')
         )
             ->where('status', 1)
-            ->orderBy('discount', 'desc')
+            ->whereNotNull('price_root')
+            ->where('price_root', '>', 0)
+            ->orderByDesc('discount_percent') // sắp theo % giảm cao nhất
             ->take(6)
             ->get();
 
         return response()->json([
             'status' => true,
-            'message' => '5 sản phẩm giảm giá cao nhất',
+            'message' => '6 sản phẩm giảm giá cao nhất',
             'data' => $products
         ]);
     }
+
 
     public function getProductBySlug($slug)
     {
@@ -305,6 +336,163 @@ class ProductController extends Controller
             'status' => true,
             'data' => $products,
             'category' => $category
+        ]);
+    }
+
+
+    // Soft delete (ẩn sản phẩm)
+    public function delete($id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sản phẩm không tồn tại'
+            ], 404);
+        }
+
+        // Kiểm tra sản phẩm có trong đơn hàng không
+        $hasOrder = OrderDetail::where('product_id', $product->id)->exists();
+        if ($hasOrder) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sản phẩm đang được đặt, không thể xóa'
+            ], 400);
+        }
+
+        $product->delete(); // soft delete
+        return response()->json([
+            'status' => true,
+            'message' => 'Xóa sản phẩm thành công'
+        ]);
+    }
+
+    // Xóa vĩnh viễn từ Trash
+    public function destroy($id)
+    {
+        $product = Product::onlyTrashed()->find($id);
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sản phẩm không tồn tại trong Trash'
+            ], 404);
+        }
+
+        // Xóa ảnh nếu có
+        $image_path = public_path('assets/images/product/' . $product->thumbnail);
+        if (File::exists($image_path)) File::delete($image_path);
+
+        $product->forceDelete(); // xóa vĩnh viễn
+        return response()->json([
+            'status' => true,
+            'message' => 'Xóa sản phẩm vĩnh viễn thành công'
+        ]);
+    }
+
+    // Khôi phục sản phẩm từ Trash
+    public function restore($id)
+    {
+        $product = Product::onlyTrashed()->find($id);
+
+        if (!$product) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sản phẩm không tồn tại trong Trash'
+            ], 404);
+        }
+
+        $product->restore();
+        return response()->json([
+            'status' => true,
+            'message' => 'Khôi phục sản phẩm thành công'
+        ]);
+    }
+
+    // Lấy danh sách sản phẩm trong Trash
+    public function trash()
+    {
+        $products = Product::onlyTrashed()
+            ->select(
+                'product.id',
+                'product.name',
+                'category.name as category_name',
+                'brand.name as brand_name',
+                'thumbnail',
+                'product.status',
+                'price_root'
+            )
+            ->join('category', 'product.category_id', '=', 'category.id')
+            ->join('brand', 'product.brand_id', '=', 'brand.id')
+            ->orderBy('product.created_at', 'desc')
+            ->paginate(8);
+
+        return response()->json([
+            'status' => true,
+            'data' => $products
+        ]);
+    }
+    // filter
+    public function filter(Request $request)
+    {
+        $query = Product::with(['category', 'brand']);
+
+        $query->when($request->category_ids, fn($q, $ids) => $q->whereIn('category_id', (array)$ids));
+        $query->when($request->brand_ids, fn($q, $ids) => $q->whereIn('brand_id', (array)$ids));
+        $query->when($request->name, fn($q, $name) => $q->where('name', 'LIKE', "%$name%"));
+        $query->when($request->min_price, fn($q, $min) => $q->where('price_root', '>=', $min));
+        $query->when($request->max_price, fn($q, $max) => $q->where('price_root', '<=', $max));
+
+        $allowedSort = ['created_at', 'price_root', 'name'];
+        $sortBy = in_array($request->input('sort_by'), $allowedSort) ? $request->input('sort_by') : 'created_at';
+        $sortOrder = $request->input('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $products = $query->paginate($request->input('limit', 12));
+
+        // Thêm % giảm giá
+        $products->getCollection()->transform(function ($p) {
+            $p->discount_percent = ($p->price_root > 0 && $p->price_sale > 0)
+                ? round((($p->price_root - $p->price_sale) / $p->price_root) * 100)
+                : 0;
+            return $p;
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Kết quả lọc sản phẩm',
+            'data' => $products
+        ]);
+    }
+
+
+    // category home
+
+    public function categoryhome()
+    {
+        $categories = Category::whereIn('name', ['Nước ngọt', 'Sữa tươi', 'Hải sản'])
+            ->with(['products' => function ($q) {
+                $q->take(3)
+                    ->select('id', 'name', 'thumbnail', 'price_root', 'price_sale', 'category_id', 'slug');
+            }])
+            ->get();
+
+        // Duyệt qua từng sản phẩm để thêm % giảm giá
+        $categories->each(function ($category) {
+            $category->products->each(function ($product) {
+                if ($product->price_root > 0 && $product->price_sale < $product->price_root) {
+                    $product->discount_percent = round(100 - ($product->price_sale / $product->price_root * 100));
+                } else {
+                    $product->discount_percent = 0;
+                }
+            });
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Danh mục chọn lọc cùng sản phẩm',
+            'data' => $categories
         ]);
     }
 }

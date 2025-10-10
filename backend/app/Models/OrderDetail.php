@@ -18,12 +18,12 @@ class OrderDetail extends Model
         'qty',
         'amount'
     ];
-
+    // 1 chi tiết đơn hàng thuộc về 1 sản phẩm
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
-
+    // 1 chi tiết đơn hàng thuộc về 1 đơn hàng
     public function order()
     {
         return $this->belongsTo(Order::class);

@@ -29,4 +29,44 @@ class AuthController extends Controller
     {
         return app(UserController::class)->logout($request);
     }
+
+
+
+// Admin login
+
+ public function adminLogin(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $user = User::where('username', $request->username)
+                    ->where('roles', 'admin')
+                    ->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sai username hoặc mật khẩu admin',
+            ], 401);
+        }
+
+        // Tạo token Sanctum
+        $token = $user->createToken('admin-token')->plainTextToken;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Đăng nhập thành công',
+            'data' => [
+                'user' => $user,
+                'token' => $token,
+            ]
+        ]);
+    }
+
+
+
+
+
 }

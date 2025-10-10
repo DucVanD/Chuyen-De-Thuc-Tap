@@ -19,11 +19,11 @@ const apiCategory = {
     return res.data;
   },
 
-//
-getParentsWithChildren: async () => {
-  const res = await axiosInstance.get("/category/parentsWithChildren");
-  return res.data;
-},
+  //
+  getParentsWithChildren: async () => {
+    const res = await axiosInstance.get("/category/parentsWithChildren");
+    return res.data;
+  },
 
 
 
@@ -54,10 +54,30 @@ getParentsWithChildren: async () => {
     return res.data;
   },
 
-  deleteCategory: async (id) => {
+  delete: async (id) => {
+    const res = await axiosInstance.get(`/category/delete/${id}`); // dùng GET như route
+    return res.data;
+  },
+
+  restore: async (id) => {
+    const res = await axiosInstance.get(`/category/restore/${id}`);
+    return res.data;
+  },
+
+  // Lấy danh sách Trash
+  getTrash: async (page = 1) => {
+    const res = await axiosInstance.get(`/category/trash?page=${page}`);
+    return res.data; // nên trả { status: true, data: { data: [...], current_page: 1, last_page: 3 } }
+  },
+
+  // Xoá vĩnh viễn
+  forceDelete: async (id) => {
     const res = await axiosInstance.delete(`/category/${id}`);
     return res.data;
   },
+
+
+
 };
 
 export default apiCategory;

@@ -8,17 +8,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+
 class UserController extends Controller
 {
     // Danh sách user (có phân trang)
     public function index()
     {
-        $users = User::orderBy('id', 'asc')->paginate(10);
-
+        $user = User::orderBy('id', 'asc')->paginate(6);
         return response()->json([
             'status' => true,
-            'message' => 'Danh sách người dùng',
-            'data' => $users
+            'message' => 'Danh sách danh mục',
+            'data' => $user
         ]);
     }
 
@@ -61,7 +61,10 @@ class UserController extends Controller
     // Lấy chi tiết 1 user
     public function show($id)
     {
-        $user = User::find($id);
+        $user = \App\Models\User::with(['orders' => function ($query) {
+            $query->withCount('orderDetails')->orderBy('id', 'desc');
+        }])->withCount('orders')->find($id);
+
         if (!$user) {
             return response()->json([
                 'status' => false,
@@ -73,7 +76,29 @@ class UserController extends Controller
         return response()->json([
             'status' => true,
             'message' => "Chi tiết user $id",
-            'data' => $user
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'address' => $user->address,
+                'username' => $user->username,
+                'avatar' => $user->avatar,
+                'roles' => $user->roles,
+                'status' => $user->status,
+                'orders_count' => $user->orders_count,
+                'orders' => $user->orders->map(function ($order) {
+                    return [
+                        'id' => $order->id,
+                        'order_code' => 'HD' . str_pad($order->id, 6, '0', STR_PAD_LEFT),
+                        'total_amount' => number_format($order->total_amount, 0, ',', '.') . '₫',
+                        'payment' => strtoupper($order->payment),
+                        'status' => $order->status,
+                        'created_at' => $order->created_at->format('d/m/Y H:i'),
+                        'total_items' => $order->order_details_count
+                    ];
+                }),
+            ]
         ]);
     }
 
@@ -144,14 +169,33 @@ class UserController extends Controller
     }
 
     // Xóa vĩnh viễn
-    public function delete(User $user)
+    public function delete($id)
     {
-        $user->forceDelete();
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Người dùng không tồn tại'
+            ], 404);
+        }
+
+        // Kiểm tra xem user có đơn hàng không
+        if ($user->orders()->exists()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Người dùng đang có đơn hàng, không thể xóa'
+            ], 400);
+        }
+
+        $user->delete();
+
         return response()->json([
             'status' => true,
-            'message' => "Xóa vĩnh viễn user $user->id"
+            'message' => 'Xóa người dùng thành công'
         ]);
     }
+
 
     // Restore soft deleted user
     public function restore(User $user)
@@ -174,21 +218,47 @@ class UserController extends Controller
             'data' => ['status' => $user->status]
         ]);
     }
-
     public function register(Request $request)
     {
         $request->validate([
             'fullName' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
+            'email' => 'required|email|unique:user,email',
             'password' => 'required|string|min:6|confirmed',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|unique:user,phone',
+            'username' => 'nullable|string|max:255|unique:user,username',
+            'address' => 'nullable|string|max:1000',
+            'avatar' => 'nullable|string|max:255', // người dùng có thể upload sau
         ]);
+
+        // Tự động sinh username nếu trống
+        $username = $request->username;
+        if (!$username) {
+            $count = User::where('roles', 'customer')->count() + 1;
+            $username = 'customer' . $count;
+            while (User::where('username', $username)->exists()) {
+                $count++;
+                $username = 'customer' . $count;
+            }
+        }
+
+        // Nếu không có avatar, đặt avatar mặc định
+        $avatar = $request->avatar ?? 'default-avatar.png'; // bạn lưu trong /uploads/avatars/
 
         $user = User::create([
             'name' => $request->fullName,
+            'username' => $username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
+            'roles' => 'customer',
+            'address' => $request->address ?? ' Chưa cập nhật',
+            'avatar' => $avatar,
+            'avatar' => $avatar ?? 'default-avatar.png',
+            'created_by' => 0,  // 0 = tự đăng ký, admin tạo thì dùng admin_id
+            'updated_by' => null,
+            'status' => 1,
+            'created_at' => now(),
+            // 'updated_at' => now(),
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -200,6 +270,7 @@ class UserController extends Controller
             'user' => $user
         ]);
     }
+
 
     // Đăng nhập
     public function login(Request $request)

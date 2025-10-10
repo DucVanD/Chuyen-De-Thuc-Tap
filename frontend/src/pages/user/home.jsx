@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import slide from "../../assets/images/slide.png";
@@ -16,37 +16,44 @@ import bannerproduct5 from "../../assets/images/img_banner_index.webp";
 import { MdArrowBackIos, MdArrowForwardIos } from "react-icons/md";
 import apiCategory from "../../api/apiCategory";
 import apiProduct from "../../api/apiProduct";
+import apiBrand from "../../api/apiBrand";
 import ProductItem from "./ProductItem";
 import { imageURL } from "../../api/config";
 import { useNavigate } from "react-router-dom";
+import useAddToCart from "../../hooks/useAddToCart";
+import "react-toastify/dist/ReactToastify.css";
+
 const videos = [
   {
-    thumbnail: "https://picsum.photos/400/250?1",
+    thumbnail: "https://thuanchay.vn/wp-content/uploads/2024/04/6-Cach-Nau-Sua-Hat-Sen-Thom-Ngon-Me-Ly-Nen-Thu-Ngay-29.webp",
     title: "Hướng dẫn cách làm sữa hạt sen ngon mê ly ngay tại nhà",
-    url: "https://www.youtube.com/watch?v=xxxxx",
+    url: "https://www.youtube.com/watch?v=4zH5iYM4wJo",
   },
   {
-    thumbnail: "https://picsum.photos/400/250?2",
+    thumbnail: "https://bearviet.vn/wp-content/uploads/2024/06/cach-lam-sua-dau-do-bang-may-lam-sua-hat.jpg",
     title: "Hướng dẫn cách làm sữa hạt đậu đỏ thơm ngon, béo ngậy",
-    url: "https://www.youtube.com/watch?v=xxxxx",
+    url: "https://www.youtube.com/watch?v=yA1B7rF-yZc",
   },
   {
-    thumbnail: "https://picsum.photos/400/250?3",
-    title: "Hướng dẫn cách làm sữa hạt điều đơn giản mà không phải ai cũng...",
-    url: "https://www.youtube.com/watch?v=xxxxx",
+    thumbnail: "https://file.hstatic.net/200000700229/article/lam-sua-hat-dieu-thumb_8769d4e4cb954630980272c75789bf39.jpg",
+    title: "Hướng dẫn cách làm sữa hạt điều đơn giản mà không phải ai cũng biết",
+    url: "https://www.youtube.com/watch?v=EwZkzGkQj2s",
   },
   {
-    thumbnail: "https://picsum.photos/400/250?4",
+    thumbnail: "https://matika.vn/wp-content/uploads/2023/05/uong-sua-hat-giam-can-tot-cho-suc-khoe.jpg",
     title: "Hướng dẫn cách làm sữa hạt đậu đen siêu ngon cho cả gia đình",
-    url: "https://www.youtube.com/watch?v=xxxxx",
+    url: "https://www.youtube.com/watch?v=BtK9O6Hh2vw",
   },
 ];
+
+
 
 const Home = () => {
   const [categorys, setcategorys] = useState([]);
   const [productNew, setProductNew] = useState([]);
   const [saleProducts, setProductSale] = useState([]);
   const navigate = useNavigate();
+  const handleAddToCart = useAddToCart();
   useEffect(() => {
     apiProduct
       .getNewest()
@@ -76,10 +83,10 @@ const Home = () => {
     // Thời gian kết thúc (99 ngày + 2 giờ + 33 phút + 35 giây từ lúc load trang)
     const end = new Date(
       Date.now() +
-        5 * 24 * 3600 * 1000 +
-        2 * 3600 * 1000 +
-        33 * 60 * 1000 +
-        35 * 1000
+      5 * 24 * 3600 * 1000 +
+      2 * 3600 * 1000 +
+      33 * 60 * 1000 +
+      35 * 1000
     );
 
     const timer = setInterval(() => {
@@ -98,7 +105,44 @@ const Home = () => {
     }, 1000);
 
     return () => clearInterval(timer);
+
+
   }, []);
+
+  const [producsCat, setProductsCat] = useState([]);
+
+  useEffect(() => {
+    const fetchProductsByCategory = async () => {
+      try {
+        const res = await apiProduct.categoryhome();
+        console.log("Data từ API:", res.data);
+        setProductsCat(res.data || []);
+      } catch (err) {
+        console.error("Lỗi khi lấy sản phẩm theo danh mục:", err);
+      }
+    };
+
+    fetchProductsByCategory();
+  }, []); // ⚠️ RẤT QUAN TRỌNG: [] để chỉ chạy 1 lần
+
+  const [Brands, setBrands] = useState([]);
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const res = await apiBrand.getAll();
+        setBrands(res.data.data || []);
+      } catch (err) {
+        console.error("Lỗi khi lấy thương hiệu:", err);
+      }
+    };
+    fetchBrands();
+  }, []);
+
+
+
+
+
+
 
   return (
     <div>
@@ -183,7 +227,7 @@ const Home = () => {
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {categorys
-                .filter((category) => category.parent_id !== 0) // chỉ lấy category con
+                .filter((category) => category.parent_id !== 0)
                 .map((category) => (
                   <div
                     key={category.id}
@@ -192,20 +236,24 @@ const Home = () => {
                         state: { categoryName: category.name },
                       })
                     }
-                    className="h-40 w-36 flex-shrink-0 bg-gray-50 rounded-lg shadow-sm flex flex-col items-center justify-center p-3 hover:shadow-md hover:bg-green-50 cursor-pointer transition"
+                    className="h-44 w-40 flex-shrink-0 rounded-xl flex flex-col items-center justify-center 
+                     p-3 cursor-pointer transition-transform duration-200 hover:scale-105 bg-gray-100"
                   >
-                    <img
-                      src={`${imageURL}/category/${category.image}`}
-                      alt={category.name}
-                      className="h-16 sm:h-20 object-contain mb-2 w-full"
-                    />
-                    <h3 className="text-xs sm:text-sm font-medium text-gray-800 text-center">
+                    <div className="w-full h-28 sm:h-32 flex items-center justify-center">
+                      <img
+                        src={`${imageURL}/category/${category.image}`}
+                        alt={category.name}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                    <h3 className="text-sm sm:text-base font-medium text-gray-800 text-center mt-2">
                       {category.name}
                     </h3>
                   </div>
                 ))}
             </div>
           </div>
+
         </section>
 
         {/* Sale 1 */}
@@ -270,86 +318,86 @@ const Home = () => {
         </section>
 
         {/* Banner */}
-    <section className="mt-8 px-2 sm:px-0">
-      {/* Grid desktop, scroll horizontal mobile */}
-      <div className="flex md:grid md:grid-cols-3 gap-4 sm:gap-6 overflow-x-auto md:overflow-visible scroll-smooth pb-2 scrollbar-hide">
-        
-        {/* Card 1 */}
-        <div className="relative bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-lg transition-all duration-300 min-w-[260px] sm:min-w-0">
-          <img
-            src={cuqua}
-            alt="Nông sản tươi mới"
-            className="w-full h-36 sm:h-56 object-cover transform group-hover:scale-105 group-hover:brightness-90 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-6 bg-black/30 text-white transition-all duration-300 group-hover:bg-black/40">
-            <div className="transition-transform duration-300 group-hover:-translate-y-1">
-              <h3 className="text-base sm:text-lg font-semibold">
-                Nông sản tươi mới
-              </h3>
-              <p className="text-xs sm:text-sm mt-1">
-                Sản phẩm 100% từ Thiên nhiên
-              </p>
-            </div>
-            <Link
-              to="/products"
-              className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-md self-start text-xs sm:text-sm hover:bg-yellow-500 transition-colors duration-300"
-            >
-              Xem ngay
-            </Link>
-          </div>
-        </div>
+        <section className="mt-8 px-2 sm:px-0">
+          {/* Grid desktop, scroll horizontal mobile */}
+          <div className="flex md:grid md:grid-cols-3 gap-4 sm:gap-6 overflow-x-auto md:overflow-visible scroll-smooth pb-2 scrollbar-hide">
 
-        {/* Card 2 */}
-        <div className="relative bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-lg transition-all duration-300 min-w-[260px] sm:min-w-0">
-          <img
-            src={suatuoi}
-            alt="Sữa nguyên chất"
-            className="w-full h-36 sm:h-56 object-cover transform group-hover:scale-105 group-hover:brightness-90 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-6 bg-black/20 text-white transition-all duration-300 group-hover:bg-black/40">
-            <div className="transition-transform duration-300 group-hover:-translate-y-1">
-              <h3 className="text-base sm:text-lg font-semibold">
-                Bữa sáng lành mạnh
-              </h3>
-              <p className="text-xs sm:text-sm mt-1">
-                Sữa tươi nguyên chất Tiệt trùng
-              </p>
+            {/* Card 1 */}
+            <div className="relative bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-lg transition-all duration-300 min-w-[260px] sm:min-w-0">
+              <img
+                src={cuqua}
+                alt="Nông sản tươi mới"
+                className="w-full h-36 sm:h-56 object-cover transform group-hover:scale-105 group-hover:brightness-90 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-6 bg-black/30 text-white transition-all duration-300 group-hover:bg-black/40">
+                <div className="transition-transform duration-300 group-hover:-translate-y-1">
+                  <h3 className="text-base sm:text-lg font-semibold">
+                    Nông sản tươi mới
+                  </h3>
+                  <p className="text-xs sm:text-sm mt-1">
+                    Sản phẩm 100% từ Thiên nhiên
+                  </p>
+                </div>
+                <Link
+                  to="/products"
+                  className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-md self-start text-xs sm:text-sm hover:bg-yellow-500 transition-colors duration-300"
+                >
+                  Xem ngay
+                </Link>
+              </div>
             </div>
-            <Link
-              to="/products"
-              className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-md self-start text-xs sm:text-sm hover:bg-yellow-500 transition-colors duration-300"
-            >
-              Xem ngay
-            </Link>
-          </div>
-        </div>
 
-        {/* Card 3 */}
-        <div className="relative bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-lg transition-all duration-300 min-w-[260px] sm:min-w-0">
-          <img
-            src={raucu}
-            alt="Rau củ hữu cơ"
-            className="w-full h-36 sm:h-56 object-cover transform group-hover:scale-105 group-hover:brightness-90 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-6 bg-black/20 text-white transition-all duration-300 group-hover:bg-black/40">
-            <div className="transition-transform duration-300 group-hover:-translate-y-1">
-              <h3 className="text-base sm:text-lg font-semibold">
-                Rau củ hữu cơ 100%
-              </h3>
-              <p className="text-xs sm:text-sm mt-1">
-                Sạch sẽ và an toàn, Chất lượng
-              </p>
+            {/* Card 2 */}
+            <div className="relative bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-lg transition-all duration-300 min-w-[260px] sm:min-w-0">
+              <img
+                src={suatuoi}
+                alt="Sữa nguyên chất"
+                className="w-full h-36 sm:h-56 object-cover transform group-hover:scale-105 group-hover:brightness-90 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-6 bg-black/20 text-white transition-all duration-300 group-hover:bg-black/40">
+                <div className="transition-transform duration-300 group-hover:-translate-y-1">
+                  <h3 className="text-base sm:text-lg font-semibold">
+                    Bữa sáng lành mạnh
+                  </h3>
+                  <p className="text-xs sm:text-sm mt-1">
+                    Sữa tươi nguyên chất Tiệt trùng
+                  </p>
+                </div>
+                <Link
+                  to="/products"
+                  className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-md self-start text-xs sm:text-sm hover:bg-yellow-500 transition-colors duration-300"
+                >
+                  Xem ngay
+                </Link>
+              </div>
             </div>
-            <Link
-              to="/products"
-              className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-md self-start text-xs sm:text-sm hover:bg-yellow-500 transition-colors duration-300"
-            >
-              Xem ngay
-            </Link>
+
+            {/* Card 3 */}
+            <div className="relative bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-lg transition-all duration-300 min-w-[260px] sm:min-w-0">
+              <img
+                src={raucu}
+                alt="Rau củ hữu cơ"
+                className="w-full h-36 sm:h-56 object-cover transform group-hover:scale-105 group-hover:brightness-90 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-6 bg-black/20 text-white transition-all duration-300 group-hover:bg-black/40">
+                <div className="transition-transform duration-300 group-hover:-translate-y-1">
+                  <h3 className="text-base sm:text-lg font-semibold">
+                    Rau củ hữu cơ 100%
+                  </h3>
+                  <p className="text-xs sm:text-sm mt-1">
+                    Sạch sẽ và an toàn, Chất lượng
+                  </p>
+                </div>
+                <Link
+                  to="/products"
+                  className="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-md self-start text-xs sm:text-sm hover:bg-yellow-500 transition-colors duration-300"
+                >
+                  Xem ngay
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </section>
+        </section>
 
         {/* Sale sản phẩm */}
         <section className="mt-9">
@@ -402,11 +450,18 @@ const Home = () => {
                         </span>
 
                         <div className="flex items-center justify-center">
-                          <img
-                            src={`${imageURL}/product/${product.thumbnail}`}
-                            alt={product.name}
-                            className="w-full h-24 object-contain"
-                          />
+
+
+
+                          <Link to={`/product/${product.slug}`}>
+                            <img
+                              src={`${imageURL}/product/${product.thumbnail}`}
+                              alt={product.name}
+                              className="w-full h-24 object-contain"
+                            />
+                          </Link>
+
+
                         </div>
 
                         <div className="flex flex-col justify-between">
@@ -435,9 +490,17 @@ const Home = () => {
                                 style={{ width: `${soldPercent}%` }}
                               ></div>
                             </div>
-                            <button className="bg-green-600 text-white w-full mt-2 py-1.5 rounded-md hover:bg-green-700 text-xs">
-                              Thêm vào giỏ
+                            <button
+                              onClick={() => handleAddToCart(product)}
+                              disabled={product.qty === 0}
+                              className={`w-full py-3 mt-4 rounded-2xl text-sm sm:text-base font-medium transition-colors duration-300 ${product.qty === 0
+                                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                                : "bg-green-600 text-white hover:bg-yellow-500"
+                                }`}
+                            >
+                              {product.qty === 0 ? "Hết hàng" : "Thêm vào giỏ"}
                             </button>
+
                           </div>
                         </div>
                       </div>
@@ -466,11 +529,13 @@ const Home = () => {
                       </span>
 
                       <div className="flex items-center justify-center">
-                        <img
-                          src={`${imageURL}/product/${product.thumbnail}`}
-                          alt={product.name}
-                          className="w-full h-32 object-contain"
-                        />
+                        <Link to={`/product/${product.slug}`}>
+                          <img
+                            src={`${imageURL}/product/${product.thumbnail}`}
+                            alt={product.name}
+                            className="w-full h-24 object-contain"
+                          />
+                        </Link>
                       </div>
 
                       <div className="flex flex-col justify-between">
@@ -499,8 +564,15 @@ const Home = () => {
                               style={{ width: `${soldPercent}%` }}
                             ></div>
                           </div>
-                          <button className="bg-green-600 text-white w-full mt-2 py-1.5 rounded-md hover:bg-green-700 text-sm">
-                            Thêm vào giỏ
+                          <button
+                            onClick={() => handleAddToCart(product)}
+                            disabled={product.qty === 0}
+                            className={`w-full py-2  mt-4 rounded-2xl text-sm sm:text-base font-medium transition-colors duration-300 ${product.qty === 0
+                              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                              : "bg-green-600 text-white hover:bg-yellow-500"
+                              }`}
+                          >
+                            {product.qty === 0 ? "Hết hàng" : "Thêm vào giỏ"}
                           </button>
                         </div>
                       </div>
@@ -512,51 +584,51 @@ const Home = () => {
           </div>
         </section>
 
-{/* Video hướng dẫn */}
-<section className="bg-gray-100 p-4 sm:p-6 rounded-2xl mt-10">
-  <h2 className="text-lg sm:text-2xl font-bold mb-5">Video hướng dẫn</h2>
+        {/* Video hướng dẫn */}
+        <section className="bg-gray-100 p-4 sm:p-6 rounded-2xl mt-10">
+          <h2 className="text-lg sm:text-2xl font-bold mb-5">Video hướng dẫn</h2>
 
-  {/* Scroll ngang ở mobile, grid khi desktop */}
-  <div className="flex md:grid md:grid-cols-4 gap-3 sm:gap-4 overflow-x-auto md:overflow-visible scroll-smooth pb-2 scrollbar-hide rounded-sm">
-    {videos.map((v, i) => (
-      <div
-        key={i}
-        className="min-w-[60%] xs:min-w-[50%] sm:min-w-0 bg-white rounded-sm shadow hover:shadow-lg transition-shadow duration-300 flex-shrink-0"
-      >
-        <div className="relative overflow-hidden rounded-t-xl">
-          <img
-            src={v.thumbnail}
-            alt={v.title}
-            className="w-full h-50 sm:h-48 object-cover transform transition-transform duration-500 hover:scale-110"
-          />
-          <a
-            href={v.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
-          >
-            <Play className="text-white w-10 h-10 sm:w-12 sm:h-12" />
-          </a>
-        </div>
-        <div className="p-3">
-          <p className="text-xs sm:text-sm font-medium text-gray-700 line-clamp-2">
-            {v.title}
-          </p>
-        </div>
-      </div>
-    ))}
-  </div>
+          {/* Scroll ngang ở mobile, grid khi desktop */}
+          <div className="flex md:grid md:grid-cols-4 gap-3 sm:gap-4 overflow-x-auto md:overflow-visible scroll-smooth pb-2 scrollbar-hide rounded-lg">
+            {videos.map((v, i) => (
+              <div
+                key={i}
+                className="min-w-[60%] xs:min-w-[50%] sm:min-w-0 bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-300 flex-shrink-0"
+              >
+                <div className="relative overflow-hidden rounded-t-lg">
+                  <img
+                    src={v.thumbnail}
+                    alt={v.title}
+                    className="w-full h-50 sm:h-48 object-cover transform transition-transform duration-500 hover:scale-110"
+                  />
+                  <a
+                    href={v.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
+                  >
+                    <Play className="text-white w-10 h-10 sm:w-12 sm:h-12" />
+                  </a>
+                </div>
+                <div className="p-3">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 line-clamp-2">
+                    {v.title}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
 
-  {/* Nút xem tất cả */}
-  <div className="text-center mt-5">
-    <button
-      onClick={() => navigate("/videos")}
-      className="px-4 sm:px-6 py-2 border border-green-600 text-green-600 rounded-full hover:bg-green-600 hover:text-white transition text-xs sm:text-base"
-    >
-      Xem tất cả
-    </button>
-  </div>
-</section>
+          {/* Nút xem tất cả */}
+          <div className="text-center mt-5">
+            <button
+              onClick={() => navigate("/videos")}
+              className="px-4 sm:px-6 py-2 border border-green-600 text-green-600 rounded-full hover:bg-green-600 hover:text-white transition text-xs sm:text-base"
+            >
+              Xem tất cả
+            </button>
+          </div>
+        </section>
 
 
 
@@ -572,62 +644,71 @@ const Home = () => {
         </section>
 
         {/* Nhóm danh mục nhỏ */}
-        <section className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 px-2 sm:px-0">
-          {[
-            { title: "Đồ khô" },
-            { title: "Thức uống" },
-            { title: "Bún các loại" },
-          ].map((block, idx) => (
+        <section className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6 px-2 sm:px-0">
+          {producsCat.map((cat) => (
             <div
-              key={idx}
-              className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-4"
+              key={cat.id}
+              className="rounded-2xl border border-gray-200 bg-white p-4"
             >
-              {/* Header danh mục */}
               <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold text-gray-800">{block.title}</h4>
+                <h4 className="font-semibold text-gray-800">{cat.name}</h4>
                 <a
-                  href="#"
-                  className="text-emerald-700 text-xs sm:text-sm hover:underline"
+                  href={`/category/${cat.slug}`}
+                  className="text-emerald-700 text-xs hover:underline"
                 >
                   Xem thêm »
                 </a>
               </div>
 
-              {/* Danh sách sản phẩm */}
-              <div className="flex lg:flex-col gap-3 overflow-x-auto lg:overflow-visible scrollbar-hide">
-                {new Array(3).fill(0).map((_, i) => (
+              <div className="flex flex-col gap-3">
+                {cat.products.map((p) => (
                   <div
-                    key={i}
-                    className="flex-shrink-0 lg:flex-shrink lg:w-full w-[70%] sm:w-[45%] rounded-lg border border-gray-100 p-2 sm:p-3 hover:bg-gray-50 transition grid grid-cols-[44px,1fr,auto] sm:grid-cols-[56px,1fr,auto] items-center gap-2 sm:gap-3"
+                    key={p.id}
+                    className="flex items-center gap-4 border border-gray-200 p-3 rounded-xl hover:shadow-md transition bg-white relative"
                   >
                     {/* Ảnh sản phẩm */}
-                    <div className="h-10 w-10 sm:h-14 sm:w-14 rounded bg-gray-50 flex items-center justify-center text-lg sm:text-2xl">
-                      🧺
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 relative">
+                      <Link to={`/product/${p.slug}`}>
+                        <img
+                          src={`${imageURL}/product/${p.thumbnail}`}
+                          alt={p.name}
+                          className="object-cover w-full h-full rounded-lg"
+                        />
+
+
+                      </Link>
+                      {/* Góc hiển thị % giảm giá */}
+                      {p.discount_percent > 0 && (
+                        <div className="absolute top-0 left-0 bg-rose-500 text-white text-xs sm:text-sm font-semibold px-1 rounded-tr-lg rounded-bl-lg shadow-md">
+                          -{p.discount_percent}%
+                        </div>
+                      )}
                     </div>
 
-                    {/* Thông tin */}
-                    <div>
-                      <div className="text-xs sm:text-sm font-medium text-gray-700">
-                        Sản phẩm {i + 1}
-                      </div>
-                      <div className="text-xs text-gray-400 line-through">
-                        35.000₫
-                      </div>
-                      <div className="text-emerald-700 font-semibold text-xs sm:text-sm">
-                        29.000₫
+                    {/* Thông tin sản phẩm */}
+                    <div className="flex-1">
+                      <p className="text-base sm:text-lg font-semibold text-gray-800 line-clamp-1">
+                        {p.name}
+                      </p>
+                      <div className="flex items-center gap-2 text-sm sm:text-base">
+                        <span className="text-rose-600 font-bold">
+                          {p.price_sale.toLocaleString()}₫
+                        </span>
+                        <span className="text-gray-400 line-through text-xs sm:text-sm">
+                          {p.price_root.toLocaleString()}₫
+                        </span>
                       </div>
                     </div>
-
-                    {/* Nút thêm */}
-                    <button className="rounded-full bg-emerald-600 text-white text-xs px-2 sm:px-3 py-1.5 hover:bg-emerald-700">
-                      +
-                    </button>
                   </div>
                 ))}
               </div>
+
+
+
             </div>
           ))}
         </section>
+
 
         {/* Đối tác */}
         <section className="mt-12 px-2 sm:px-0">
@@ -635,20 +716,26 @@ const Home = () => {
             <h3 className="text-base sm:text-lg font-semibold mb-4">
               Đối tác của chúng tôi
             </h3>
+
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 items-center">
-              {["BIBO", "Organica", "Nhà Quê", "emart", "LOTTE", "NAMAN"].map(
-                (p, i) => (
+              {Brands.length > 0 ? (
+                Brands.map((brand, i) => (
                   <div
                     key={i}
                     className="h-10 sm:h-12 rounded-md border flex items-center justify-center text-xs sm:text-sm text-gray-600 bg-gray-50"
                   >
-                    {p}
+                    {brand.name}
                   </div>
-                )
+                ))
+              ) : (
+                <p className="col-span-6 text-center text-gray-400 text-sm">
+                  Đang tải thương hiệu...
+                </p>
               )}
             </div>
           </div>
         </section>
+
 
         {/* Service badges */}
         <section className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 px-2 sm:px-0">

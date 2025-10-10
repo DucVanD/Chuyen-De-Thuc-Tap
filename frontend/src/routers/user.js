@@ -13,6 +13,8 @@ import ProductByCat from "../pages/user/ProductByCat.jsx";
 const Userroute = [
   { path: "", component: Home },
   { path: "/products", component: Products },
+  { path: "/products/:page?", component: Products },
+  { path: "/products/category/:slug", component: ProductByCat },
   { path: "product/:slug", component: ProductDetail },
   { path: "/registered", component: Registered },
   { path: "/posts", component: Posts },

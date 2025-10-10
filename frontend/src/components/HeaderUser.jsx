@@ -111,10 +111,10 @@ const HeaderUser = () => {
             <FaUser />
             {user ? (
               <div className="relative group">
-                <span className="cursor-pointer hover:text-amber-400 flex items-center gap-1">
+                <span className="cursor-pointer hover:text-amber-400 flex items-start gap-1">
                   {user.name} <FaSortDown />
                 </span>
-                <div className="absolute right-0 hidden group-hover:block bg-white shadow rounded mt-1 min-w-[120px] z-50">
+                <div className="absolute right-0 hidden group-hover:block bg-white shadow rounded  min-w-[120px] z-50">
                   <button
                     onClick={handleLogout}
                     className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"

@@ -2,12 +2,18 @@ import { Edit } from "lucide-react";
 import axiosInstance from "./axios";
 
 const apiProduct = {
-  getAll: async () => {
-    const res = await axiosInstance.get("/product/all");
+  // getAll: async () => {
+  //   const res = await axiosInstance.get("/product/all");
+  //   return res.data;
+  // },
+
+  getAll: async (page = 1) => {
+    const res = await axiosInstance.get(`/product/all?page=${page}`);
     return res.data;
   },
 
-  // Lấy sản phẩm phân trang (kèm page)
+
+  // Lấy sản phẩm phân trang (kèm page)admin 
   getAllPage: async (page = 1) => {
     const res = await axiosInstance.get(`/product?page=${page}`);
     return res.data;
@@ -56,7 +62,7 @@ const apiProduct = {
   },
 
   // search product
-  // search product
+
   search: async (keyword) => {
     const res = await axiosInstance.get(`/product/search`, {
       params: { keyword },
@@ -66,9 +72,47 @@ const apiProduct = {
 
   //
   getByCategorySlug: async (slug) => {
-  const res = await axiosInstance.get(`/product/category/slug/${slug}`);
-  return res.data;
-},
+    const res = await axiosInstance.get(`/product/category/slug/${slug}`);
+    return res.data;
+  },
+  delete: async (id) => {
+    const res = await axiosInstance.get(`/product/delete/${id}`); // dùng GET như route
+    return res.data;
+  },
+
+  // Khôi phục
+  restore: async (id) => {
+    const res = await axiosInstance.get(`/product/restore/${id}`);
+    return res.data;
+  },
+
+  // Lấy danh sách Trash
+  getTrash: async (page = 1) => {
+    const res = await axiosInstance.get(`/product/trash?page=${page}`);
+    return res.data; // nên trả { status: true, data: { data: [...], current_page: 1, last_page: 3 } }
+  },
+
+  // Xoá vĩnh viễn
+  forceDelete: async (id) => {
+    const res = await axiosInstance.delete(`/product/${id}`);
+    return res.data;
+  },
+
+  filter: async (filters) => {
+    const params = new URLSearchParams(filters).toString();
+    const res = await axiosInstance.get(`/product/filter?${params}`);
+    return res.data;
+  },
+
+// category home
+  categoryhome: async () => {
+    const res = await axiosInstance.get(`/product/category`);
+    return res.data;
+  }
+
+
+
+
 
 };
 

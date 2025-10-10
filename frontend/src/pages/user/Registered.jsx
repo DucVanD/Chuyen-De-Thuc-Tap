@@ -4,6 +4,9 @@ import { FaFacebookF, FaGoogle } from "react-icons/fa";
 import apiUser from "../../api/apiUser";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../Redux/authSlice";
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+
 
 const Registered = () => {
   const navigate = useNavigate();
@@ -23,50 +26,50 @@ const Registered = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      if (activeTab === "login") {
-        const res = await apiUser.loginUser({
-          email: formData.email,
-          password: formData.password,
-        });
-        if (res.status) {
-          dispatch(loginSuccess({ user: res.user, token: res.access_token }));
-          alert("Đăng nhập thành công!");
-          navigate("/");
-        }
-      } else {
-        if (formData.password !== formData.confirmPassword) {
-          alert("Mật khẩu và xác nhận không khớp!");
-          setLoading(false);
-          return;
-        }
-        const res = await apiUser.registerUser({
-          fullName: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-          password_confirmation: formData.confirmPassword,
-          phone: formData.phone,
-        });
-        if (res.status) {
-          dispatch(loginSuccess({ user: res.user, token: res.access_token }));
-          alert("Đăng ký thành công!");
-          navigate("/");
-        }
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    if (activeTab === "login") {
+      const res = await apiUser.loginUser({
+        email: formData.email,
+        password: formData.password,
+      });
+      if (res.status) {
+        dispatch(loginSuccess({ user: res.user, token: res.access_token }));
+        toast.success("Đăng nhập thành công! 🎉");
+        navigate("/");
       }
-    } catch (err) {
-      const message =
-        err.response?.data?.message ||
-        (err.response?.data?.errors &&
-          Object.values(err.response.data.errors).flat().join("\n")) ||
-        "Có lỗi xảy ra!";
-      alert(message);
-    } finally {
-      setLoading(false);
+    } else {
+      if (formData.password !== formData.confirmPassword) {
+        toast.error("Mật khẩu và xác nhận không khớp!");
+        setLoading(false);
+        return;
+      }
+      const res = await apiUser.registerUser({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        password_confirmation: formData.confirmPassword,
+        phone: formData.phone,
+      });
+      if (res.status) {
+        dispatch(loginSuccess({ user: res.user, token: res.access_token }));
+        toast.success("Đăng ký thành công! 🎉");
+        navigate("/");
+      }
     }
-  };
+  } catch (err) {
+    const message =
+      err.response?.data?.message ||
+      (err.response?.data?.errors &&
+        Object.values(err.response.data.errors).flat().join("\n")) ||
+      "Có lỗi xảy ra!";
+    toast.error(message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <>

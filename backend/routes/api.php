@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 
 
 
@@ -22,6 +23,18 @@ Route::get('/check-api', function () {
 
 
 
+//  dashboard
+
+
+    Route::get('dashboard/summary', [DashboardController::class, 'summary']);
+    Route::get('dashboard/report/{date}', [DashboardController::class, 'getReportByDate']);
+
+
+
+    Route::post('/admin/login', [AuthController::class, 'adminLogin']);
+
+
+//
 route::prefix('user')->group(function () {
     route::get('trash', [UserController::class, 'trash'])->name('user.trash');
     route::get('delete/{user}', [UserController::class, 'delete'])->name('user.delete');
@@ -34,16 +47,17 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
-
 });
 
 // product
 Route::get('/product/category/slug/{slug}', [ProductController::class, 'getByCategorySlug']);
-Route::get('/product/search', [ProductController::class, 'search']);
-Route::get('product/newest', [ProductController::class, 'newest']);
+Route::get('/product/search', [ProductController::class, 'search']) ;
+Route::get('product/newest', [ProductController::class, 'newest']) ;
 Route::get('product/salediscount', [ProductController::class, 'salediscount']);
 Route::get('product/slug/{slug}', [ProductController::class, 'getProductBySlug']);
-Route::get('/product/all', [ProductController::class, 'getAll']);
+Route::get('/product/all', [ProductController::class, 'getAllProductUser']) ;
+Route::get('/product/filter', [ProductController::class, 'filter']);
+Route::get('/product/category', [ProductController::class, 'categoryhome']);
 route::prefix('product')->group(function () {
     route::get('trash', [ProductController::class, 'trash'])->name('product.trash');
     route::get('delete/{product}', [ProductController::class, 'delete'])->name('product.delete');
@@ -51,7 +65,7 @@ route::prefix('product')->group(function () {
     route::get('status/{product}', [ProductController::class, 'status'])->name('product.status');
 });
 route::resource('product', ProductController::class);
-
+//     Route::resource('/', ProductController::class)->parameters(['' => 'product']);
 // category
 // routes/api.php
 Route::get('/category/parents', [CategoryController::class, 'getParents']);
@@ -96,6 +110,7 @@ route::prefix('topic')->group(function () {
 });
 route::resource('topic', TopicController::class);
 // order
+Route::get('/orders/{id}/invoice', [OrderController::class, 'exportInvoice']);
 route::prefix('order')->group(function () {
     route::get('trash', [OrderController::class, 'trash'])->name('order.trash');
     route::get('delete/{order}', [OrderController::class, 'delete'])->name('order.delete');
@@ -135,4 +150,3 @@ route::prefix('brand')->group(function () {
     route::get('status/{brand}', [BrandController::class, 'status'])->name('brand.status');
 });
 route::resource('brand', BrandController::class);
-

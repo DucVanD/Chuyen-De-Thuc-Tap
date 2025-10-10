@@ -95,7 +95,8 @@ const EditCat = () => {
 
       if (res.status || res.data?.status) {
         alert("Cập nhật thành công!");
-        navigate("/admin/categories/1");
+        const page = localStorage.getItem("currentCategoryPage") || 1;
+        navigate(`/admin/categories/${page}`);
       } else {
         alert("Có lỗi xảy ra khi cập nhật!");
       }

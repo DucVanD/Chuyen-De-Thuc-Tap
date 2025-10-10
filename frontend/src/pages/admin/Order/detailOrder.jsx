@@ -30,22 +30,27 @@ const DetailOrder = () => {
     fetchOrder();
   }, [id]);
 
-// Map trạng thái đơn hàng
-const statusLabels = {
-  1: { text: "Đang chờ xác nhận", color: "bg-yellow-100 text-yellow-800" },
-  2: { text: "Đã xác nhận", color: "bg-blue-100 text-blue-800" },
-  3: { text: "Đang đóng gói", color: "bg-orange-100 text-orange-800" },
-  4: { text: "Đang giao hàng", color: "bg-teal-100 text-teal-800" },
-  5: { text: "Đã giao", color: "bg-green-100 text-green-800" },
-  6: { text: "Hoàn hàng / Trả hàng", color: "bg-purple-100 text-purple-800" },
-  7: { text: "Đã hủy", color: "bg-red-100 text-red-800" },
-};
+  const handleExportInvoice = () => {
+    window.open(`http://127.0.0.1:8000/api/orders/${order.id}/invoice`, "_blank");
+  };
 
-// Hàm lấy text hiển thị
-const getStatusText = (status) => statusLabels[status]?.text || "Không xác định";
 
-// Hàm lấy class màu sắc
-const getStatusClass = (status) => statusLabels[status]?.color || "bg-gray-100 text-gray-600";
+  // Map trạng thái đơn hàng
+  const statusLabels = {
+    1: { text: "Đang chờ xác nhận", color: "bg-yellow-100 text-yellow-800" },
+    2: { text: "Đã xác nhận", color: "bg-blue-100 text-blue-800" },
+    3: { text: "Đang đóng gói", color: "bg-orange-100 text-orange-800" },
+    4: { text: "Đang giao hàng", color: "bg-teal-100 text-teal-800" },
+    5: { text: "Đã giao", color: "bg-green-100 text-green-800" },
+    6: { text: "Hoàn hàng / Trả hàng", color: "bg-purple-100 text-purple-800" },
+    7: { text: "Đã hủy", color: "bg-red-100 text-red-800" },
+  };
+
+  // Hàm lấy text hiển thị
+  const getStatusText = (status) => statusLabels[status]?.text || "Không xác định";
+
+  // Hàm lấy class màu sắc
+  const getStatusClass = (status) => statusLabels[status]?.color || "bg-gray-100 text-gray-600";
 
 
   if (loading) {
@@ -65,44 +70,72 @@ const getStatusClass = (status) => statusLabels[status]?.color || "bg-gray-100 t
     <section className="py-6">
       <div className="container mx-auto px-4">
         {/* Header */}
+        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">
             Chi tiết đơn hàng #{order.id}
           </h1>
-          <button
-            onClick={() => navigate("/admin/orders")}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm inline-flex items-center"
-          >
-            <i className="fa fa-arrow-left mr-1"></i> Về danh sách
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleExportInvoice}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm inline-flex items-center"
+            >
+              <i className="fa fa-file-pdf mr-1"></i> Xuất hóa đơn
+            </button>
+
+            <button
+              onClick={() => navigate("/admin/orders")}
+              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm inline-flex items-center"
+            >
+              <i className="fa fa-arrow-left mr-1"></i> Về danh sách
+            </button>
+          </div>
         </div>
+
 
         {/* Nội dung chính */}
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
             {/* 🧾 Thông tin người đặt hàng */}
             <div className="md:col-span-1">
-              <div className="bg-gray-50 p-4 rounded-lg shadow-sm text-center">
-                <h2 className="text-xl font-bold text-gray-800">
-                  {order.name}
-                </h2>
-                <p className="text-gray-600">{order.email}</p>
-                <p className="text-gray-600">{order.phone}</p>
-                <p className="text-gray-600">{order.address}</p>
-                <p className="text-gray-600">
-                  {order.ward}, {order.district}, {order.province}
-                </p>
+              <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 text-gray-800 max-w-md mx-auto">
+                {/* Header */}
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">{order.name}</h2>
+                <p className="text-sm text-gray-500 mb-3">{order.email}</p>
 
-                <div className="mt-3">
-                  <span className="text-sm font-medium text-gray-700">
-                    Phương thức thanh toán:
-                  </span>
-                  <p className="text-gray-800 italic">{order.payment}</p>
+                <div className="flex items-center justify-center space-x-1 text-sm text-gray-600 mb-4">
+                  <span className="font-medium">{order.phone}</span>
                 </div>
 
-                <div className="mt-4">
+                {/* Address section */}
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-4">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-1">Địa chỉ giao hàng</h3>
+                  <p className="text-gray-600 leading-relaxed text-sm">
+                    {order.address}
+                    <br />
+                    {order.ward}, {order.district}, {order.province}
+                  </p>
+                </div>
+
+                {/* Payment section */}
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-4">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-1">
+                    Phương thức thanh toán
+                  </h3>
+                  <p
+                    className={`text-sm font-medium italic ${order.payment === "cod" ? "text-green-600" : "text-blue-600"
+                      }`}
+                  >
+                    {order.payment === "cod"
+                      ? "Thanh toán khi nhận hàng (COD)"
+                      : "Chuyển khoản ngân hàng"}
+                  </p>
+                </div>
+
+                {/* Status */}
+                <div className="flex justify-center mt-3">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide shadow-sm ${getStatusClass(
                       order.status
                     )}`}
                   >
@@ -110,6 +143,7 @@ const getStatusClass = (status) => statusLabels[status]?.color || "bg-gray-100 t
                   </span>
                 </div>
               </div>
+
             </div>
 
             {/* 🛒 Danh sách sản phẩm */}
@@ -132,7 +166,7 @@ const getStatusClass = (status) => statusLabels[status]?.color || "bg-gray-100 t
                               : `${imageURL}/products/${detail.product?.thumbnail}`
                           }
                           alt={detail.product?.name}
-                          className="w-16 h-16 rounded object-cover border"
+                          className="w-16 h-16 rounded object-cover"
                         />
                         <div>
                           <p className="font-medium text-gray-800">
