@@ -14,13 +14,24 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
-
+use Illuminate\Support\Facades\DB;
 
 
 Route::get('/check-api', function () {
     return response()->json(['status' => true, 'message' => 'API OK']);
 });
 
+
+
+
+Route::get('/check-db', function () {
+    try {
+        DB::connection()->getPdo();
+        return response()->json(['status' => true, 'message' => 'Database connected ✅']);
+    } catch (\Exception $e) {
+        return response()->json(['status' => false, 'error' => $e->getMessage()]);
+    }
+});
 
 
 //  dashboard
