@@ -1,1 +1,1 @@
-web: cd backend && php artisan serve --host 0.0.0.0 --port=$PORT
+web: cd backend && php artisan serve --host 0.0.0.0 --port=${PORT:-8000}
