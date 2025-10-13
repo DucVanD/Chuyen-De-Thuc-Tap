@@ -4,6 +4,6 @@
     "buildCommand": "cd backend && composer install --no-dev --optimize-autoloader && php artisan key:generate && php artisan migrate --force"
   },
   "start": {
-    "cmd": "cd backend && php artisan serve"
+    "cmd": "cd backend && php artisan serve --host 0.0.0.0 --port $PORT"
   }
 }
