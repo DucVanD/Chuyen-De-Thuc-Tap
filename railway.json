@@ -1,7 +1,10 @@
 {
   "build": {
     "builder": "nixpacks",
-    "buildCommand": "cd backend && composer install --no-dev --optimize-autoloader && php artisan key:generate && php artisan migrate --force"
+    "buildCommand": "cd backend && composer install --no-dev --optimize-autoloader && php artisan key:generate && php artisan migrate --force",
+    "setup": {
+      "packages": ["php", "composer", "php-mbstring", "php-xml", "php-pdo", "php-pdo_mysql"]
+    }
   },
   "start": {
     "cmd": "cd backend && php artisan serve --host 0.0.0.0 --port $PORT"
