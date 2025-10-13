@@ -98,13 +98,18 @@ const apiProduct = {
     return res.data;
   },
 
+  // filter: async (filters) => {
+  //   const params = new URLSearchParams(filters).toString();
+  //   const res = await axiosInstance.get(`/product/filter?${params}`);
+  //   return res.data;
+  // },
   filter: async (filters) => {
-    const params = new URLSearchParams(filters).toString();
-    const res = await axiosInstance.get(`/product/filter?${params}`);
+    // Không cần tạo URLSearchParams nữa.
+    // Gửi object `filters` trực tiếp làm body của request POST.
+    const res = await axiosInstance.post('/product/filter', filters);
     return res.data;
   },
-
-// category home
+  // category home
   categoryhome: async () => {
     const res = await axiosInstance.get(`/product/category`);
     return res.data;

@@ -218,18 +218,18 @@ class ProductController extends Controller
         $products = Product::select(
             '*',
             // Giảm theo tiền
-            DB::raw('CASE 
-                    WHEN price_sale IS NULL OR price_sale = 0 THEN 0 
-                    ELSE (price_root - price_sale) 
+            DB::raw('CASE
+                    WHEN price_sale IS NULL OR price_sale = 0 THEN 0
+                    ELSE (price_root - price_sale)
                  END AS discount'),
 
             // Giảm theo %
-            DB::raw('CASE 
-                    WHEN price_root > 0 
-                         AND price_sale > 0 
-                         AND price_sale < price_root 
+            DB::raw('CASE
+                    WHEN price_root > 0
+                         AND price_sale > 0
+                         AND price_sale < price_root
                     THEN LEAST(FLOOR(((price_root - price_sale) / price_root) * 100), 99)
-                    ELSE 0 
+                    ELSE 0
                  END AS discount_percent')
         )
             ->where('status', 1)
@@ -253,14 +253,16 @@ class ProductController extends Controller
             'product.id',
             'product.name',
             'product.slug',
+            'product.qty',
             'product.detail',
             'product.description',
             'product.thumbnail',
             'product.status',
-            'product.price_root as price',
-            'product.price_sale as sale_price',
+            'product.price_root as price_root',
+            'product.price_sale as price_sale',
             'category.name as category_name',
             'brand.name as brand_name'
+
         )
             ->join('category', 'product.category_id', '=', 'category.id')
             ->join('brand', 'product.brand_id', '=', 'brand.id')
@@ -434,38 +436,47 @@ class ProductController extends Controller
         ]);
     }
     // filter
-    public function filter(Request $request)
-    {
-        $query = Product::with(['category', 'brand']);
+  public function filter(Request $request)
+{
+    $query = Product::with(['category', 'brand']);
 
-        $query->when($request->category_ids, fn($q, $ids) => $q->whereIn('category_id', (array)$ids));
-        $query->when($request->brand_ids, fn($q, $ids) => $q->whereIn('brand_id', (array)$ids));
-        $query->when($request->name, fn($q, $name) => $q->where('name', 'LIKE', "%$name%"));
-        $query->when($request->min_price, fn($q, $min) => $q->where('price_root', '>=', $min));
-        $query->when($request->max_price, fn($q, $max) => $q->where('price_root', '<=', $max));
+    $query->when($request->category_ids, function ($q, $ids) {
+        $idArray = is_array($ids) ? $ids : explode(',', $ids);
+        $q->whereIn('category_id', $idArray);
+    });
+    $query->when($request->brand_ids, function ($q, $ids) {
+        $idArray = is_array($ids) ? $ids : explode(',', $ids);
+        $q->whereIn('brand_id', $idArray);
+    });
+    $query->when($request->name, fn($q, $name) => $q->where('name', 'LIKE', "%$name%"));
+    $query->when($request->min_price, fn($q, $min) => $q->where('price_root', '>=', $min));
+    $query->when($request->max_price, fn($q, $max) => $q->where('price_root', '<=', $max));
 
-        $allowedSort = ['created_at', 'price_root', 'name'];
-        $sortBy = in_array($request->input('sort_by'), $allowedSort) ? $request->input('sort_by') : 'created_at';
-        $sortOrder = $request->input('sort_order', 'desc');
+    $allowedSort = ['created_at', 'price_root', 'name', 'price_sale'];
+    $sortBy = in_array($request->input('sort_by'), $allowedSort) ? $request->input('sort_by') : 'created_at';
+    $sortOrder = $request->input('sort_order', 'desc');
+
+    if ($sortBy === 'price_sale') {
+        $query->orderByRaw('CASE WHEN price_sale > 0 THEN price_sale ELSE price_root END ' . $sortOrder);
+    } else {
         $query->orderBy($sortBy, $sortOrder);
-
-        $products = $query->paginate($request->input('limit', 12));
-
-        // Thêm % giảm giá
-        $products->getCollection()->transform(function ($p) {
-            $p->discount_percent = ($p->price_root > 0 && $p->price_sale > 0)
-                ? round((($p->price_root - $p->price_sale) / $p->price_root) * 100)
-                : 0;
-            return $p;
-        });
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Kết quả lọc sản phẩm',
-            'data' => $products
-        ]);
     }
 
+    $products = $query->paginate($request->input('limit', 12));
+
+    $products->getCollection()->transform(function ($p) {
+        $p->discount_percent = ($p->price_root > 0 && $p->price_sale > 0)
+            ? round((($p->price_root - $p->price_sale) / $p->price_root) * 100)
+            : 0;
+        return $p;
+    });
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Kết quả lọc sản phẩm',
+        'data' => $products
+    ]);
+}
 
     // category home
 

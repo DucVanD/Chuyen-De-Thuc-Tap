@@ -381,7 +381,7 @@ const HeaderUser = () => {
           onClick={handleQuickCheckout}
           className="bg-red-600 py-2 px-5 rounded-full text-white font-medium shadow hover:bg-red-700 transition animate-bounce" style={{ animationDuration: "0.7s" }} 
         >
-          Mua hàng nhanh
+          Thanh toán nhanh
         </button>
       </nav>
 

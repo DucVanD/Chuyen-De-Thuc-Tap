@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { Editor } from "@tinymce/tinymce-react";
 import apiProduct from "../../../api/apiProduct";
 import apiCategory from "../../../api/apiCategory";
 import apiBrand from "../../../api/apiBrand";
@@ -59,6 +60,10 @@ const AddProduct = () => {
     const file = e.target.files[0];
     setThumbnail(file || null);
     setThumbPreview(file ? URL.createObjectURL(file) : null);
+  };
+
+  const handleEditorChange = (content) => {
+    setFormData((prev) => ({ ...prev, detail: content }));
   };
 
   const handleSubmit = async (e) => {
@@ -134,9 +139,10 @@ const AddProduct = () => {
                   />
                 </div>
 
+                {/* Mô tả ngắn */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">
-                    Mô tả
+                    Mô tả ngắn
                   </label>
                   <textarea
                     name="description"
@@ -144,22 +150,48 @@ const AddProduct = () => {
                     onChange={handleChange}
                     rows="3"
                     className="w-full p-2.5 border rounded-md"
-                    placeholder="Nhập mô tả sản phẩm"
+                    placeholder="Mô tả sản phẩm..."
                   ></textarea>
                 </div>
 
+                {/* Chi tiết sản phẩm với TinyMCE */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">
                     Chi tiết sản phẩm
                   </label>
-                  <textarea
-                    name="detail"
+                  <Editor
+                    apiKey="08g2njx5rtkfad5tsq5p91c0bos9siwvip1tcsinbsduna70"
                     value={formData.detail}
-                    onChange={handleChange}
-                    rows="5"
-                    className="w-full p-2.5 border rounded-md"
-                    placeholder="Nhập chi tiết sản phẩm"
-                  ></textarea>
+                    init={{
+                      height: 400,
+                      menubar: true,
+                      plugins: [
+                        "advlist",
+                        "autolink",
+                        "lists",
+                        "link",
+                        "image",
+                        "charmap",
+                        "preview",
+                        "anchor",
+                        "searchreplace",
+                        "visualblocks",
+                        "code",
+                        "fullscreen",
+                        "insertdatetime",
+                        "media",
+                        "table",
+                        "help",
+                        "wordcount",
+                      ],
+                      toolbar:
+                        "undo redo | formatselect | bold italic underline | " +
+                        "alignleft aligncenter alignright | bullist numlist outdent indent | link image media | code fullscreen",
+                      content_style:
+                        "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                    }}
+                    onEditorChange={handleEditorChange}
+                  />
                 </div>
               </div>
 

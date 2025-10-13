@@ -1,11 +1,12 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { Editor } from "@tinymce/tinymce-react";
 import apiProduct from "../../../api/apiProduct";
 import apiCategory from "../../../api/apiCategory";
 import apiBrand from "../../../api/apiBrand";
 import { imageURL } from "../../../api/config";
-// import { useLocation } from "react-router-dom";
+
 const EditProduct = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // lấy id từ URL
@@ -17,12 +18,13 @@ const EditProduct = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const savedPage = localStorage.getItem("currentProductPage") || 1;
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     detail: "",
     price_root: "",
-    price_sale: "",
+    price_sale: "0",
     qty: 1,
     category_id: "",
     brand_id: "",
@@ -50,16 +52,7 @@ const EditProduct = () => {
     const fetchProduct = async () => {
       try {
         const res = await apiProduct.getProductId(id);
-        console.log("Kết quả API product:", res.data);
-
-        // nếu API có wrapper {status, message, data}
-        let product = null;
-        if (res.data && res.data.data) {
-          product = res.data.data;
-        } else {
-          // nếu API trả về trực tiếp object sản phẩm
-          product = res.data;
-        }
+        let product = res.data?.data || res.data;
 
         if (product) {
           setFormData({
@@ -80,7 +73,8 @@ const EditProduct = () => {
             );
           }
         } else {
-          console.warn("API không trả về dữ liệu hợp lệ:", res.data);
+          alert("Không tìm thấy sản phẩm");
+          navigate("/admin/products");
         }
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
@@ -112,6 +106,10 @@ const EditProduct = () => {
     setThumbPreview(file ? URL.createObjectURL(file) : thumbPreview);
   };
 
+  const handleEditorChange = (content) => {
+    setFormData((prev) => ({ ...prev, detail: content }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -133,7 +131,7 @@ const EditProduct = () => {
 
       const res = await apiProduct.EditProduct(id, data);
       alert(res.message || "Cập nhật sản phẩm thành công");
-     navigate(`/admin/products/${savedPage}`);
+      navigate(`/admin/products/${savedPage}`);
     } catch (error) {
       if (error.response?.data?.errors) setErrors(error.response.data.errors);
       alert(
@@ -153,7 +151,7 @@ const EditProduct = () => {
           Chỉnh sửa sản phẩm
         </h3>
         <Link
-          to="/admin/products"
+          to={`/admin/products/${savedPage}`}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded inline-flex items-center"
         >
           <FaArrowLeft className="mr-2" /> Về danh sách
@@ -187,7 +185,7 @@ const EditProduct = () => {
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">
-                    Mô tả
+                    Mô tả ngắn
                   </label>
                   <textarea
                     name="description"
@@ -199,18 +197,44 @@ const EditProduct = () => {
                   ></textarea>
                 </div>
 
+                {/* Chi tiết sản phẩm (TinyMCE) */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">
                     Chi tiết sản phẩm
                   </label>
-                  <textarea
-                    name="detail"
+                  <Editor
+                    apiKey="08g2njx5rtkfad5tsq5p91c0bos9siwvip1tcsinbsduna70"
                     value={formData.detail}
-                    onChange={handleChange}
-                    rows="5"
-                    className="w-full p-2.5 border rounded-md"
-                    placeholder="Nhập chi tiết sản phẩm"
-                  ></textarea>
+                    init={{
+                      height: 400,
+                      menubar: true,
+                      plugins: [
+                        "advlist",
+                        "autolink",
+                        "lists",
+                        "link",
+                        "image",
+                        "charmap",
+                        "preview",
+                        "anchor",
+                        "searchreplace",
+                        "visualblocks",
+                        "code",
+                        "fullscreen",
+                        "insertdatetime",
+                        "media",
+                        "table",
+                        "help",
+                        "wordcount",
+                      ],
+                      toolbar:
+                        "undo redo | formatselect | bold italic underline | " +
+                        "alignleft aligncenter alignright | bullist numlist outdent indent | link image media | code fullscreen",
+                      content_style:
+                        "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                    }}
+                    onEditorChange={handleEditorChange}
+                  />
                 </div>
               </div>
 

@@ -56,7 +56,7 @@ Route::get('product/newest', [ProductController::class, 'newest']) ;
 Route::get('product/salediscount', [ProductController::class, 'salediscount']);
 Route::get('product/slug/{slug}', [ProductController::class, 'getProductBySlug']);
 Route::get('/product/all', [ProductController::class, 'getAllProductUser']) ;
-Route::get('/product/filter', [ProductController::class, 'filter']);
+Route::post('/product/filter', [ProductController::class, 'filter']);
 Route::get('/product/category', [ProductController::class, 'categoryhome']);
 route::prefix('product')->group(function () {
     route::get('trash', [ProductController::class, 'trash'])->name('product.trash');
