@@ -22,6 +22,18 @@ class TopicController extends Controller
         ]);
     }
 
+    // Lấy tất cả topic (không phân trang)
+    public function getAll()
+    {
+        $list = Topic::orderBy('id', 'asc')->get();
+        return response()->json([
+            'status' => true,
+            'message' => 'Danh sách tất cả chủ đề',
+            'data' => $list
+        ]);
+    }
+
+
     // Thêm topic
     public function store(Request $request)
     {

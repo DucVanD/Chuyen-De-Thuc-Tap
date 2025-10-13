@@ -90,7 +90,7 @@ route::prefix('contact')->group(function () {
 route::resource('contact', ContactController::class);
 
 // post
-
+Route::get('/post/all', [PostController::class, 'getAll']);
 route::prefix('post')->group(function () {
     route::get('trash', [PostController::class, 'trash'])->name('post.trash');
     route::get('delete/{post}', [PostController::class, 'delete'])->name('post.delete');
@@ -102,6 +102,8 @@ route::resource('post', PostController::class);
 
 //
 
+// topic
+Route::get('topic/all', [TopicController::class, 'getAll']);
 route::prefix('topic')->group(function () {
     route::get('trash', [TopicController::class, 'trash'])->name('topic.trash');
     route::get('delete/{topic}', [TopicController::class, 'delete'])->name('topic.delete');
