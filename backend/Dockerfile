@@ -11,9 +11,9 @@ RUN apt-get update && apt-get install -y \
 # Sao chép composer từ image chính thức
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Sao chép mã nguồn Laravel (trong thư mục backend)
+# ✅ Chỉ cần sao chép toàn bộ mã nguồn hiện tại (vì Dockerfile đang trong /backend)
 WORKDIR /var/www/html
-COPY ./backend /var/www/html
+COPY . /var/www/html
 
 # Cài package Laravel
 RUN composer install --no-dev --optimize-autoloader
