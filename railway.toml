@@ -1,0 +1,21 @@
+[build]
+builder = "nixpacks"
+
+[variables]
+PORT = "8080"
+
+[nixpacks]
+packages = ["php", "composer", "nodejs_18"]
+
+[phases.install]
+cmds = [
+  "cd backend && composer install --no-dev --optimize-autoloader"
+]
+
+[phases.build]
+cmds = [
+  "cd backend && php artisan key:generate && php artisan migrate --force"
+]
+
+[start]
+cmd = "cd backend && php artisan serve --host 0.0.0.0 --port $PORT"
