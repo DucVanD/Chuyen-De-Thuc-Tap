@@ -17,7 +17,7 @@ const Userroute = [
   { path: "/products/category/:slug", component: ProductByCat },
   { path: "product/:slug", component: ProductDetail },
   { path: "/registered", component: Registered },
-  { path: "/posts", component: Posts },
+  { path: "/posts/:page?", component: Posts },
   { path: "/contact", component: Contact },
   { path: "/about", component: About },
   { path: "/cart", component: Cart },
