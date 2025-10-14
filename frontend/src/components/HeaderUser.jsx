@@ -20,7 +20,7 @@ const HeaderUser = () => {
 
   const cartItems = useSelector((state) => state.cart.items);
   const cartCount = cartItems.reduce((total, item) => total + item.qty, 0);
-
+  const [showLogout, setShowLogout] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -141,29 +141,45 @@ const HeaderUser = () => {
       </div>
 
       {/* 🔹 Mobile */}
-      <div className="flex md:hidden h-[35px] bg-green-700 text-gray-50 justify-center px-4 text-sm gap-10">
-        {/* Tài khoản */}
-        <div className="flex items-center gap-1">
-          <FaUser />
-          {user ? (
-            <span className="cursor-pointer hover:text-amber-400">
-              {user.name}
-            </span>
-          ) : (
-            <Link to="/registered" className="hover:text-amber-400">
-              Tài khoản
-            </Link>
-          )}
-        </div>
+      <div className="flex md:hidden h-[35px] bg-green-700 text-gray-50 justify-center px-4 text-sm gap-10 relative">
+      {/* Tài khoản */}
+      <div className="flex items-center gap-1 relative">
+        <FaUser />
+        {user ? (
+          <div className="relative">
+            <button
+              onClick={() => setShowLogout(!showLogout)}
+              className="flex items-center gap-1 hover:text-amber-400 focus:outline-none"
+            >
+              {user.name} <FaSortDown />
+            </button>
 
-        {/* Hotline */}
-        <div className="flex items-center gap-1">
-          <span>Hotline:</span>
-          <Link to="/hotline" className="hover:text-amber-400">
-            1900 6750
+            {showLogout && (
+              <div className="absolute right-0 mt-1 bg-white text-gray-800 rounded shadow z-50 min-w-[120px]">
+                <button
+                  onClick={handleLogout}
+                  className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Link to="/registered" className="hover:text-amber-400">
+            Tài khoản
           </Link>
-        </div>
+        )}
       </div>
+
+      {/* Hotline */}
+      <div className="flex items-center gap-1">
+        <span>Hotline:</span>
+        <Link to="/hotline" className="hover:text-amber-400">
+          1900 6750
+        </Link>
+      </div>
+    </div>
 
       {/* --- MOBILE HEADER --- */}
       <div className="flex md:hidden justify-between items-center px-4 py-2 bg-gray-100 text-black">

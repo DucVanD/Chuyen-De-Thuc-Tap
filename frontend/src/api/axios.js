@@ -1,23 +1,37 @@
-import axios from 'axios';
-import { apiURL } from './config';
+// src/api/axiosInstance.js
+import axios from "axios";
+import { apiURL } from "./config";
 
-// Tạo ra một instance của axios
+// === Tạo instance chung ===
 const axiosInstance = axios.create({
-  baseURL: apiURL, // dùng chung cho mọi API
-  timeout: 15000,   // quá 5 giây sẽ báo lỗi
+  baseURL: apiURL,
+  timeout: 20000, // tăng lên 20s vì Render cold-start chậm
   headers: {
-    "Content-Type": "application/json"
-  }
+    "Content-Type": "application/json",
+  },
 });
 
-// Khi cần upload file thì đổi Content-Type thành multipart/form-data
+// === Chế độ upload ===
 axiosInstance.enableUploadFile = () => {
-  axiosInstance.defaults.headers['Content-Type'] = 'multipart/form-data';
+  axiosInstance.defaults.headers["Content-Type"] = "multipart/form-data";
 };
 
-// Khi cần gửi JSON trở lại thì set lại Content-Type
+// === Chế độ JSON ===
 axiosInstance.enableJson = () => {
-  axiosInstance.defaults.headers['Content-Type'] = 'application/json';
+  axiosInstance.defaults.headers["Content-Type"] = "application/json";
 };
+
+// === Retry khi timeout (Render bị ngủ) ===
+axiosInstance.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    if (error.code === "ECONNABORTED" && !error.config._retry) {
+      error.config._retry = true;
+      console.warn("⏳ Retry request sau khi Render khởi động lại...");
+      return axiosInstance.request(error.config);
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default axiosInstance;
