@@ -4,7 +4,7 @@ import { apiURL } from './config';
 // Tạo ra một instance của axios
 const axiosInstance = axios.create({
   baseURL: apiURL, // dùng chung cho mọi API
-  timeout: 5000,   // quá 5 giây sẽ báo lỗi
+  timeout: 15000,   // quá 5 giây sẽ báo lỗi
   headers: {
     "Content-Type": "application/json"
   }

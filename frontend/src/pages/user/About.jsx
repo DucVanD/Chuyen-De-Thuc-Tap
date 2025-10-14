@@ -12,7 +12,7 @@ const About = () => {
             Trang chủ
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-700 font-semibold">Giới thiệu WWeb</span>
+          <span className="text-gray-700 font-semibold">Giới thiệu</span>
         </nav>
 
         {/* Hero Section */}
