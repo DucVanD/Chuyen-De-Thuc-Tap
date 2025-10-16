@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Order;
+use App\Models\OrderDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+
 
 class UserController extends Controller
 {
@@ -59,23 +62,64 @@ class UserController extends Controller
     }
 
     // Lấy chi tiết 1 user
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $user = \App\Models\User::with(['orders' => function ($query) {
-            $query->withCount('orderDetails')->orderBy('id', 'desc');
-        }])->withCount('orders')->find($id);
+        $from = $request->input('from');
+        $to = $request->input('to');
+        $status = $request->input('status');
+        $payment = $request->input('payment');
+        $minTotal = $request->input('min_total');
+        $maxTotal = $request->input('max_total');
+        $perPage = $request->input('limit', 3);
 
+        $user = \App\Models\User::find($id);
         if (!$user) {
             return response()->json([
                 'status' => false,
                 'message' => "Không tìm thấy user với id = $id",
-                'data' => null
-            ]);
+            ], 404);
         }
 
+        // 🔹 Lọc đơn hàng theo các tiêu chí + phân trang
+        $orders = \App\Models\Order::with(['orderDetails.product'])
+            ->withCount('orderDetails')
+            ->where('user_id', $id)
+            // 📅 Lọc ngày
+            ->when($from && $to, fn($q) => $q->whereBetween('created_at', ["$from 00:00:00", "$to 23:59:59"]))
+            ->when($from && !$to, fn($q) => $q->where('created_at', '>=', "$from 00:00:00"))
+            ->when(!$from && $to, fn($q) => $q->where('created_at', '<=', "$to 23:59:59"))
+            // 🧾 Lọc theo trạng thái
+            ->when($status, fn($q) => $q->where('status', $status))
+            // 💳 Lọc phương thức thanh toán
+            ->when($payment, fn($q) => $q->where('payment', strtoupper($payment)))
+            // 💰 Lọc theo tổng tiền
+            ->when($minTotal && $maxTotal, fn($q) => $q->whereBetween('total_amount', [$minTotal, $maxTotal]))
+            ->when($minTotal && !$maxTotal, fn($q) => $q->where('total_amount', '>=', $minTotal))
+            ->when(!$minTotal && $maxTotal, fn($q) => $q->where('total_amount', '<=', $maxTotal))
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
+
+        // 🔹 Thống kê toàn bộ user
+        $totalOrders = \App\Models\Order::where('user_id', $id)->count();
+        $totalProducts = \App\Models\OrderDetail::whereIn(
+            'order_id',
+            \App\Models\Order::where('user_id', $id)->pluck('id')
+        )->sum('qty');
+
+        // 🔹 Thống kê trạng thái đơn hàng
+        $statusStats = \App\Models\Order::where('user_id', $id)
+            ->selectRaw('
+            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as confirmed,
+            SUM(CASE WHEN status = 5 THEN 1 ELSE 0 END) as delivered,
+            SUM(CASE WHEN status = 7 THEN 1 ELSE 0 END) as canceled
+        ')
+            ->first();
+
+        // 🔹 Trả kết quả JSON
         return response()->json([
             'status' => true,
-            'message' => "Chi tiết user $id",
+            'message' => "Chi tiết user $id (kèm lịch sử mua hàng có lọc)",
             'data' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -86,21 +130,57 @@ class UserController extends Controller
                 'avatar' => $user->avatar,
                 'roles' => $user->roles,
                 'status' => $user->status,
-                'orders_count' => $user->orders_count,
-                'orders' => $user->orders->map(function ($order) {
+
+                // 🔸 Tổng quan
+                'summary' => [
+                    'total_orders' => $totalOrders,
+                    'total_products' => $totalProducts,
+                    'pending_orders' => $statusStats->pending ?? 0,
+                    'confirmed_orders' => $statusStats->confirmed ?? 0,
+                    'delivered_orders' => $statusStats->delivered ?? 0,
+                    'canceled_orders' => $statusStats->canceled ?? 0,
+                ],
+
+                // 🔸 Danh sách đơn hàng
+                'orders' => collect($orders->items())->map(function ($order) {
                     return [
                         'id' => $order->id,
-                        'order_code' => 'HD' . str_pad($order->id, 6, '0', STR_PAD_LEFT),
+                        'order_code' => $order->order_code ?? '---',
                         'total_amount' => number_format($order->total_amount, 0, ',', '.') . '₫',
                         'payment' => strtoupper($order->payment),
                         'status' => $order->status,
                         'created_at' => $order->created_at->format('d/m/Y H:i'),
-                        'total_items' => $order->order_details_count
+                        'total_items' => $order->order_details_count,
+                        'products' => $order->orderDetails->map(function ($detail) {
+                            return [
+                                'product_id' => $detail->product_id,
+                                'name' => $detail->product->name,
+                                'thumbnail' => $detail->product->thumbnail
+                                    ? asset('assets/images/product/' . $detail->product->thumbnail)
+                                    : asset('assets/images/no-image.png'),
+                                'price_buy' => number_format($detail->price_buy, 0, ',', '.') . '₫',
+                                'qty' => $detail->qty,
+                                'amount' => number_format($detail->amount, 0, ',', '.') . '₫',
+                            ];
+                        }),
                     ];
                 }),
+
+                // 🔸 Phân trang
+                'pagination' => [
+                    'current_page' => $orders->currentPage(),
+                    'last_page' => $orders->lastPage(),
+                    'per_page' => $orders->perPage(),
+                    'total' => $orders->total(),
+                ]
             ]
         ]);
     }
+
+
+
+
+
 
     // Cập nhật user
     public function update(Request $request, $id)

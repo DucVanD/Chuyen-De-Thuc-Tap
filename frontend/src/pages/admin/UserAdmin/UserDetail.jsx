@@ -1,28 +1,48 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import apiUser from "../../../api/apiUser"; // file gọi API user/show
+import apiUser from "../../../api/apiUser";
 import { FaEdit, FaTrash, FaArrowLeft } from "react-icons/fa";
 
 const UserDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [pagination, setPagination] = useState({ current_page: 1, last_page: 1 });
+  const [loading, setLoading] = useState(true);
+
+  // 🔹 Lấy thông tin user + phân trang đơn hàng
+  const fetchUser = async (page = 1) => {
+    try {
+      setLoading(true);
+      const res = await apiUser.getUserIdWithParams(id, `page=${page}`);
+      if (res.status) {
+        setUser(res.data);
+        setOrders(res.data.orders || []);
+        setPagination(res.data.pagination || { current_page: 1, last_page: 1 });
+      }
+    } catch (err) {
+      console.error("Lỗi tải user:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await apiUser.getUserId(id);
-        if (res.status) {
-          setUser(res.data);
-        }
-      } catch (err) {
-        console.error("Lỗi tải user:", err);
-      }
-    };
     fetchUser();
   }, [id]);
 
-  if (!user) return <div className="p-10 text-center">Đang tải...</div>;
+  const goToPage = (page) => {
+    if (page >= 1 && page <= pagination.last_page) {
+      fetchUser(page);
+    }
+  };
+
+  if (loading) return <div className="p-10 text-center text-gray-500">Đang tải dữ liệu...</div>;
+  if (!user) return <div className="p-10 text-center text-gray-500">Không tìm thấy người dùng.</div>;
+
+  const currentPage = pagination.current_page;
+  const lastPage = pagination.last_page;
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -106,7 +126,8 @@ const UserDetail = () => {
               <div className="space-y-2 text-gray-700">
                 <p><strong>Tên đăng nhập:</strong> {user.username}</p>
                 <p><strong>Quyền:</strong> {user.roles}</p>
-                <p><strong>Tổng đơn hàng:</strong> {user.orders_count}</p>
+                <p><strong>Tổng đơn hàng:</strong> {user.summary?.total_orders || 0}</p>
+                <p><strong>Tổng sản phẩm:</strong> {user.summary?.total_products || 0}</p>
               </div>
             </div>
           </div>
@@ -117,60 +138,95 @@ const UserDetail = () => {
               Danh sách đơn hàng của khách
             </h2>
 
-            {user.orders.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full border border-gray-200 text-sm">
-                  <thead className="bg-gray-100">
-                    <tr className="text-gray-700 text-left">
-                      <th className="p-3 border">Mã đơn</th>
-                      <th className="p-3 border">Ngày tạo</th>
-                      <th className="p-3 border">Sản phẩm</th>
-                      <th className="p-3 border">Tổng tiền</th>
-                      <th className="p-3 border">Thanh toán</th>
-                      <th className="p-3 border">Trạng thái</th>
-                      <th className="p-3 border text-center">Hành động</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {user.orders.map((order) => (
-                      <tr key={order.id} className="hover:bg-gray-50">
-                        <td className="p-3 border">{order.order_code}</td>
-                        <td className="p-3 border">{order.created_at}</td>
-                        <td className="p-3 border text-center">{order.total_items}</td>
-                        <td className="p-3 border text-right">{order.total_amount}</td>
-                        <td className="p-3 border">{order.payment}</td>
-                        <td className="p-3 border">
-                          {order.status === 1 ? (
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">
-                              Chờ xử lý
-                            </span>
-                          ) : order.status === 2 ? (
-                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
-                              Đang giao
-                            </span>
-                          ) : order.status === 4 ? (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
-                              Hoàn thành
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">
-                              Hủy
-                            </span>
-                          )}
-                        </td>
-                        <td className="p-3 border text-center">
-                          <Link
-                            to={`/admin/orderDetail/${order.id}`}
-                            className="text-blue-600 hover:underline"
-                          >
-                            Xem
-                          </Link>
-                        </td>
+            {orders.length > 0 ? (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border border-gray-200 text-sm">
+                    <thead className="bg-gray-100">
+                      <tr className="text-gray-700 text-left">
+                        <th className="p-3 border">Mã đơn</th>
+                        <th className="p-3 border">Ngày tạo</th>
+                        <th className="p-3 border">Số SP</th>
+                        <th className="p-3 border">Tổng tiền</th>
+                        <th className="p-3 border">Thanh toán</th>
+                        <th className="p-3 border">Trạng thái</th>
+                        <th className="p-3 border text-center">Hành động</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {orders.map((order) => (
+                        <tr key={order.id} className="hover:bg-gray-50">
+                          <td className="p-3 border">{order.order_code}</td>
+                          <td className="p-3 border">{order.created_at}</td>
+                          <td className="p-3 border text-center">{order.total_items}</td>
+                          <td className="p-3 border text-right">{order.total_amount}</td>
+                          <td className="p-3 border">{order.payment}</td>
+                          <td className="p-3 border">
+                            {order.status === 5 ? (
+                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
+                                Đã giao
+                              </span>
+                            ) : order.status === 1 ? (
+                              <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">
+                                Đang xử lý
+                              </span>
+                            ) : order.status === 7 ? (
+                              <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">
+                                Đã hủy
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                                Khác
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3 border text-center">
+                            <Link
+                              to={`/admin/orderDetail/${order.id}`}
+                              className="text-blue-600 hover:underline"
+                            >
+                              Xem
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="flex justify-center mt-4 space-x-2">
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                  >
+                    Trước
+                  </button>
+
+                  {Array.from({ length: lastPage }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => goToPage(i + 1)}
+                      className={`px-3 py-1 rounded ${
+                        currentPage === i + 1
+                          ? "bg-indigo-600 text-white"
+                          : "bg-gray-200 hover:bg-gray-300"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === lastPage}
+                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                  >
+                    Sau
+                  </button>
+                </div>
+              </>
             ) : (
               <p className="text-gray-600 italic">Khách này chưa có đơn hàng nào.</p>
             )}

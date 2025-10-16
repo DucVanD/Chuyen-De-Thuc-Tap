@@ -1,12 +1,20 @@
 import { Edit } from "lucide-react";
 import axiosInstance from "./axios";
-import EditOrder from "../pages/admin/Order/EditOrder";
+
 
 const apiOrder = {
   getAllPage: async (page = 1) => {
     const res = await axiosInstance.get(`/order?page=${page}`);
     return res.data;
   },
+
+  //
+  getAllFilter: async (page = 1, filters = {}) => {
+    const params = new URLSearchParams({ page, ...filters }).toString();
+    const res = await axiosInstance.get(`/order?${params}`);
+    return res.data;
+  },
+  //
 
   getOrderId: async (id) => {
     const res = await axiosInstance.get(`/order/${id}`);
@@ -17,15 +25,15 @@ const apiOrder = {
     const res = await axiosInstance.put(`/order/${id}`, orderData);
     return res.data;
   },
-checkout: async (orderData) => {
-  const token = localStorage.getItem("token");
-  const res = await axiosInstance.post("/order/checkout", orderData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.data;
-},
+  checkout: async (orderData) => {
+    const token = localStorage.getItem("token");
+    const res = await axiosInstance.post("/order/checkout", orderData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.data;
+  },
 
 };
 

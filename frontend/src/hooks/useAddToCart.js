@@ -11,7 +11,7 @@ export default function useAddToCart() {
     if (!product.qty || product.qty <= 0) {
       toast.info("Sản phẩm tạm hết hàng!", {
         position: "top-right",
-        autoClose: 1500,
+        autoClose: 300,
       });
       return;
     }
@@ -24,7 +24,7 @@ export default function useAddToCart() {
     if (currentQty + quantity > product.qty) {
       toast.warn(`Chỉ còn ${product.qty} sản phẩm trong kho!`, {
         position: "top-right",
-        autoClose: 1000,
+        autoClose: 300,
       });
       return;
     }
@@ -40,7 +40,7 @@ export default function useAddToCart() {
 
     toast.success(`🛒 Đã thêm ${quantity} "${product.name}" vào giỏ hàng!`, {
       position: "top-right",
-      autoClose: 1500,
+      autoClose: 300,
     });
   };
 

@@ -12,6 +12,7 @@ import { imageURL } from "../api/config";
 import { logout } from "../Redux/authSlice";
 import { toast } from "react-toastify";
 import { TbBrandShopee } from "react-icons/tb";
+import { HiOutlineClipboardDocumentCheck } from "react-icons/hi2";
 const HeaderUser = () => {
   const [openMenu, setOpenMenu] = useState(false); // Menu mobile
   const [showDropdown, setShowDropdown] = useState(false); // Dropdown desktop
@@ -85,10 +86,10 @@ const HeaderUser = () => {
       href: "/compare",
     },
     {
-      label: "Yêu thích",
-      count: 3,
-      icon: <LuHeart className="h-6 w-6" />,
-      href: "/wishlist",
+      label: "Lịch sử",
+      count: 0,
+      icon: <HiOutlineClipboardDocumentCheck className="h-6 w-6" />,
+      href: "/history-bought",
     },
     {
       label: "Giỏ hàng",

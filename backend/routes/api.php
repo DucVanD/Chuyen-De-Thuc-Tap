@@ -24,12 +24,18 @@ Route::get('/check-api', function () {
 
 
 
-Route::get('/check-db', function () {
+Route::get('/db-test', function () {
     try {
-        DB::connection()->getPdo();
-        return response()->json(['status' => true, 'message' => 'Database connected ✅']);
+        $result = DB::select('SELECT NOW() as current_time');
+        return response()->json([
+            'status' => '✅ Database connected successfully!',
+            'server_time' => $result[0]->current_time,
+        ]);
     } catch (\Exception $e) {
-        return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        return response()->json([
+            'status' => '❌ Database connection failed!',
+            'error' => $e->getMessage(),
+        ], 500);
     }
 });
 
@@ -37,12 +43,12 @@ Route::get('/check-db', function () {
 //  dashboard
 
 
-    Route::get('dashboard/summary', [DashboardController::class, 'summary']);
-    Route::get('dashboard/report/{date}', [DashboardController::class, 'getReportByDate']);
+Route::get('dashboard/summary', [DashboardController::class, 'summary']);
+Route::get('dashboard/report/{date}', [DashboardController::class, 'getReportByDate']);
 
 
 
-    Route::post('/admin/login', [AuthController::class, 'adminLogin']);
+Route::post('/admin/login', [AuthController::class, 'adminLogin']);
 
 
 //
@@ -53,6 +59,7 @@ route::prefix('user')->group(function () {
     route::get('status/{user}', [UserController::class, 'status'])->name('user.status');
 });
 route::resource('user', UserController::class);
+Route::get('user/{id}/purchaseHistory', [UserController::class, 'purchaseHistory']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
@@ -62,11 +69,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // product
 Route::get('/product/category/slug/{slug}', [ProductController::class, 'getByCategorySlug']);
-Route::get('/product/search', [ProductController::class, 'search']) ;
-Route::get('product/newest', [ProductController::class, 'newest']) ;
+Route::get('/product/search', [ProductController::class, 'search']);
+Route::get('product/newest', [ProductController::class, 'newest']);
 Route::get('product/salediscount', [ProductController::class, 'salediscount']);
 Route::get('product/slug/{slug}', [ProductController::class, 'getProductBySlug']);
-Route::get('/product/all', [ProductController::class, 'getAllProductUser']) ;
+Route::get('/product/all', [ProductController::class, 'getAllProductUser']);
 Route::post('/product/filter', [ProductController::class, 'filter']);
 Route::get('/product/category', [ProductController::class, 'categoryhome']);
 route::prefix('product')->group(function () {

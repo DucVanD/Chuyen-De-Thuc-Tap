@@ -28,7 +28,7 @@ class PostController extends Controller
     //
     public function getAll()
     {
-        $list = Post::orderBy('id', 'asc')->paginate(5);
+        $list = Post::orderBy('id', 'asc')->paginate(3);
         return response()->json([
             'status' => true,
             'message' => 'Danh sách bài viết',

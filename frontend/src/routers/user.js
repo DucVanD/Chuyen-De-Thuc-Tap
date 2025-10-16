@@ -28,7 +28,7 @@ const Userroute = [
   { path: "/checkout", component: Checkout },
   { path: "/category/:slug", component: Products },
   { path: "/profile", component: Profile },
-  { path: "/history-bought", component: HistoryBought },
+  { path: "/history-bought/:page?", component: HistoryBought },
 ];
 
 export default Userroute;

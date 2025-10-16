@@ -14,7 +14,7 @@ class Order extends Model
     protected $fillable = [
         'user_id', 'name', 'phone', 'email', 'address',
         'province', 'district', 'ward', 'note',
-        'payment', 'status', 'total_amount'
+        'payment', 'status', 'total_amount','order_code',
     ];
 
     // Quan hệ với User
@@ -29,5 +29,5 @@ class Order extends Model
         return $this->hasMany(OrderDetail::class, 'order_id', 'id');
     }
 
-    
+
 }

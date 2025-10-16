@@ -84,7 +84,10 @@ const DetailOrder = () => {
             </button>
 
             <button
-              onClick={() => navigate("/admin/orders")}
+              onClick={() => {
+                const lastPage = localStorage.getItem("currentOrderPage") || 1;
+                navigate(`/admin/orders/${lastPage}`);
+              }}
               className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm inline-flex items-center"
             >
               <i className="fa fa-arrow-left mr-1"></i> Về danh sách
@@ -100,8 +103,9 @@ const DetailOrder = () => {
             <div className="md:col-span-1">
               <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 text-gray-800 max-w-md mx-auto">
                 {/* Header */}
-                <h2 className="text-2xl font-bold text-gray-800 mb-1">{order.name}</h2>
-                <p className="text-sm text-gray-500 mb-3">{order.email}</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">Thông tin người nhận</h2>
+                <h3 className="text-2xl font-bold text-gray-800 mb-1">Tên: {order.name}</h3>
+                <p className="text-sm text-gray-500 mb-3">Email: {order.email}</p>
 
                 <div className="flex items-center justify-center space-x-1 text-sm text-gray-600 mb-4">
                   <span className="font-medium">{order.phone}</span>
@@ -202,8 +206,8 @@ const DetailOrder = () => {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="font-medium text-gray-700">ID đơn hàng:</p>
-                  <p className="text-gray-800">{order.id}</p>
+                  <p className="font-medium text-gray-700">Mã đơn hàng:</p>
+                  <p className="text-gray-800">{order.order_code}</p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-700">Ngày tạo:</p>

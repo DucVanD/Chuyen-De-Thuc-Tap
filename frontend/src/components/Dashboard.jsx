@@ -174,7 +174,7 @@ const Dashboard = () => {
           </aside>
 
           {/* Nội dung */}
-          <section className="flex-1 min-h-screen bg-gray-100 p-6 sm:ml-0">
+          <section className="flex-1 min-h-screen bg-gray-100 p-3 sm:ml-0">
             {/* Nút mở sidebar (mobile) */}
             <button
               onClick={() => setIsSidebarOpen(true)}

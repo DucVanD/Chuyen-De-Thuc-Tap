@@ -8,10 +8,11 @@ const apiPost = {
     },
 
 
-    getAllPageuser: async (page = 1) => {
-        const res = await axiosInstance.get(`/post/all?page=${page}`);
-        return res.data;
-    },
+ getAllPageuser: async (page = 1) => {
+  const res = await axiosInstance.get(`/post/all?page=${page}`);
+  return res.data;
+},
+
 
 
 

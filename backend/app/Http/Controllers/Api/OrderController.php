@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Illuminate\Support\Str; // nhớ thêm dòng này ở đầu file
 class OrderController extends Controller
 {
     /**
@@ -17,14 +17,27 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $orders = Order::with('user')->orderBy('id', 'desc')->paginate(8);
+        $status = $request->input('status');
+        $payment = $request->input('payment');
+        $orderCode = $request->input('order_code');
+        $perPage = $request->input('limit', 8);
+
+        $orders = Order::with('user')
+            ->when($status, fn($q) => $q->where('status', $status))
+            ->when($payment, fn($q) => $q->where('payment', strtoupper($payment)))
+            ->when($orderCode, fn($q) => $q->where('order_code', 'LIKE', "%$orderCode%"))
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
 
         return response()->json([
             'status' => true,
-            'message' => 'Danh sách đơn hàng',
+            'message' => 'Danh sách đơn hàng (lọc & phân trang)',
             'data' => $orders
         ]);
     }
+
+
+
 
     public function show($id)
     {
@@ -55,6 +68,7 @@ class OrderController extends Controller
                 'status' => $order->status,
                 'created_at' => $order->created_at,
                 'updated_at' => $order->updated_at,
+                'order_code' => $order->order_code,
 
                 // Người đặt (user đăng nhập)
                 'user' => $order->user ? [
@@ -117,12 +131,6 @@ class OrderController extends Controller
             'data' => $order,
         ]);
     }
-
-
-
-
-
-
 
 
 
@@ -203,6 +211,17 @@ class OrderController extends Controller
                 'created_at' => now(),
             ]);
 
+            // 🔹 Sinh mã hóa đơn kiểu HD251016A9ZK
+            $orderCode = 'HD' . date('ymd') . strtoupper(Str::random(4));
+
+            // 🔸 Kiểm tra trùng (phòng khi random ra trùng mã)
+            while (Order::where('order_code', $orderCode)->exists()) {
+                $orderCode = 'HD' . date('ymd') . strtoupper(Str::random(4));
+            }
+
+            // 🔹 Cập nhật mã vào đơn hàng
+            $order->update(['order_code' => $orderCode]);
+
             // Tạo chi tiết đơn hàng & trừ tồn kho
             foreach ($request->cart as $item) {
                 OrderDetail::create([
@@ -212,7 +231,7 @@ class OrderController extends Controller
                     'qty' => $item['qty'],
                     'amount' => $item['price'] * $item['qty'],
                 ]);
-                // Trừ tồn kho
+
                 $product = \App\Models\Product::find($item['id']);
                 $product->qty -= $item['qty'];
                 $product->save();
@@ -223,7 +242,12 @@ class OrderController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Đặt hàng thành công',
-                'data' => $order
+                'data' => [
+                    'order_id' => $order->id,
+                    'order_code' => $orderCode,
+                    'total_amount' => $order->total_amount,
+                    'payment' => $order->payment,
+                ]
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -234,16 +258,15 @@ class OrderController extends Controller
         }
     }
 
-public function exportInvoice($id)
-{
-    $order = Order::with('orderDetails.product')->find($id);
+    public function exportInvoice($id)
+    {
+        $order = Order::with('orderDetails.product')->find($id);
 
-    if (!$order) {
-        return response()->json(['status' => false, 'message' => 'Không tìm thấy đơn hàng'], 404);
+        if (!$order) {
+            return response()->json(['status' => false, 'message' => 'Không tìm thấy đơn hàng'], 404);
+        }
+
+        $pdf = Pdf::loadView('pdf.invoice', ['order' => $order])->setPaper('a4');
+        return $pdf->download('HoaDon_' . $order->id . '.pdf');
     }
-
-    $pdf = Pdf::loadView('pdf.invoice', ['order' => $order])->setPaper('a4');
-    return $pdf->download('HoaDon_' . $order->id . '.pdf');
-}
-
 }

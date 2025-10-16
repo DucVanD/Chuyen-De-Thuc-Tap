@@ -39,17 +39,40 @@ const apiUser = {
   },
 
 
-  getUserId: async (id) => {
-    const res = await axiosInstance.get(`/user/${id}`);
+  getUserId: async (id, page = 1, from = "", to = "") => {
+    let url = `/user/${id}?history=1&page=${page}`;
+    if (from && to) url += `&from=${from}&to=${to}`;
+    const res = await axiosInstance.get(url);
+    return res.data;
+  },
+
+  //
+  getPurchaseHistory: async (userId, from = "", to = "", page = 1) => {
+    let url = `/user/${userId}?history=1&page=${page}`;
+    if (from && to) {
+      url += `&from=${from}&to=${to}`;
+    }
+
+    const res = await axiosInstance.get(url);
+    return res.data;
+  },
+  //
+  getUserIdWithParams: async (userId, queryString = "") => {
+    const res = await axiosInstance.get(`/user/${userId}?${queryString}`);
     return res.data;
   },
 
 
 
-//
-loginAdmin: async (username, password) => {
+
+
+
+
+
+  //
+  loginAdmin: async (username, password) => {
     const res = await axiosInstance.post("/admin/login", { username, password });
-    if(res.data.status && res.data.data.token){
+    if (res.data.status && res.data.data.token) {
       localStorage.setItem("token", res.data.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.data.user));
     }
