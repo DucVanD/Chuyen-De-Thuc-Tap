@@ -83,7 +83,8 @@ const ListProduct = () => {
               <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sản phẩm</th>
               <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục</th>
               <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Thương hiệu</th>
-              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+              <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Giá gốc</th>
+               <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Giá khuyến mại</th>
               <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Số Lượng</th>
               <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
               <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Chức năng</th>
@@ -101,6 +102,7 @@ const ListProduct = () => {
                 <td>{product.category_name || 'Chưa cập nhật'}</td>
                 <td>{product.brand_name || 'Chưa cập nhật'}</td>
                 <td>{product.price ? product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : 'Chưa cập nhật'}</td>
+                <td>{product.sale ? product.sale.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) : 'Chưa cập nhật'}</td>
                 <td>{product.qty}</td>
                 <td>
                   {product.status ? (

@@ -47,43 +47,56 @@ const Home = () => {
   const [categorys, setcategorys] = useState([]);
   const [productNew, setProductNew] = useState([]);
   const [saleProducts, setProductSale] = useState([]);
+  const [producsCat, setProductsCat] = useState([]);
+  const [Brands, setBrands] = useState([]);
   const navigate = useNavigate();
   const handleAddToCart = useAddToCart();
+  
+  // ✅ GỘP TOÀN BỘ CÁC API VỀ MỘT LẦN GỌI
   useEffect(() => {
-    apiProduct
-      .getNewest()
-      .then((res) => setProductNew(res.data || []))
-      .catch((err) => console.error("Lỗi khi lấy sản phẩm mới:", err));
+    const fetchAllData = async () => {
+      try {
+        const [resNewest, resCategory, resSale, resCategoryHome, resBrand] =
+          await Promise.all([
+            apiProduct.getNewest(),
+            apiCategory.getAll(),
+            apiProduct.getSaleDiscount(),
+            apiProduct.categoryhome(),
+            apiBrand.getAll(),
+          ]);
+  
+        setProductNew(resNewest.data || []);
+        setcategorys(resCategory.data.data || []);
+        setProductSale(resSale.data || []);
+        setProductsCat(resCategoryHome.data || []);
+        setBrands(resBrand.data.data || []);
+  
+        console.log("✅ Dữ liệu trang Home đã tải xong");
+      } catch (error) {
+        console.error("❌ Lỗi khi tải dữ liệu trang Home:", error);
+      }
+    };
+  
+    fetchAllData();
   }, []);
-
-  useEffect(() => {
-    apiCategory
-      .getAll()
-      .then((res) => setcategorys(res.data.data || []))
-      .catch((err) => console.error("Lỗi khi lấy danh muc:", err));
-  }, []);
-
-  useEffect(() => {
-    apiProduct.getSaleDiscount().then((res) => setProductSale(res.data || []));
-  }, []);
-
+  
+  // ✅ Đồng hồ đếm ngược
   const [countdown, setCountdown] = useState({
     days: 5,
     hours: 2,
     minutes: 33,
     seconds: 35,
   });
-
+  
   useEffect(() => {
-    // Thời gian kết thúc (99 ngày + 2 giờ + 33 phút + 35 giây từ lúc load trang)
     const end = new Date(
       Date.now() +
-      5 * 24 * 3600 * 1000 +
-      2 * 3600 * 1000 +
-      33 * 60 * 1000 +
-      35 * 1000
+        5 * 24 * 3600 * 1000 +
+        2 * 3600 * 1000 +
+        33 * 60 * 1000 +
+        35 * 1000
     );
-
+  
     const timer = setInterval(() => {
       const now = new Date();
       const diff = end - now;
@@ -98,42 +111,9 @@ const Home = () => {
         setCountdown({ days, hours, minutes, seconds });
       }
     }, 1000);
-
+  
     return () => clearInterval(timer);
-
-
   }, []);
-
-  const [producsCat, setProductsCat] = useState([]);
-
-  useEffect(() => {
-    const fetchProductsByCategory = async () => {
-      try {
-        const res = await apiProduct.categoryhome();
-        console.log("Data từ API:", res.data);
-        setProductsCat(res.data || []);
-      } catch (err) {
-        console.error("Lỗi khi lấy sản phẩm theo danh mục:", err);
-      }
-    };
-
-    fetchProductsByCategory();
-  }, []); // ⚠️ RẤT QUAN TRỌNG: [] để chỉ chạy 1 lần
-
-  const [Brands, setBrands] = useState([]);
-  useEffect(() => {
-    const fetchBrands = async () => {
-      try {
-        const res = await apiBrand.getAll();
-        setBrands(res.data.data || []);
-      } catch (err) {
-        console.error("Lỗi khi lấy thương hiệu:", err);
-      }
-    };
-    fetchBrands();
-  }, []);
-
-
 
 
 

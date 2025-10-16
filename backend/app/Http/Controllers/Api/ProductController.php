@@ -27,6 +27,7 @@ class ProductController extends Controller
             'product.status',
             'product.qty',
             'product.price_root as price',
+            'product.price_sale as sale',
             'category.name as category_name',
             'brand.name as brand_name'
         )

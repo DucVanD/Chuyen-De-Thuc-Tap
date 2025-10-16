@@ -10,6 +10,8 @@ import System from "../pages/user/system.jsx";
 import Request from "../pages/user/request.jsx";
 import Checkout from "../pages/user/Checkout.jsx";
 import ProductByCat from "../pages/user/ProductByCat.jsx";
+import Profile from "../pages/user/Profile.jsx";
+import HistoryBought from "../pages/user/HistoryBought.jsx";
 const Userroute = [
   { path: "", component: Home },
   { path: "/products", component: Products },
@@ -25,6 +27,8 @@ const Userroute = [
   { path: "/request", component: Request },
   { path: "/checkout", component: Checkout },
   { path: "/category/:slug", component: Products },
+  { path: "/profile", component: Profile },
+  { path: "/history-bought", component: HistoryBought },
 ];
 
 export default Userroute;

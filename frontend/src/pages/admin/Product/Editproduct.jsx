@@ -24,7 +24,7 @@ const EditProduct = () => {
     description: "",
     detail: "",
     price_root: "",
-    price_sale: "0",
+    price_sale: "",
     qty: 1,
     category_id: "",
     brand_id: "",
@@ -60,11 +60,12 @@ const EditProduct = () => {
             description: product.description || "",
             detail: product.detail || "",
             price_root: product.price_root || "",
-            price_sale: product.price_sale || "",
+            // ✅ Nếu có giá giảm thì dùng, không thì mặc định 0
+            price_sale: product.price_sale ?? 0,
             qty: product.qty || 1,
             category_id: product.category_id || "",
             brand_id: product.brand_id || "",
-            status: product.status || 1,
+            status: product.status ?? 1,
           });
 
           if (product.thumbnail) {
@@ -136,7 +137,7 @@ const EditProduct = () => {
       if (error.response?.data?.errors) setErrors(error.response.data.errors);
       alert(
         error.response?.data?.message ||
-          `Lỗi từ server (status ${error.response?.status || "?"})`
+        `Lỗi từ server (status ${error.response?.status || "?"})`
       );
     } finally {
       setLoading(false);
