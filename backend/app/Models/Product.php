@@ -54,4 +54,10 @@ class Product extends Model
         // Tính phần trăm giảm, làm tròn và không cho âm
         return max(0, round((($this->price_root - $this->price_sale) / $this->price_root) * 100));
     }
+    //
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class, 'product_id');
+    }
 }

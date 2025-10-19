@@ -70,19 +70,7 @@ const apiUser = {
 
 
   //
-  loginAdmin: async (username, password) => {
-    const res = await axiosInstance.post("/admin/login", { username, password });
-    if (res.data.status && res.data.data.token) {
-      localStorage.setItem("token", res.data.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.data.user));
-    }
-    return res.data;
-  },
 
-  logout: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-  }
 
 };
 

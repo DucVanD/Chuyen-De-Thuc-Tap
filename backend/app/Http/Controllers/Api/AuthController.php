@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class AuthController extends Controller
 {
+    // ===== USER AUTH (bạn đã có sẵn) =====
     public function register(Request $request)
     {
         return app(UserController::class)->register($request);
@@ -30,43 +31,90 @@ class AuthController extends Controller
         return app(UserController::class)->logout($request);
     }
 
-
-
-// Admin login
-
- public function adminLogin(Request $request)
+    // ===== ADMIN LOGIN =====
+    public function adminLogin(Request $request)
     {
         $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
+            'email' => 'required|email',
+            'password' => 'required|string|min:6',
         ]);
 
-        $user = User::where('username', $request->username)
-                    ->where('roles', 'admin')
-                    ->first();
+        // Lấy user theo email
+        $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Sai username hoặc mật khẩu admin',
+                'message' => 'Sai email hoặc mật khẩu!',
             ], 401);
         }
 
-        // Tạo token Sanctum
+        // Kiểm tra quyền admin
+        if ($user->roles !== 'admin') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Không có quyền truy cập Admin!!!',
+            ], 403);
+        }
+
+        // Tạo token
         $token = $user->createToken('admin-token')->plainTextToken;
 
         return response()->json([
             'status' => true,
-            'message' => 'Đăng nhập thành công',
-            'data' => [
-                'user' => $user,
-                'token' => $token,
-            ]
+            'message' => 'Đăng nhập thành công!',
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'roles' => $user->roles,
+            ],
         ]);
     }
 
 
+    public function adminMe(Request $request)
+    {
+        $user = $request->user();
 
+        if (!$user || $user->roles !== 'admin') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Không có quyền truy cập!',
+            ], 403);
+        }
 
+        return response()->json([
+            'status' => true,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'roles' => $user->roles,
+            ],
+        ]);
+    }
 
+    public function adminLogout(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user || $user->roles !== 'admin') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Không có quyền thực hiện hành động này!',
+            ], 403);
+        }
+
+        // Xóa token hiện tại (chỉ logout token đang dùng)
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Đăng xuất admin thành công!',
+        ]);
+    }
 }

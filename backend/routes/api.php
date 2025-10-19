@@ -2,28 +2,39 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\CategoryController;
-use App\Http\Controllers\Api\PostController;
-use App\Http\Controllers\Api\ContactController;
-use App\Http\Controllers\Api\TopicController;
-use App\Http\Controllers\Api\MenuController;
-use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\BrandController;
-use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\BannerController;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\DashboardController;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Api\{
+    ProductController,
+    CategoryController,
+    PostController,
+    ContactController,
+    TopicController,
+    MenuController,
+    UserController,
+    BrandController,
+    OrderController,
+    BannerController,
+    AuthController,
+    DashboardController,
+    StockController
+};
 
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+| File này định nghĩa tất cả các API endpoint cho ứng dụng.
+| Mỗi nhóm (user, product, category, v.v...) đều có route riêng và RESTful.
+| Các route đều trả về JSON và dùng prefix /api (theo mặc định của Laravel).
+|--------------------------------------------------------------------------
+*/
 
+// ✅ Kiểm tra API hoạt động hay chưa
 Route::get('/check-api', function () {
     return response()->json(['status' => true, 'message' => 'API OK']);
 });
 
-
-
-
+// ✅ Kiểm tra kết nối Database (DB test)
 Route::get('/db-test', function () {
     try {
         $result = DB::select('SELECT NOW() as current_time');
@@ -39,35 +50,68 @@ Route::get('/db-test', function () {
     }
 });
 
-
-//  dashboard
-
-
+/* ------------------ DASHBOARD ------------------ */
 Route::get('dashboard/summary', [DashboardController::class, 'summary']);
 Route::get('dashboard/report/{date}', [DashboardController::class, 'getReportByDate']);
 
-
-
-Route::post('/admin/login', [AuthController::class, 'adminLogin']);
-
-
-//
-route::prefix('user')->group(function () {
-    route::get('trash', [UserController::class, 'trash'])->name('user.trash');
-    route::get('delete/{user}', [UserController::class, 'delete'])->name('user.delete');
-    route::get('restore/{user}', [UserController::class, 'restore'])->name('user.restore');
-    route::get('status/{user}', [UserController::class, 'status'])->name('user.status');
-});
-route::resource('user', UserController::class);
-Route::get('user/{id}/purchaseHistory', [UserController::class, 'purchaseHistory']);
+/* ------------------ AUTH (Đăng nhập / Đăng ký) ------------------ */
+// ✅ Auth public
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/admin/login', [AuthController::class, 'adminLogin']); // admin login riêng
+
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    // Thông tin admin hiện tại
+    Route::get('/me', [AuthController::class, 'adminMe']);
+
+    // Đăng xuất admin
+    Route::post('/logout', [AuthController::class, 'adminLogout']);
+
+    // Dashboard
+    Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
+    Route::get('/dashboard/report/{date}', [DashboardController::class, 'getReportByDate']);
+
+    // Quản lý hệ thống
+    Route::apiResources([
+        'user' => UserController::class,
+        'product' => ProductController::class,
+        'category' => CategoryController::class,
+        'post' => PostController::class,
+        'topic' => TopicController::class,
+        'banner' => BannerController::class,
+        'brand' => BrandController::class,
+        'menu' => MenuController::class,
+        'order' => OrderController::class,
+        'stock' => StockController::class,
+    ]);
+});
+
+
+
+
+// 🔒 Các route yêu cầu token Sanctum (user đã đăng nhập)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::post('/order/checkout', [OrderController::class, 'checkout']);
+    Route::get('user/{id}/purchaseHistory', [UserController::class, 'purchaseHistory']);
+
 });
 
-// product
+/* ------------------ USER ------------------ */
+Route::prefix('user')->group(function () {
+    Route::get('trash', [UserController::class, 'trash'])->name('user.trash');
+    Route::get('delete/{user}', [UserController::class, 'delete'])->name('user.delete');
+    Route::get('restore/{user}', [UserController::class, 'restore'])->name('user.restore');
+    Route::get('status/{user}', [UserController::class, 'status'])->name('user.status');
+});
+Route::resource('user', UserController::class);
+
+// Lịch sử mua hàng theo người dùng
+
+
+/* ------------------ PRODUCT ------------------ */
 Route::get('/product/category/slug/{slug}', [ProductController::class, 'getByCategorySlug']);
 Route::get('/product/search', [ProductController::class, 'search']);
 Route::get('product/newest', [ProductController::class, 'newest']);
@@ -76,97 +120,105 @@ Route::get('product/slug/{slug}', [ProductController::class, 'getProductBySlug']
 Route::get('/product/all', [ProductController::class, 'getAllProductUser']);
 Route::post('/product/filter', [ProductController::class, 'filter']);
 Route::get('/product/category', [ProductController::class, 'categoryhome']);
-route::prefix('product')->group(function () {
-    route::get('trash', [ProductController::class, 'trash'])->name('product.trash');
-    route::get('delete/{product}', [ProductController::class, 'delete'])->name('product.delete');
-    route::get('restore/{product}', [ProductController::class, 'restore'])->name('product.restore');
-    route::get('status/{product}', [ProductController::class, 'status'])->name('product.status');
+
+Route::prefix('product')->group(function () {
+    Route::get('trash', [ProductController::class, 'trash'])->name('product.trash');
+    Route::get('delete/{product}', [ProductController::class, 'delete'])->name('product.delete');
+    Route::get('restore/{product}', [ProductController::class, 'restore'])->name('product.restore');
+    Route::get('status/{product}', [ProductController::class, 'status'])->name('product.status');
 });
-route::resource('product', ProductController::class);
-//     Route::resource('/', ProductController::class)->parameters(['' => 'product']);
-// category
-// routes/api.php
+Route::resource('product', ProductController::class);
+
+/* ------------------ CATEGORY ------------------ */
 Route::get('/category/parents', [CategoryController::class, 'getParents']);
 Route::get('/category/parentsWithChildren', [CategoryController::class, 'parentsWithChildren']);
 Route::get('/category/all', [CategoryController::class, 'getAll']);
-route::prefix('category')->group(function () {
-    route::get('trash', [CategoryController::class, 'trash'])->name('category.trash');
-    route::get('delete/{category}', [CategoryController::class, 'delete'])->name('category.delete');
-    route::get('restore/{category}', [CategoryController::class, 'restore'])->name('category.restore');
-    route::get('status/{category}', [CategoryController::class, 'status'])->name('category.status');
+
+Route::prefix('category')->group(function () {
+    Route::get('trash', [CategoryController::class, 'trash'])->name('category.trash');
+    Route::get('delete/{category}', [CategoryController::class, 'delete'])->name('category.delete');
+    Route::get('restore/{category}', [CategoryController::class, 'restore'])->name('category.restore');
+    Route::get('status/{category}', [CategoryController::class, 'status'])->name('category.status');
 });
-route::resource('category', CategoryController::class);
+Route::resource('category', CategoryController::class);
 
-// contact
-
-route::prefix('contact')->group(function () {
-    route::get('trash', [ContactController::class, 'trash'])->name('contact.trash');
-    route::get('delete/{contact}', [ContactController::class, 'delete'])->name('contact.delete');
-    route::get('restore/{contact}', [ContactController::class, 'restore'])->name('contact.restore');
-    route::get('status/{contact}', [ContactController::class, 'status'])->name('contact.status');
+/* ------------------ CONTACT ------------------ */
+Route::prefix('contact')->group(function () {
+    Route::get('trash', [ContactController::class, 'trash'])->name('contact.trash');
+    Route::get('delete/{contact}', [ContactController::class, 'delete'])->name('contact.delete');
+    Route::get('restore/{contact}', [ContactController::class, 'restore'])->name('contact.restore');
+    Route::get('status/{contact}', [ContactController::class, 'status'])->name('contact.status');
 });
-route::resource('contact', ContactController::class);
+Route::resource('contact', ContactController::class);
 
-// post
+/* ------------------ POST ------------------ */
 Route::get('/post/all', [PostController::class, 'getAll']);
-route::prefix('post')->group(function () {
-    route::get('trash', [PostController::class, 'trash'])->name('post.trash');
-    route::get('delete/{post}', [PostController::class, 'delete'])->name('post.delete');
-    route::get('restore/{post}', [PostController::class, 'restore'])->name('post.restore');
-    route::get('status/{post}', [PostController::class, 'status'])->name('post.status');
+Route::prefix('post')->group(function () {
+    Route::get('trash', [PostController::class, 'trash'])->name('post.trash');
+    Route::get('delete/{post}', [PostController::class, 'delete'])->name('post.delete');
+    Route::get('restore/{post}', [PostController::class, 'restore'])->name('post.restore');
+    Route::get('status/{post}', [PostController::class, 'status'])->name('post.status');
 });
-route::resource('post', PostController::class);
+Route::resource('post', PostController::class);
 
-
-//
-
-// topic
+/* ------------------ TOPIC ------------------ */
 Route::get('topic/all', [TopicController::class, 'getAll']);
-route::prefix('topic')->group(function () {
-    route::get('trash', [TopicController::class, 'trash'])->name('topic.trash');
-    route::get('delete/{topic}', [TopicController::class, 'delete'])->name('topic.delete');
-    route::get('restore/{topic}', [TopicController::class, 'restore'])->name('topic.restore');
-    route::get('status/{topic}', [TopicController::class, 'status'])->name('topic.status');
+Route::prefix('topic')->group(function () {
+    Route::get('trash', [TopicController::class, 'trash'])->name('topic.trash');
+    Route::get('delete/{topic}', [TopicController::class, 'delete'])->name('topic.delete');
+    Route::get('restore/{topic}', [TopicController::class, 'restore'])->name('topic.restore');
+    Route::get('status/{topic}', [TopicController::class, 'status'])->name('topic.status');
 });
-route::resource('topic', TopicController::class);
-// order
+Route::resource('topic', TopicController::class);
+
+/* ------------------ ORDER ------------------ */
 Route::get('/orders/{id}/invoice', [OrderController::class, 'exportInvoice']);
-route::prefix('order')->group(function () {
-    route::get('trash', [OrderController::class, 'trash'])->name('order.trash');
-    route::get('delete/{order}', [OrderController::class, 'delete'])->name('order.delete');
-    route::get('restore/{order}', [OrderController::class, 'restore'])->name('order.restore');
-    route::get('status/{order}', [OrderController::class, 'status'])->name('order.status');
+Route::prefix('order')->group(function () {
+    Route::get('trash', [OrderController::class, 'trash'])->name('order.trash');
+    Route::get('delete/{order}', [OrderController::class, 'delete'])->name('order.delete');
+    Route::get('restore/{order}', [OrderController::class, 'restore'])->name('order.restore');
+    Route::get('status/{order}', [OrderController::class, 'status'])->name('order.status');
 });
-route::resource('order', OrderController::class);
-// routes/api.php
-// ví dụ Laravel
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/order/checkout', [OrderController::class, 'checkout']);
-});
+Route::resource('order', OrderController::class);
 
-// menu
+// Checkout chỉ cho người dùng đã đăng nhập
 
-route::prefix('menu')->group(function () {
-    route::get('trash', [MenuController::class, 'trash'])->name('menu.trash');
-    route::get('delete/{menu}', [MenuController::class, 'delete'])->name('menu.delete');
-    route::get('restore/{menu}', [MenuController::class, 'restore'])->name('menu.restore');
-    route::get('status/{menu}', [MenuController::class, 'status'])->name('menu.status');
+/* ------------------ MENU ------------------ */
+Route::prefix('menu')->group(function () {
+    Route::get('trash', [MenuController::class, 'trash'])->name('menu.trash');
+    Route::get('delete/{menu}', [MenuController::class, 'delete'])->name('menu.delete');
+    Route::get('restore/{menu}', [MenuController::class, 'restore'])->name('menu.restore');
+    Route::get('status/{menu}', [MenuController::class, 'status'])->name('menu.status');
 });
-route::resource('menu', MenuController::class);
+Route::resource('menu', MenuController::class);
 
-// banner
-route::prefix('banner')->group(function () {
-    route::get('trash', [BannerController::class, 'trash'])->name('banner.trash');
-    route::get('delete/{banner}', [BannerController::class, 'delete'])->name('banner.delete');
-    route::get('restore/{banner}', [BannerController::class, 'restore'])->name('banner.restore');
-    route::get('status/{banner}', [BannerController::class, 'status'])->name('banner.status');
+/* ------------------ BANNER ------------------ */
+Route::prefix('banner')->group(function () {
+    Route::get('trash', [BannerController::class, 'trash'])->name('banner.trash');
+    Route::get('delete/{banner}', [BannerController::class, 'delete'])->name('banner.delete');
+    Route::get('restore/{banner}', [BannerController::class, 'restore'])->name('banner.restore');
+    Route::get('status/{banner}', [BannerController::class, 'status'])->name('banner.status');
 });
-route::resource('banner', BannerController::class);
-// brand
-route::prefix('brand')->group(function () {
-    route::get('trash', [BrandController::class, 'trash'])->name('brand.trash');
-    route::get('delete/{brand}', [BrandController::class, 'delete'])->name('brand.delete');
-    route::get('restore/{brand}', [BrandController::class, 'restore'])->name('brand.restore');
-    route::get('status/{brand}', [BrandController::class, 'status'])->name('brand.status');
+Route::resource('banner', BannerController::class);
+
+/* ------------------ BRAND ------------------ */
+Route::prefix('brand')->group(function () {
+    Route::get('trash', [BrandController::class, 'trash'])->name('brand.trash');
+    Route::get('delete/{brand}', [BrandController::class, 'delete'])->name('brand.delete');
+    Route::get('restore/{brand}', [BrandController::class, 'restore'])->name('brand.restore');
+    Route::get('status/{brand}', [BrandController::class, 'status'])->name('brand.status');
 });
-route::resource('brand', BrandController::class);
+Route::resource('brand', BrandController::class);
+
+/* ------------------ STOCK (Tồn kho) ------------------ */
+// CRUD chính cho bảng tồn kho
+Route::apiResource('stock', StockController::class);
+
+// Các thao tác nhập / xuất / điều chỉnh / trả hàng
+Route::prefix('inventory')->group(function () {
+    Route::get('/', [StockController::class, 'index']);      // Danh sách tồn kho
+    Route::post('/import', [StockController::class, 'import']); // Nhập kho
+    Route::post('/export', [StockController::class, 'export']); // Xuất kho
+    Route::post('/adjust', [StockController::class, 'adjust']); // Điều chỉnh tồn kho
+    Route::post('/return', [StockController::class, 'return']); // Trả hàng
+});

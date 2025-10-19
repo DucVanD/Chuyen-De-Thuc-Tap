@@ -10,33 +10,53 @@ import Userroute from "./routers/user.js";
 import LayoutUser from "./components/LayoutUser.jsx";
 import Adminroute from "./routers/admin.js";
 import LayoutAdmin from "./components/LayoutAdmin.jsx";
+import AdminPrivateRoute from "./components/AdminPrivateRoute.jsx";
+import AdminLogin from "./pages/admin/AdminLogin"; // 👈 THÊM DÒNG NÀY
 
 function App() {
   return (
     <Provider store={store}>
-      <ToastContainer />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LayoutUser />}>
-              {Userroute.map((router, index) => {
-                const Page = router.component;
-                return (
-                  <Route key={index} path={router.path} element={<Page />} />
-                );
-              })}
-            </Route>
+   <ToastContainer
+  position="top-right"
+  autoClose={300} // thông báo chỉ hiện 1.5 giây
+  hideProgressBar={false}
+  newestOnTop={false}
+  closeOnClick
+  pauseOnHover={false}
+  draggable
+  theme="colored"
+/>
 
-            <Route path="/admin" element={<LayoutAdmin />}>
-              {Adminroute.map((router, index) => {
-                const Page = router.component;
-                return (
-                  <Route key={index} path={router.path} element={<Page />} />
-                );
-              })}
-            </Route>
-          </Routes>
-        </BrowserRouter>
-   
+
+      <BrowserRouter>
+        <Routes>
+          {/* USER */}
+          <Route path="/" element={<LayoutUser />}>
+            {Userroute.map((router, index) => {
+              const Page = router.component;
+              return <Route key={index} path={router.path} element={<Page />} />;
+            })}
+          </Route>
+
+          {/* ✅ ADMIN LOGIN (Public) */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+
+          {/* ✅ ADMIN (Protected) */}
+          <Route
+            path="/admin"
+            element={
+              <AdminPrivateRoute>
+                <LayoutAdmin />
+              </AdminPrivateRoute>
+            }
+          >
+            {Adminroute.map((router, index) => {
+              const Page = router.component;
+              return <Route key={index} path={router.path} element={<Page />} />;
+            })}
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </Provider>
   );
 }

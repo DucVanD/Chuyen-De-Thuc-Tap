@@ -55,9 +55,24 @@ const HeaderUser = () => {
   };
 
   const handleLogout = () => {
+  // Hộp thoại xác nhận
+  const confirmLogout = window.confirm("Bạn có chắc muốn đăng xuất không?");
+  if (confirmLogout) {
     dispatch(logout());
+    toast.success("Đăng xuất thành công!", {
+      position: "top-right",
+      autoClose: 1500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      theme: "colored",
+    });
     navigate("/");
-  };
+  }
+};
+
+
 
   const handleQuickCheckout = (e) => {
     e.preventDefault();
@@ -71,6 +86,8 @@ const HeaderUser = () => {
     }
     navigate("/checkout");
   };
+
+
 
   const menuItems = [
     {
@@ -143,44 +160,44 @@ const HeaderUser = () => {
 
       {/* 🔹 Mobile */}
       <div className="flex md:hidden h-[35px] bg-green-700 text-gray-50 justify-center px-4 text-sm gap-10 relative">
-      {/* Tài khoản */}
-      <div className="flex items-center gap-1 relative">
-        <FaUser />
-        {user ? (
-          <div className="relative">
-            <button
-              onClick={() => setShowLogout(!showLogout)}
-              className="flex items-center gap-1 hover:text-amber-400 focus:outline-none"
-            >
-              {user.name} <FaSortDown />
-            </button>
+        {/* Tài khoản */}
+        <div className="flex items-center gap-1 relative">
+          <FaUser />
+          {user ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowLogout(!showLogout)}
+                className="flex items-center gap-1 hover:text-amber-400 focus:outline-none"
+              >
+                {user.name} <FaSortDown />
+              </button>
 
-            {showLogout && (
-              <div className="absolute right-0 mt-1 bg-white text-gray-800 rounded shadow z-50 min-w-[120px]">
-                <button
-                  onClick={handleLogout}
-                  className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
-                >
-                  Đăng xuất
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <Link to="/registered" className="hover:text-amber-400">
-            Tài khoản
+              {showLogout && (
+                <div className="absolute right-0 mt-1 bg-white text-gray-800 rounded shadow z-50 min-w-[120px]">
+                  <button
+                    onClick={handleLogout}
+                    className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/registered" className="hover:text-amber-400">
+              Tài khoản
+            </Link>
+          )}
+        </div>
+
+        {/* Hotline */}
+        <div className="flex items-center gap-1">
+          <span>Hotline:</span>
+          <Link to="/hotline" className="hover:text-amber-400">
+            1900 6750
           </Link>
-        )}
+        </div>
       </div>
-
-      {/* Hotline */}
-      <div className="flex items-center gap-1">
-        <span>Hotline:</span>
-        <Link to="/hotline" className="hover:text-amber-400">
-          1900 6750
-        </Link>
-      </div>
-    </div>
 
       {/* --- MOBILE HEADER --- */}
       <div className="flex md:hidden justify-between items-center px-4 py-2 bg-gray-100 text-black">
@@ -204,32 +221,32 @@ const HeaderUser = () => {
 
       {/* --- MOBILE SEARCH BAR --- */}
       {/* Thanh tìm kiếm + nút mua nhanh (Mobile Only) */}
-<div className="md:hidden px-4 py-2 bg-gray-100 shadow">
-      <form onSubmit={handleSearch} className="relative flex items-center gap-2">
-        {/* Ô tìm kiếm */}
-        <div className="relative flex-1">
-          <input
-            type="text"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="Tìm sản phẩm..."
-            className="w-full rounded-full border border-gray-300 pl-4 pr-10 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none"
-          />
-          <button type="submit">
-            <CiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5" />
-          </button>
-        </div>
+      <div className="md:hidden px-4 py-2 bg-gray-100 shadow">
+        <form onSubmit={handleSearch} className="relative flex items-center gap-2">
+          {/* Ô tìm kiếm */}
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="Tìm sản phẩm..."
+              className="w-full rounded-full border border-gray-300 pl-4 pr-10 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none"
+            />
+            <button type="submit">
+              <CiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5" />
+            </button>
+          </div>
 
-        {/* Icon mua nhanh */}
-        <button
-          onClick={handleQuickCheckout}
-          className="bg-red-600 text-white p-2 rounded-full shadow hover:bg-red-700 transition animate-bounce  relative"  style={{ animationDuration: "0.8s" }} 
-          title="Mua hàng nhanh"
-        >
-          <TbBrandShopee className="h-5 w-5 " />
-        </button>
-      </form>
-    </div>
+          {/* Icon mua nhanh */}
+          <button
+            onClick={handleQuickCheckout}
+            className="bg-red-600 text-white p-2 rounded-full shadow hover:bg-red-700 transition animate-bounce  relative" style={{ animationDuration: "0.8s" }}
+            title="Mua hàng nhanh"
+          >
+            <TbBrandShopee className="h-5 w-5 " />
+          </button>
+        </form>
+      </div>
 
 
       {/* --- DESKTOP HEADER --- */}
@@ -305,17 +322,15 @@ const HeaderUser = () => {
           >
             <Link
               to="/products"
-              className={`py-2 px-4 rounded-full transition flex items-center gap-1 ${
-                showDropdown
+              className={`py-2 px-4 rounded-full transition flex items-center gap-1 ${showDropdown
                   ? "bg-green-600 text-white"
                   : "bg-gray-200 text-gray-800 hover:bg-green-600 hover:text-white"
-              }`}
+                }`}
             >
               Sản phẩm
               <FaSortDown
-                className={`transition-transform duration-300 ${
-                  showDropdown ? "rotate-180" : ""
-                }`}
+                className={`transition-transform duration-300 ${showDropdown ? "rotate-180" : ""
+                  }`}
               />
             </Link>
 
@@ -396,7 +411,7 @@ const HeaderUser = () => {
 
         <button
           onClick={handleQuickCheckout}
-          className="bg-red-600 py-2 px-5 rounded-full text-white font-medium shadow hover:bg-red-700 transition animate-bounce" style={{ animationDuration: "0.7s" }} 
+          className="bg-red-600 py-2 px-5 rounded-full text-white font-medium shadow hover:bg-red-700 transition animate-bounce" style={{ animationDuration: "0.7s" }}
         >
           Thanh toán nhanh
         </button>

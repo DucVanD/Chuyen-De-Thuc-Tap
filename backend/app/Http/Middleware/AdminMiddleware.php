@@ -3,19 +3,20 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminMiddleware
 {
-    public function handle(Request $request, Closure $next)
+    public function handle($request, Closure $next)
     {
-        $user = $request->user();
-        if (!$user || $user->roles !== 'admin') {
-            return response()->json([
-                'status' => false,
-                'message' => 'Chỉ admin mới truy cập'
-            ], 403);
+        $user = Auth::user();
+        if ($user && $user->roles === 'admin') {
+            return $next($request);
         }
-        return $next($request);
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Không có quyền truy cập Admin!!!'
+        ], 403);
     }
 }

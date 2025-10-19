@@ -25,7 +25,7 @@ class GenerateDailyReport extends Command
         // ====== TÍNH TOÁN CÁC CHỈ SỐ ======
 
         // 1. Doanh thu (chỉ tính đơn hàng đã giao thành công, ví dụ status = 5)
-        $totalRevenue = Order::where('status', 5)
+        $totalRevenue = Order::where('status', 1)
             ->whereDate('created_at', $today)
             ->sum('total_amount');
 

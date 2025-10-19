@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\StockMovement;
+use App\Models\Product;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str; // nhớ thêm dòng này ở đầu file
 class OrderController extends Controller
@@ -104,7 +106,7 @@ class OrderController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $order = Order::find($id);
+        $order = Order::with('orderDetails.product')->find($id);
 
         if (!$order) {
             return response()->json([
@@ -113,23 +115,57 @@ class OrderController extends Controller
             ], 404);
         }
 
-        // Validate input
         $request->validate([
             'status' => 'required|integer|in:1,2,3,4,5,6,7',
             'note' => 'nullable|string|max:1000',
         ]);
 
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
 
-        $order->status = $request->status;
-        $order->note = $request->note ?? '';
-        $order->updated_at = now();
-        $order->save();
+        DB::beginTransaction();
+        try {
+            $order->status = $newStatus;
+            $order->note = $request->note ?? '';
+            $order->updated_at = now();
+            $order->save();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Cập nhật đơn hàng thành công',
-            'data' => $order,
-        ]);
+            // ✅ Nếu đơn bị hoàn/trả hàng hoặc hủy
+            if (in_array($newStatus, [6, 7]) && !in_array($oldStatus, [6, 7])) {
+                foreach ($order->orderDetails as $detail) {
+                    $product = $detail->product;
+                    if ($product) {
+                        // Cộng lại tồn kho
+                        $product->qty += $detail->qty;
+                        $product->save();
+
+                        // Ghi log "return"
+                        StockMovement::create([
+                            'product_id' => $product->id,
+                            'product_name' => $product->name,
+                            'type' => 'return',
+                            'quantity_change' => $detail->qty,
+                            'qty_after' => $product->qty,
+                            'note' => "Hoàn trả đơn hàng #{$order->order_code}",
+                            'user_id' => Auth::id() ?? $order->user_id,
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            return response()->json([
+                'status' => true,
+                'message' => 'Cập nhật trạng thái đơn hàng thành công',
+                'data' => $order,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi khi cập nhật trạng thái: ' . $e->getMessage(),
+            ]);
+        }
     }
 
 
@@ -138,65 +174,50 @@ class OrderController extends Controller
 
     public function checkout(Request $request)
     {
-        // Validate cơ bản
+        // ✅ 1. Validate dữ liệu đầu vào
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'required|email|max:255',
-
-            // 🔥 BẮT BUỘC địa chỉ, tỉnh, huyện, xã
             'address' => 'required|string|max:1000',
             'province' => 'required|string|max:255',
             'district' => 'required|string|max:255',
             'ward' => 'required|string|max:255',
-
             'note' => 'nullable|string',
             'payment' => 'required|string|in:cod,bank',
             'cart' => 'required|array|min:1',
             'cart.*.id' => 'required|integer',
             'cart.*.qty' => 'required|integer|min:1',
             'cart.*.price' => 'required|numeric|min:0',
-        ], [
-            // 🎯 Custom thông báo tiếng Việt
-            'name.required' => 'Vui lòng nhập họ và tên.',
-            'phone.required' => 'Vui lòng nhập số điện thoại.',
-            'email.required' => 'Vui lòng nhập email.',
-            'email.email' => 'Email không hợp lệ.',
-            'address.required' => 'Vui lòng nhập địa chỉ cụ thể.',
-            'province.required' => 'Vui lòng chọn Tỉnh/Thành phố.',
-            'district.required' => 'Vui lòng chọn Quận/Huyện.',
-            'ward.required' => 'Vui lòng chọn Phường/Xã.',
-            'payment.required' => 'Vui lòng chọn phương thức thanh toán.',
-            'cart.required' => 'Giỏ hàng trống, không thể đặt hàng.',
         ]);
 
-        // Kiểm tra tồn kho từng sản phẩm
+        // ✅ 2. Kiểm tra tồn kho từng sản phẩm
         foreach ($request->cart as $item) {
-            $product = \App\Models\Product::find($item['id']);
+            $product = Product::find($item['id']);
             if (!$product) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Sản phẩm ID {$item['id']} không tồn tại"
+                    'message' => "Sản phẩm ID {$item['id']} không tồn tại!"
                 ], 400);
             }
             if ($item['qty'] > $product->qty) {
                 return response()->json([
                     'status' => false,
-                    'message' => "Sản phẩm {$product->name} chỉ còn {$product->qty} sản phẩm trong kho"
+                    'message' => "Sản phẩm {$product->name} chỉ còn {$product->qty} sản phẩm trong kho."
                 ], 400);
             }
         }
 
         DB::beginTransaction();
         try {
-            // Tính tổng tiền
-            $totalAmount = array_reduce($request->cart, function ($carry, $item) {
+            // ✅ 3. Tính tổng tiền
+            $totalAmount = collect($request->cart)->reduce(function ($carry, $item) {
                 return $carry + ($item['price'] * $item['qty']);
             }, 0);
 
-            // Tạo đơn hàng
+            // ✅ 4. Tạo đơn hàng
             $order = Order::create([
-                'user_id' => Auth::id() ?? 11, // nếu chưa login thì dùng ID giả
+                'user_id' => Auth::id() ?? 11,
                 'name' => $request->name,
                 'phone' => $request->phone,
                 'email' => $request->email,
@@ -206,24 +227,21 @@ class OrderController extends Controller
                 'ward' => $request->ward,
                 'note' => $request->note,
                 'payment' => $request->payment,
-                'status' => 1, // pending
+                'status' => 1,
                 'total_amount' => $totalAmount,
                 'created_at' => now(),
             ]);
 
-            // 🔹 Sinh mã hóa đơn kiểu HD251016A9ZK
-            $orderCode = 'HD' . date('ymd') . strtoupper(Str::random(4));
-
-            // 🔸 Kiểm tra trùng (phòng khi random ra trùng mã)
-            while (Order::where('order_code', $orderCode)->exists()) {
+            // ✅ 5. Sinh mã hóa đơn duy nhất
+            do {
                 $orderCode = 'HD' . date('ymd') . strtoupper(Str::random(4));
-            }
+            } while (Order::where('order_code', $orderCode)->exists());
 
-            // 🔹 Cập nhật mã vào đơn hàng
             $order->update(['order_code' => $orderCode]);
 
-            // Tạo chi tiết đơn hàng & trừ tồn kho
+            // ✅ 6. Tạo chi tiết đơn hàng & trừ tồn kho
             foreach ($request->cart as $item) {
+                // Ghi chi tiết đơn hàng
                 OrderDetail::create([
                     'order_id' => $order->id,
                     'product_id' => $item['id'],
@@ -232,20 +250,33 @@ class OrderController extends Controller
                     'amount' => $item['price'] * $item['qty'],
                 ]);
 
-                $product = \App\Models\Product::find($item['id']);
+                // Trừ tồn kho
+                $product = Product::find($item['id']);
                 $product->qty -= $item['qty'];
                 $product->save();
+
+                // ✅ 7. Ghi log xuất kho
+                StockMovement::create([
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'type' => 'export',
+                    'quantity_change' => -$item['qty'],
+                    'qty_after' => $product->qty,
+                    'note' => 'Bán hàng – đơn #' . $orderCode,
+                    'user_id' => Auth::id() ?? $order->user_id,
+                ]);
             }
 
             DB::commit();
 
+            // ✅ 8. Trả về phản hồi thành công
             return response()->json([
                 'status' => true,
-                'message' => 'Đặt hàng thành công',
+                'message' => 'Đặt hàng thành công!',
                 'data' => [
                     'order_id' => $order->id,
                     'order_code' => $orderCode,
-                    'total_amount' => $order->total_amount,
+                    'total_amount' => number_format($order->total_amount, 0, ',', '.') . '₫',
                     'payment' => $order->payment,
                 ]
             ]);

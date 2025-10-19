@@ -43,6 +43,15 @@ const Dashboard = () => {
                   Quản lý sản phẩm
                 </p>
                 <ul className="space-y-1">
+                   <li>
+                    <Link
+                      to="inventory"
+                      className="flex items-center text-[15px] px-4 py-2.5 rounded-md hover:bg-gray-700 font-medium"
+                    >
+                      <i className="fas fa-box mr-3 text-indigo-400"></i>
+                      kho hàng
+                    </Link>
+                  </li>
                   <li>
                     <Link
                       to="products"

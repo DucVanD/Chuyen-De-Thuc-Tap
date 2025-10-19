@@ -7,24 +7,30 @@ import { clearCart } from "../../Redux/cartSlice";
 import { imageURL } from "../../api/config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+const provinces = ["---", "Hà Nội", "Hồ Chí Minh"];
 
-const provinces = ["---", "Hà Nội", "Hồ Chí Minh", "Đà Nẵng"];
 const districts = {
-  "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Cầu Giấy"],
-  "Hồ Chí Minh": ["Quận 1", "Quận 3", "Quận 7"],
-  "Đà Nẵng": ["Hải Châu", "Thanh Khê", "Sơn Trà"],
+  "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Cầu Giấy", "Đống Đa", "Hai Bà Trưng"],
+  "Hồ Chí Minh": ["Quận 1", "Quận 3", "Quận 7", "Quận 5", "Bình Thạnh"],
 };
+
 const wards = {
+  // Hà Nội
   "Ba Đình": ["Phúc Xá", "Trúc Bạch"],
   "Hoàn Kiếm": ["Chương Dương", "Hàng Bạc"],
   "Cầu Giấy": ["Dịch Vọng", "Nghĩa Đô"],
+  "Đống Đa": ["Văn Chương", "Phương Liên"],
+  "Hai Bà Trưng": ["Bách Khoa", "Đồng Nhân"],
+
+  // Hồ Chí Minh
   "Quận 1": ["Bến Nghé", "Bến Thành"],
   "Quận 3": ["Phường 1", "Phường 2"],
   "Quận 7": ["Tân Phú", "Tân Thuận Đông"],
-  "Hải Châu": ["Thạch Thang", "Hải Châu 1"],
-  "Thanh Khê": ["An Khê", "Hòa Khê"],
-  "Sơn Trà": ["An Hải Bắc", "Phước Mỹ"],
+  "Quận 5": ["Phường 8", "Phường 11"],
+  "Bình Thạnh": ["Phường 19", "Phường 22"],
 };
+
+
 
 const Checkout = () => {
   const dispatch = useDispatch();
@@ -57,6 +63,7 @@ const Checkout = () => {
         email: user.email || "",
         name: user.name || "",
         phone: user.phone || "",
+        address: user.address || "",
       }));
     }
   }, [user]);
@@ -80,69 +87,69 @@ const Checkout = () => {
   };
 
   const handleCheckout = async () => {
-  if (loading) return;
-  setLoading(true);
+    if (loading) return;
+    setLoading(true);
 
-  // Kiểm tra giỏ hàng
-  if (!cartItems.length) {
-    toast.error("Giỏ hàng trống!");
+    // Kiểm tra giỏ hàng
+    if (!cartItems.length) {
+      toast.error("Giỏ hàng trống!");
+      setLoading(false);
+      return;
+    }
+
+    // Kiểm tra thông tin bắt buộc
+    if (!form.name || !form.email || !form.phone) {
+      toast.warning("Vui lòng điền họ tên, email và số điện thoại!");
+      setLoading(false);
+      return;
+    }
+
+    // 🔥 Kiểm tra địa chỉ đầy đủ
+    if (
+      !form.address.trim() ||
+      form.province === "---" ||
+      !form.district ||
+      !form.ward
+    ) {
+      toast.warning("Vui lòng nhập đầy đủ địa chỉ, tỉnh/thành, quận/huyện và phường/xã!");
+      setLoading(false);
+      return;
+    }
+
+    const orderData = {
+      ...form,
+      cart: cartItems.map((item) => ({
+        id: item.id,
+        qty: item.qty,
+        price: item.price_sale || item.price_root,
+      })),
+    };
+
+    try {
+      const res = await apiOrder.checkout(orderData);
+
+      if (res.status) {
+        toast.success("Đặt hàng thành công!");
+        dispatch(clearCart());
+        navigate("/");
+      } else {
+        toast.error("Lỗi: " + (res.message || "Không thể đặt hàng"));
+      }
+    } catch (err) {
+      console.error(err);
+
+      // Nếu backend trả lỗi 422 (Laravel validation)
+      if (err.response && err.response.status === 422) {
+        const errors = err.response.data.errors || {};
+        const firstError = Object.values(errors)[0]?.[0] || "Thông tin không hợp lệ!";
+        toast.error(firstError);
+      } else {
+        toast.error("Lỗi khi đặt hàng!");
+      }
+    }
+
     setLoading(false);
-    return;
-  }
-
-  // Kiểm tra thông tin bắt buộc
-  if (!form.name || !form.email || !form.phone) {
-    toast.warning("Vui lòng điền họ tên, email và số điện thoại!");
-    setLoading(false);
-    return;
-  }
-
-  // 🔥 Kiểm tra địa chỉ đầy đủ
-  if (
-    !form.address.trim() ||
-    form.province === "---" ||
-    !form.district ||
-    !form.ward
-  ) {
-    toast.warning("Vui lòng nhập đầy đủ địa chỉ, tỉnh/thành, quận/huyện và phường/xã!");
-    setLoading(false);
-    return;
-  }
-
-  const orderData = {
-    ...form,
-    cart: cartItems.map((item) => ({
-      id: item.id,
-      qty: item.qty,
-      price: item.price_sale || item.price_root,
-    })),
   };
-
-  try {
-    const res = await apiOrder.checkout(orderData);
-
-    if (res.status) {
-      toast.success("Đặt hàng thành công!");
-      dispatch(clearCart());
-      navigate("/");
-    } else {
-      toast.error("Lỗi: " + (res.message || "Không thể đặt hàng"));
-    }
-  } catch (err) {
-    console.error(err);
-
-    // Nếu backend trả lỗi 422 (Laravel validation)
-    if (err.response && err.response.status === 422) {
-      const errors = err.response.data.errors || {};
-      const firstError = Object.values(errors)[0]?.[0] || "Thông tin không hợp lệ!";
-      toast.error(firstError);
-    } else {
-      toast.error("Lỗi khi đặt hàng!");
-    }
-  }
-
-  setLoading(false);
-};
 
 
   const subtotal = cartItems.reduce(

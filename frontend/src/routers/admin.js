@@ -30,55 +30,61 @@ import OrderDetail from "../pages/admin/Order/detailOrder";
 // user
 import ListUser from "../pages/admin/UserAdmin/ListUser";
 import UserDetail from "../pages/admin/UserAdmin/UserDetail";
+//
+import Inventory from "../pages/admin/Inventory/ListInventory";
+import FormNhapKho from "../pages/admin/Inventory/FormNhapKho";
+import FormXuatKho from "../pages/admin/Inventory/FormXuatKho";
+import FormDieuChinh from "../pages/admin/Inventory/FormDieuChinh";
+
 
 // định nghĩa các route cho trang admin
 
-import LoginAmin from "../pages/admin/Login";
+import AdminLogin from "../pages/admin/AdminLogin";
 
 const AdminRoute = [
-  //  category
-  { path: "categories/:page?", component: ListCat },
-  { path: "/admin/addCat", component: AddCat },
-  { path: "/admin/delCat/", component: DelCat },
-  { path: "/admin/editCat/:id", component: EditCat },
-  {path: "/admin/trashCat/:page?", component: TrashCat},
-
-  //  dashboard
   { path: "dashboard", component: Dashboard },
   { path: "", component: Dashboard },
 
-  //  product
-  { path: "products", component: ListProduct },
-  { path: "/admin/products/:page?", component: ListProduct },
-  { path: "/admin/delProduct", component: DelProduct },
-  { path: "/admin/editProduct/:id", component: EditProduct },
-  { path: "/admin/addProduct", component: AddProduct },
-  { path: "/admin/trashProduct/:page?", component: TrashProduct },
+  // category
+  { path: "categories/:page?", component: ListCat },
+  { path: "addCat", component: AddCat },
+  { path: "delCat", component: DelCat },
+  { path: "editCat/:id", component: EditCat },
+  { path: "trashCat/:page?", component: TrashCat },
+
+  // product
+  { path: "products/:page?", component: ListProduct },
+  { path: "addProduct", component: AddProduct },
+  { path: "editProduct/:id", component: EditProduct },
+  { path: "trashProduct/:page?", component: TrashProduct },
+
+  // post
+  { path: "posts/:page?", component: ListPost },
+  { path: "addPost", component: AddPost },
+  { path: "editPost/:id", component: EditPost },
+
+  // topic
+  { path: "topics/:page?", component: ListTopic },
+  { path: "addTopic", component: AddTopic },
+  { path: "editTopic/:id", component: EditTopic },
+
   // brand
   { path: "brands/:page?", component: ListBrand },
 
-
-
-  //  post
-  { path: "posts", component: ListPost },
-  { path: "/admin/addPost", component: AddPost },
-  { path: "/admin/editPost/:id", component: EditPost },
-  // topic
-  { path: "topics/:page?", component: ListTopic },
-  { path: "/admin/addTopic", component: AddTopic },
-  { path: "/admin/editTopic/:id", component: EditTopic },
-
-
-  //  order
+  // order
   { path: "orders/:page?", component: listOrder },
-  { path: "orders", component: listOrder },
-  { path: "editOrder/:id", component: EditOrder }, // chỉnh sửa đơn hàng
-  { path: "orderDetail/:id", component: OrderDetail }, // chi tiết đơn hàng
-  //  user
-  {path: "users/:page?", component: ListUser },
-  {path: "userDetail/:id", component: UserDetail },
-  // login
-  { path: "login", component: LoginAmin }
+  { path: "editOrder/:id", component: EditOrder },
+  { path: "orderDetail/:id", component: OrderDetail },
+
+  // user
+  { path: "users/:page?", component: ListUser },
+  { path: "userDetail/:id", component: UserDetail },
+
+  // inventory
+  { path: "inventory", component: Inventory },
+  { path: "inventory/import", component: FormNhapKho },
+  { path: "inventory/export", component: FormXuatKho },
+  { path: "inventory/adjust", component: FormDieuChinh },
 ];
 
 export default AdminRoute;

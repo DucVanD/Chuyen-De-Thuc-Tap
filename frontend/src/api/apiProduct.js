@@ -19,6 +19,15 @@ const apiProduct = {
     return res.data;
   },
 
+  getAllFiltered: async (filters = {}, page = 1) => {
+    const params = new URLSearchParams({ page, ...filters }).toString();
+    const res = await axiosInstance.get(`/product?${params}`);
+    return res.data;
+  },
+
+
+
+
   // 5 sản phẩm mới nhất
   getNewest: async () => {
     const res = await axiosInstance.get("/product/newest");

@@ -13,13 +13,23 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Category;
 use App\Models\Brand;
 use App\Models\OrderDetail;
-
-
+use App\Models\StockMovement;
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $list = Product::select(
+        $categoryId = $request->input('category_id');
+        $brandId = $request->input('brand_id');
+        $minPrice = $request->input('min_price');
+        $maxPrice = $request->input('max_price');
+        $lowStock = $request->boolean('low_stock');
+        $status = $request->input('status');
+        $keyword = $request->input('keyword');
+        $sortBy = $request->input('sort_by', 'product.id');
+        $sortOrder = $request->input('sort_order', 'desc');
+        $limit = $request->input('limit', 8);
+
+        $query = Product::select(
             'product.id',
             'product.name',
             'product.slug',
@@ -31,17 +41,62 @@ class ProductController extends Controller
             'category.name as category_name',
             'brand.name as brand_name'
         )
-            ->Join('category', 'product.category_id', '=', 'category.id')
-            ->Join('brand', 'product.brand_id', '=', 'brand.id')
-            ->orderBy('product.id', 'asc')
-            ->paginate(8);
+            ->join('category', 'product.category_id', '=', 'category.id')
+            ->join('brand', 'product.brand_id', '=', 'brand.id');
+
+        // 🎯 Bộ lọc
+        $query->when($categoryId, fn($q) => $q->where('product.category_id', $categoryId));
+
+        $query->when($brandId, fn($q) => $q->where('product.brand_id', $brandId));
+
+        $query->when(
+            $minPrice && $maxPrice,
+            fn($q) =>
+            $q->whereBetween('product.price_root', [$minPrice, $maxPrice])
+        );
+
+        $query->when(
+            $minPrice && !$maxPrice,
+            fn($q) =>
+            $q->where('product.price_root', '>=', $minPrice)
+        );
+
+        $query->when(
+            !$minPrice && $maxPrice,
+            fn($q) =>
+            $q->where('product.price_root', '<=', $maxPrice)
+        );
+
+        // 🧾 Lọc sản phẩm sắp hết hàng
+        $query->when($lowStock, fn($q) => $q->where('product.qty', '<=', 10));
+
+        // 🔍 Lọc theo từ khóa
+        $query->when(
+            $keyword,
+            fn($q) =>
+            $q->where(function ($sub) use ($keyword) {
+                $sub->where('product.name', 'like', "%$keyword%")
+                    ->orWhere('product.slug', 'like', "%$keyword%");
+            })
+        );
+
+        // ⚙️ Lọc theo trạng thái
+        $query->when(isset($status), fn($q) => $q->where('product.status', $status));
+
+        // 📅 Sắp xếp
+        $query->orderBy($sortBy, $sortOrder);
+
+        // 📄 Phân trang
+        $list = $query->paginate($limit);
 
         return response()->json([
             'status' => true,
-            'message' => 'Danh sách sản phẩm có phân trang',
+            'message' => 'Danh sách sản phẩm có phân trang và lọc (index style như Order)',
             'data' => $list
         ]);
     }
+
+
 
     public function getAllProductUser()
     {
@@ -148,41 +203,63 @@ class ProductController extends Controller
         ]);
     }
 
-    public function update(Request $request, string $id)
-    {
-        $product = Product::find($id);
-        if ($product == null) {
-            return redirect()->route('product.index')->with('error', 'Sản phẩm không tồn tại');
-        }
-        $product->name = $request->name;
-        $product->slug = Str::of($request->name)->slug('-');
-        $product->detail = $request->detail;
-        $product->price_root = $request->price_root;
-        $product->price_sale = $request->price_sale;
-        $product->qty = $request->qty;
-        $product->description = $request->description;
-        // Upload filex
-        if ($request->hasFile('thumbnail')) {
-            $file = $request->file('thumbnail');
-            $extension = $file->getClientOriginalExtension();
-            $filename = $product->slug . '.' . $extension;
-            $file->move(public_path('assets/images/product'), $filename);
-            $product->thumbnail =  $filename; // Lưu đường dẫn chính xác
-        }
+   public function update(Request $request, string $id)
+{
+    $product = Product::find($id);
+    if (!$product) {
+        return response()->json(['status' => false, 'message' => 'Sản phẩm không tồn tại']);
+    }
 
+    $oldQty = $product->qty; // lưu số lượng cũ
 
-        $product->status = $request->status;
-        $product->created_at = now();
-        $product->created_by = Auth::id() ?? 1;
-        $product->category_id = $request->category_id;
-        $product->brand_id = $request->brand_id;
-        $product->save();
-        return response()->json([
-            'status' => true,
-            'message' => "Cập nhật sản phẩm $product->name thành công",
-            'data' => $product
+    // Cập nhật các trường cơ bản
+    $product->name = $request->name;
+    $product->slug = Str::of($request->name)->slug('-');
+    $product->detail = $request->detail;
+    $product->price_root = $request->price_root;
+    $product->price_sale = $request->price_sale;
+    $product->qty = $request->qty;
+    $product->description = $request->description;
+    $product->status = $request->status;
+    $product->category_id = $request->category_id;
+    $product->brand_id = $request->brand_id;
+    $product->created_by = Auth::id() ?? 1;
+
+    // Upload hình ảnh (nếu có)
+    if ($request->hasFile('thumbnail')) {
+        $file = $request->file('thumbnail');
+        $extension = $file->getClientOriginalExtension();
+        $filename = $product->slug . '.' . $extension;
+        $file->move(public_path('assets/images/product'), $filename);
+        $product->thumbnail = $filename;
+    }
+
+    $product->save();
+
+    // 🔹 Ghi lịch sử tồn kho
+    if ($oldQty != $product->qty) {
+        $change = $product->qty - $oldQty;
+        $type = $change > 0 ? 'import' : 'adjustment';
+        $note = $change > 0 ? 'Nhập thủ công bởi Admin' : 'Giảm tồn kho (điều chỉnh)';
+
+        StockMovement::create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'type' => $type,
+            'quantity_change' => $change,
+            'qty_after' => $product->qty,
+            'note' => $note,
+            'user_id' => Auth::id() ?? null,
         ]);
     }
+
+    return response()->json([
+        'status' => true,
+        'message' => "Cập nhật sản phẩm {$product->name} thành công",
+        'data' => $product
+    ]);
+}
+
 
 
 
@@ -437,47 +514,47 @@ class ProductController extends Controller
         ]);
     }
     // filter
-  public function filter(Request $request)
-{
-    $query = Product::with(['category', 'brand']);
+    public function filter(Request $request)
+    {
+        $query = Product::with(['category', 'brand']);
 
-    $query->when($request->category_ids, function ($q, $ids) {
-        $idArray = is_array($ids) ? $ids : explode(',', $ids);
-        $q->whereIn('category_id', $idArray);
-    });
-    $query->when($request->brand_ids, function ($q, $ids) {
-        $idArray = is_array($ids) ? $ids : explode(',', $ids);
-        $q->whereIn('brand_id', $idArray);
-    });
-    $query->when($request->name, fn($q, $name) => $q->where('name', 'LIKE', "%$name%"));
-    $query->when($request->min_price, fn($q, $min) => $q->where('price_root', '>=', $min));
-    $query->when($request->max_price, fn($q, $max) => $q->where('price_root', '<=', $max));
+        $query->when($request->category_ids, function ($q, $ids) {
+            $idArray = is_array($ids) ? $ids : explode(',', $ids);
+            $q->whereIn('category_id', $idArray);
+        });
+        $query->when($request->brand_ids, function ($q, $ids) {
+            $idArray = is_array($ids) ? $ids : explode(',', $ids);
+            $q->whereIn('brand_id', $idArray);
+        });
+        $query->when($request->name, fn($q, $name) => $q->where('name', 'LIKE', "%$name%"));
+        $query->when($request->min_price, fn($q, $min) => $q->where('price_root', '>=', $min));
+        $query->when($request->max_price, fn($q, $max) => $q->where('price_root', '<=', $max));
 
-    $allowedSort = ['created_at', 'price_root', 'name', 'price_sale'];
-    $sortBy = in_array($request->input('sort_by'), $allowedSort) ? $request->input('sort_by') : 'created_at';
-    $sortOrder = $request->input('sort_order', 'desc');
+        $allowedSort = ['created_at', 'price_root', 'name', 'price_sale'];
+        $sortBy = in_array($request->input('sort_by'), $allowedSort) ? $request->input('sort_by') : 'created_at';
+        $sortOrder = $request->input('sort_order', 'desc');
 
-    if ($sortBy === 'price_sale') {
-        $query->orderByRaw('CASE WHEN price_sale > 0 THEN price_sale ELSE price_root END ' . $sortOrder);
-    } else {
-        $query->orderBy($sortBy, $sortOrder);
+        if ($sortBy === 'price_sale') {
+            $query->orderByRaw('CASE WHEN price_sale > 0 THEN price_sale ELSE price_root END ' . $sortOrder);
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $products = $query->paginate($request->input('limit', 12));
+
+        $products->getCollection()->transform(function ($p) {
+            $p->discount_percent = ($p->price_root > 0 && $p->price_sale > 0)
+                ? round((($p->price_root - $p->price_sale) / $p->price_root) * 100)
+                : 0;
+            return $p;
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Kết quả lọc sản phẩm',
+            'data' => $products
+        ]);
     }
-
-    $products = $query->paginate($request->input('limit', 12));
-
-    $products->getCollection()->transform(function ($p) {
-        $p->discount_percent = ($p->price_root > 0 && $p->price_sale > 0)
-            ? round((($p->price_root - $p->price_sale) / $p->price_root) * 100)
-            : 0;
-        return $p;
-    });
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Kết quả lọc sản phẩm',
-        'data' => $products
-    ]);
-}
 
     // category home
 
