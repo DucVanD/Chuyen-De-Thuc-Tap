@@ -30,9 +30,14 @@ const DetailOrder = () => {
     fetchOrder();
   }, [id]);
 
+  // const handleExportInvoice = () => {
+  //   window.open(`http://127.0.0.1:8000/api/orders/${order.id}/invoice`, "_blank");
+  // };
+
   const handleExportInvoice = () => {
-    window.open(`http://127.0.0.1:8000/api/orders/${order.id}/invoice`, "_blank");
+    apiOrder.exportInvoice(order.id);
   };
+
 
 
   // Map trạng thái đơn hàng

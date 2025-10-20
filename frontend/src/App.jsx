@@ -22,9 +22,9 @@ function App() {
   hideProgressBar={false}
   newestOnTop={false}
   closeOnClick
-  pauseOnHover={false}
+  pauseOnHover={true}
   draggable
-  theme="colored"
+  // theme="colored"
 />
 
 

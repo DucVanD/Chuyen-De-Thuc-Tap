@@ -66,8 +66,10 @@ class OrderController extends Controller
                 'province' => $order->province,
                 'district' => $order->district,
                 'ward' => $order->ward,
+                'total_amount' => $order->total_amount,
                 'payment' => $order->payment ?? 'Chưa chọn',
                 'status' => $order->status,
+
                 'created_at' => $order->created_at,
                 'updated_at' => $order->updated_at,
                 'order_code' => $order->order_code,

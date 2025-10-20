@@ -343,8 +343,9 @@ const ListProduct = () => {
           </tbody>
         </table>
 
+
         {/* Phân trang */}
-        <div className="flex justify-center mt-4 space-x-2">
+        <div className="flex justify-center mt-6 flex-wrap gap-2">
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage === 1}
@@ -352,18 +353,37 @@ const ListProduct = () => {
           >
             Trước
           </button>
-          {Array.from({ length: lastPage }, (_, i) => (
+
+          {/* Hiển thị tối đa 5 trang đầu tiên */}
+          {Array.from({ length: Math.min(5, lastPage) }, (_, i) => i + 1).map((p) => (
             <button
-              key={i}
-              onClick={() => goToPage(i + 1)}
-              className={`px-3 py-1 rounded ${currentPage === i + 1
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-200 hover:bg-gray-300"
+              key={p}
+              onClick={() => goToPage(p)}
+              className={`px-3 py-1 rounded ${currentPage === p
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
                 }`}
             >
-              {i + 1}
+              {p}
             </button>
           ))}
+
+          {/* Nếu còn nhiều trang hơn thì hiển thị dấu ... và trang cuối */}
+          {lastPage > 5 && (
+            <>
+              <span className="px-2 text-gray-500">...</span>
+              <button
+                onClick={() => goToPage(lastPage)}
+                className={`px-3 py-1 rounded ${currentPage === lastPage
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                  }`}
+              >
+                {lastPage}
+              </button>
+            </>
+          )}
+
           <button
             onClick={() => goToPage(currentPage + 1)}
             disabled={currentPage === lastPage}
@@ -372,6 +392,8 @@ const ListProduct = () => {
             Sau
           </button>
         </div>
+
+
       </div>
     </div>
   );

@@ -6,6 +6,8 @@ import apiProduct from "../../../api/apiProduct";
 import apiCategory from "../../../api/apiCategory";
 import apiBrand from "../../../api/apiBrand";
 import { imageURL } from "../../../api/config";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const EditProduct = () => {
   const navigate = useNavigate();
@@ -131,17 +133,18 @@ const EditProduct = () => {
       if (thumbnail) data.append("thumbnail", thumbnail);
 
       const res = await apiProduct.EditProduct(id, data);
-      alert(res.message || "Cập nhật sản phẩm thành công");
-      navigate(`/admin/products/${savedPage}`);
+      toast.success(res.message || "✅ Cập nhật sản phẩm thành công!");
+      setTimeout(() => navigate(`/admin/products/${savedPage}`), 1500);
     } catch (error) {
-      if (error.response?.data?.errors) setErrors(error.response.data.errors);
-      alert(
+      console.error("❌ Lỗi khi cập nhật:", error);
+      toast.error(
         error.response?.data?.message ||
         `Lỗi từ server (status ${error.response?.status || "?"})`
       );
     } finally {
       setLoading(false);
     }
+
   };
 
   return (

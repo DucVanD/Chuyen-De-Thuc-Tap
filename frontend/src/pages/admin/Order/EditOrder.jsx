@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import apiOrder from "../../../api/apiOrder";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const EditOrder = () => {
   const { id } = useParams();
@@ -14,7 +16,7 @@ const EditOrder = () => {
       }
     });
   }, [id]);
-
+  console.log("thong tin ", order)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -23,13 +25,14 @@ const EditOrder = () => {
         note: order.note,
       });
       if (res.status) {
-        alert("✅ Cập nhật đơn hàng thành công!");
-        navigate("/admin/orders");
+        toast.success("✅ Cập nhật đơn hàng thành công!");
+        setTimeout(() => navigate("/admin/orders"), 1500);
       }
     } catch (err) {
       console.error("❌ Lỗi cập nhật:", err.response?.data || err.message);
-      alert("Lỗi khi cập nhật đơn hàng!");
+      toast.error("❌ Lỗi khi cập nhật đơn hàng!");
     }
+
   };
 
   if (!order) return <div>Đang tải dữ liệu...</div>;
@@ -114,7 +117,8 @@ const EditOrder = () => {
                   </label>
                   <input
                     type="text"
-                    value={order.total_amount?.toLocaleString("vi-VN") + " đ"}
+                    value={`${Number(order.total_amount || 0).toLocaleString("vi-VN")} đ`}
+
                     readOnly
                     className="w-full p-2.5 border border-gray-300 rounded-md bg-gray-100"
                   />

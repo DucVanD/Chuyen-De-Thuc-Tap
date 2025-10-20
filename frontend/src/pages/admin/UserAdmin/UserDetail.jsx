@@ -44,6 +44,17 @@ const UserDetail = () => {
   const currentPage = pagination.current_page;
   const lastPage = pagination.last_page;
 
+   const statusLabels = {
+    1: { text: "Đang chờ xác nhận", color: "bg-yellow-200 text-yellow-800" },
+    2: { text: "Đã xác nhận", color: "bg-blue-200 text-blue-800" },
+    3: { text: "Đang đóng gói", color: "bg-orange-200 text-orange-800" },
+    4: { text: "Đang giao hàng", color: "bg-teal-200 text-teal-800" },
+    5: { text: "Đã giao", color: "bg-green-300 text-green-800" },
+    6: { text: "Hoàn hàng / Trả hàng", color: "bg-purple-100 text-purple-800" },
+    7: { text: "Đã hủy", color: "bg-red-200 text-red-800" },
+  };
+
+
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Tiêu đề */}
@@ -161,25 +172,21 @@ const UserDetail = () => {
                           <td className="p-3 border text-center">{order.total_items}</td>
                           <td className="p-3 border text-right">{order.total_amount}</td>
                           <td className="p-3 border">{order.payment}</td>
-                          <td className="p-3 border">
-                            {order.status === 5 ? (
-                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
-                                Đã giao
-                              </span>
-                            ) : order.status === 1 ? (
-                              <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">
-                                Đang xử lý
-                              </span>
-                            ) : order.status === 7 ? (
-                              <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">
-                                Đã hủy
+                          <td className="p-3 border text-center">
+                            {statusLabels[order.status] ? (
+                              <span
+                                className={`px-2 py-1 rounded text-xs font-semibold ${statusLabels[order.status].color
+                                  }`}
+                              >
+                                {statusLabels[order.status].text}
                               </span>
                             ) : (
                               <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                                Khác
+                                Không xác định
                               </span>
                             )}
                           </td>
+
                           <td className="p-3 border text-center">
                             <Link
                               to={`/admin/orderDetail/${order.id}`}
@@ -208,11 +215,10 @@ const UserDetail = () => {
                     <button
                       key={i}
                       onClick={() => goToPage(i + 1)}
-                      className={`px-3 py-1 rounded ${
-                        currentPage === i + 1
+                      className={`px-3 py-1 rounded ${currentPage === i + 1
                           ? "bg-indigo-600 text-white"
                           : "bg-gray-200 hover:bg-gray-300"
-                      }`}
+                        }`}
                     >
                       {i + 1}
                     </button>

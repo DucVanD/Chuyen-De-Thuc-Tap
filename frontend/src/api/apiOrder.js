@@ -1,6 +1,6 @@
 import { Edit } from "lucide-react";
 import axiosInstance from "./axios";
-
+import { apiURL } from "./config"; // nếu cần dùng URL đầy đủ
 
 const apiOrder = {
   getAllPage: async (page = 1) => {
@@ -34,6 +34,11 @@ const apiOrder = {
     });
     return res.data;
   },
+
+  exportInvoice: async (id) => {
+    window.open(`${apiURL}/orders/${id}/invoice`, "_blank");
+  },
+
 
 };
 
