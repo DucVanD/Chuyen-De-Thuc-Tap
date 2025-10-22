@@ -15,7 +15,7 @@ import { useState, useEffect } from "react";
 import apiProduct from "../../api/apiProduct"; // Keep if you need the real API
 import useAddToCart from "../../hooks/useAddToCart";
 import "react-toastify/dist/ReactToastify.css";
-
+import ProductItem from "./ProductItem";
 
 const Detail = () => {
   const { slug } = useParams(); // lấy slug từ URL
@@ -25,24 +25,42 @@ const Detail = () => {
   const [quantity, setQuantity] = useState(1); // New state for quantity
   const handleAddToCart = useAddToCart();
   // Simulate API fetch. You should uncomment and use your real API call.
+  const [relatedProducts, setRelatedProducts] = useState([]);
+
   useEffect(() => {
     const fetchProduct = async () => {
+      setLoading(true);
       try {
-        const res = await apiProduct.getProductBySlug(slug); // gọi API
-        console.log("du lieu api", res);
-        if (res.status) {
-          setProduct(res.data); // backend trả về {status, message, data}
+        const res = await apiProduct.getProductBySlug(slug);
+        console.log("du lieu api", res); // xem console thật trong trình duyệt
+
+        if (res.status && res.data) {
+          setProduct(res.data); // ✅ chính xác
+
+          // ✅ Gọi sản phẩm liên quan khi có category_id
+          if (res.data.category_id) {
+            const related = await apiProduct.getRelatedProducts(res.data.category_id);
+            if (related.status && related.data) {
+              setRelatedProducts(related.data);
+            }
+          }
         } else {
           setError("Không tìm thấy sản phẩm.");
         }
       } catch (err) {
-        setError("Lỗi khi lấy thông tin sản phẩm.");
         console.error(err);
+        setError("Lỗi khi lấy thông tin sản phẩm.");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+
     fetchProduct();
   }, [slug]);
+
+
+
+
 
   // console.log("Product Details:", product);
   // Quantity handlers
@@ -97,31 +115,18 @@ const Detail = () => {
 
 
               {/* Main Image - Adjusted to better fit the layout */}
-              <div className="flex justify-center h-full max-h-[500px]">
-                <img
-                  src={`${imageURL}/product/${product.thumbnail}`}
-                  alt={product.name}
-                  className="object-contain w-auto h-auto"
-                />
-              </div>
-            </div>
-            {/* Gallery/Thumbnails (Using data from the image) */}
-            <div className="flex gap-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className={`w-16 h-16 rounded-lg overflow-hidden border p-1 ${i === 1 ? "border-green-600" : "border-gray-200"
-                    } cursor-pointer`}
-                >
-                  {/* Assuming image_49a3eb.jpg is thumbnail 1 */}
+              <div className="flex justify-center items-center h-auto">
+                <div className="aspect-square w-[250px] sm:w-[300px] lg:w-[400px]">
                   <img
-                    src={`/assets/images/thumbnail-${i}.jpg`}
-                    alt={`Thumbnail ${i}`}
-                    className="w-full h-full object-cover"
+                    src={`${imageURL}/product/${product.thumbnail}`}
+                    alt={product.name}
+                    className="object-contain w-full h-full"
                   />
                 </div>
-              ))}
+              </div>
+
             </div>
+
           </div>
 
           {/* Thông tin sản phẩm (Right Column) */}
@@ -193,12 +198,10 @@ const Detail = () => {
 
             {/* Usage/Instruction Box (New section from image) */}
             <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg text-sm mb-6">
-              <p className="font-semibold mb-2">Lưu ý trước khi dùng:</p>
+              <p className="font-semibold mb-2">Mô tả:</p>
               <ul className="list-disc ml-5 space-y-1">
-                <li>Lắc đều trước khi dùng.</li>
-                <li>Mỗi ngày dùng trực tiếp 100ml, có thể pha loãng với chút đá viên.</li>
-                <li>Bảo quản nơi khô ráo, thoáng mát khi chưa mở nắp.</li>
-                <li>Sau khi mở nắp, bảo quản lạnh và sử dụng hết trong vòng 10 ngày.</li>
+                <li>{product.description}.</li>
+                
               </ul>
               <button className="text-green-600 text-sm mt-3 flex items-center hover:text-green-700">
                 <i className="fa-solid fa-store mr-2"></i>
@@ -359,30 +362,18 @@ const Detail = () => {
           Sản phẩm liên quan
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow"
-            >
-              <img
-                src={`/assets/images/sp-${i}.jpg`}
-                alt="Sản phẩm"
-                className="w-full h-40 object-cover"
-              />
-              <div className="p-3">
-                <p className="font-semibold text-gray-800 truncate mb-1">
-                  Nước ép dâu rừng {i}
-                </p>
-                <p className="text-red-600 font-bold text-lg">
-                  {((99000 + i * 5000)).toLocaleString("vi-VN")}₫
-                </p>
-                <button className="bg-green-600 text-white w-full py-2 rounded-lg mt-2 text-sm hover:bg-green-700 transition">
-                  Thêm vào giỏ
-                </button>
-              </div>
-            </div>
-          ))}
+          {relatedProducts.length > 0 ? (
+            relatedProducts.map((item) => (
+              <ProductItem key={item.id} product={item} />
+            ))
+          ) : (
+            <p className="col-span-full text-center text-gray-500">
+              Không có sản phẩm liên quan.
+            </p>
+          )}
         </div>
+
+
 
         {/* --- Chính sách hỗ trợ (Retained and slightly improved) --- */}
         <h2 className="text-2xl font-bold mt-12 mb-5 text-gray-800">

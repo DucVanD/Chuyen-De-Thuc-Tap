@@ -16,3 +16,16 @@
 .animate-zoom {
   animation: zoomInOut 1.3s ease-in-out infinite;
 }
+
+
+@keyframes flash-fast {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.2); }
+}
+
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
+}

@@ -120,7 +120,7 @@ Route::get('product/slug/{slug}', [ProductController::class, 'getProductBySlug']
 Route::get('/product/all', [ProductController::class, 'getAllProductUser']);
 Route::post('/product/filter', [ProductController::class, 'filter']);
 Route::get('/product/category', [ProductController::class, 'categoryhome']);
-
+Route::get('/product/related/{categoryId}', [ProductController::class, 'related']);
 Route::prefix('product')->group(function () {
     Route::get('trash', [ProductController::class, 'trash'])->name('product.trash');
     Route::get('delete/{product}', [ProductController::class, 'delete'])->name('product.delete');

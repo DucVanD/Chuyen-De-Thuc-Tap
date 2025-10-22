@@ -395,37 +395,58 @@ const Products = () => {
 
                                 )}
 
-                            </div>
+                            </div>  {totalPages > 1 && (
+                                <div className="flex justify-center mt-6 gap-2 flex-wrap">
+                                    {/* Nút Trước */}
+                                    <button
+                                        onClick={() => handleChangePage(Math.max(1, page - 1))}
+                                        disabled={page === 1}
+                                        className="px-3 py-1 rounded-lg bg-green-600 text-white disabled:bg-gray-300 disabled:text-gray-500"
+                                    >
+                                        Trước
+                                    </button>
 
-                            {totalPages > 1 && (
-
-                                <div className="flex justify-center mt-6 gap-2">
-
-                                    <button onClick={() => handleChangePage(Math.max(1, page - 1))} disabled={page === 1}
-
-                                        className="px-3 py-1 rounded-lg disabled:bg-gray-300 disabled:text-gray-500 bg-green-600 text-white"
-
-                                    >Trước</button>
-
-                                    {[...Array(totalPages)].map((_, i) => (
-
-                                        <button key={i} onClick={() => handleChangePage(i + 1)}
-
-                                            className={`px-3 py-1 rounded-lg ${page === i + 1 ? "bg-green-600 text-white" : "bg-gray-200 hover:bg-green-100"}`}
-
-                                        >{i + 1}</button>
-
+                                    {/* Hiển thị tối đa 5 trang đầu tiên */}
+                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((p) => (
+                                        <button
+                                            key={p}
+                                            onClick={() => handleChangePage(p)}
+                                            className={`px-3 py-1 rounded-lg ${page === p
+                                                    ? "bg-green-600 text-white"
+                                                    : "bg-gray-200 hover:bg-green-100"
+                                                }`}
+                                        >
+                                            {p}
+                                        </button>
                                     ))}
 
-                                    <button onClick={() => handleChangePage(Math.min(totalPages, page + 1))} disabled={page === totalPages}
+                                    {/* Nếu có nhiều hơn 5 trang thì thêm dấu ... và nút cuối */}
+                                    {totalPages > 5 && (
+                                        <>
+                                            <span className="px-2 text-gray-500">...</span>
+                                            <button
+                                                onClick={() => handleChangePage(totalPages)}
+                                                className={`px-3 py-1 rounded-lg ${page === totalPages
+                                                        ? "bg-green-600 text-white"
+                                                        : "bg-gray-200 hover:bg-green-100"
+                                                    }`}
+                                            >
+                                                {totalPages}
+                                            </button>
+                                        </>
+                                    )}
 
-                                        className="px-3 py-1 rounded-lg disabled:bg-gray-300 disabled:text-gray-500 bg-green-600 text-white"
-
-                                    >Sau</button>
-
+                                    {/* Nút Sau */}
+                                    <button
+                                        onClick={() => handleChangePage(Math.min(totalPages, page + 1))}
+                                        disabled={page === totalPages}
+                                        className="px-3 py-1 rounded-lg bg-green-600 text-white disabled:bg-gray-300 disabled:text-gray-500"
+                                    >
+                                        Sau
+                                    </button>
                                 </div>
-
                             )}
+
 
                         </>
 

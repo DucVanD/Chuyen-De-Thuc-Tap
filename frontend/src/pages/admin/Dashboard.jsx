@@ -219,17 +219,16 @@ const Dashboard = () => {
 
                   <div className="flex items-center gap-3">
                     <div
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                        Number(p.qty) <= 3
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${Number(p.qty) <= 3
                           ? "bg-red-100 text-red-700"
                           : "bg-yellow-50 text-yellow-700"
-                      }`}
+                        }`}
                     >
                       {p.qty} còn lại
                     </div>
 
                     <a
-                      href={`/admin/editProduct/${p.id}`}
+                      href={`inventory/import`}
                       className="text-sm text-blue-600 hover:underline"
                     >
                       Nhập hàng

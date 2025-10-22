@@ -51,7 +51,7 @@ const Home = () => {
   const [Brands, setBrands] = useState([]);
   const navigate = useNavigate();
   const handleAddToCart = useAddToCart();
-  
+
   // ✅ GỘP TOÀN BỘ CÁC API VỀ MỘT LẦN GỌI
   useEffect(() => {
     const fetchAllData = async () => {
@@ -64,22 +64,22 @@ const Home = () => {
             apiProduct.categoryhome(),
             apiBrand.getAll(),
           ]);
-  
+
         setProductNew(resNewest.data || []);
         setcategorys(resCategory.data.data || []);
         setProductSale(resSale.data || []);
         setProductsCat(resCategoryHome.data || []);
         setBrands(resBrand.data.data || []);
-  
+
         console.log("✅ Dữ liệu trang Home đã tải xong");
       } catch (error) {
         console.error("❌ Lỗi khi tải dữ liệu trang Home:", error);
       }
     };
-  
+
     fetchAllData();
   }, []);
-  
+
   // ✅ Đồng hồ đếm ngược
   const [countdown, setCountdown] = useState({
     days: 5,
@@ -87,16 +87,16 @@ const Home = () => {
     minutes: 33,
     seconds: 35,
   });
-  
+
   useEffect(() => {
     const end = new Date(
       Date.now() +
-        5 * 24 * 3600 * 1000 +
-        2 * 3600 * 1000 +
-        33 * 60 * 1000 +
-        35 * 1000
+      5 * 24 * 3600 * 1000 +
+      2 * 3600 * 1000 +
+      33 * 60 * 1000 +
+      35 * 1000
     );
-  
+
     const timer = setInterval(() => {
       const now = new Date();
       const diff = end - now;
@@ -111,7 +111,7 @@ const Home = () => {
         setCountdown({ days, hours, minutes, seconds });
       }
     }, 1000);
-  
+
     return () => clearInterval(timer);
   }, []);
 
@@ -134,7 +134,7 @@ const Home = () => {
 
         {/* Danh mục nổi bật */}
         <section className="mt-10">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 px-2 sm:px-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4 px-2 sm:px-0">
             <div>
               <Link className="text-[22px] sm:text-[25px] font-medium">
                 Danh mục nổi bật
@@ -172,33 +172,19 @@ const Home = () => {
               </Link>
             </div>
 
-            <div className="hidden md:flex gap-2 sm:gap-3 justify-end">
-              <button
-                onClick={() =>
-                  document
-                    .getElementById("category-list")
-                    .scrollBy({ left: -180, behavior: "smooth" })
-                }
-                className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 shadow"
-              >
-                <MdArrowBackIos className="text-gray-600" />
-              </button>
-              <button
-                onClick={() =>
-                  document
-                    .getElementById("category-list")
-                    .scrollBy({ left: 180, behavior: "smooth" })
-                }
-                className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 shadow"
-              >
-                <MdArrowForwardIos className="text-gray-600" />
-              </button>
-            </div>
+
           </div>
           <div className="relative">
+            {/* Nút trái */}
+            <button
+              onClick={() => document.getElementById("category-list").scrollBy({ left: -180, behavior: "smooth" })}
+              className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white shadow hover:bg-gray-100 items-center justify-center"
+            >
+              <MdArrowBackIos className="text-gray-600" />
+            </button>
             <div
               id="category-list"
-              className="flex gap-3 sm:gap-5 overflow-x-auto scroll-smooth pb-2 scrollbar-hide px-2 sm:px-0"
+              className="flex gap-3 sm:gap-5 overflow-x-auto scroll-smooth pb-2 scrollbar-hide px-2 sm:px-0 relative "
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {categorys
@@ -212,41 +198,51 @@ const Home = () => {
                       })
                     }
                     className="h-44 w-40 flex-shrink-0 rounded-xl flex flex-col items-center justify-center 
-                     p-3 cursor-pointer transition-transform duration-200 hover:scale-105 bg-gray-100"
+          p-3 cursor-pointer bg-white border border-gray-100 shadow-sm hover:shadow-lg 
+          hover:border-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-yellow-50 
+          transition-all duration-300 hover:-translate-y-1 mt-4"
                   >
                     <div className="w-full h-28 sm:h-32 flex items-center justify-center">
                       <img
                         src={`${imageURL}/category/${category.image}`}
                         alt={category.name}
-                        className="h-full w-full object-contain"
+                        className="h-full w-full object-contain transition-transform duration-300 hover:scale-110"
                       />
                     </div>
-                    <h3 className="text-sm sm:text-base font-medium text-gray-800 text-center mt-2">
+                    <h3 className="text-sm sm:text-base font-medium text-gray-800 text-center mt-2 hover:text-green-700 transition-colors">
                       {category.name}
                     </h3>
                   </div>
                 ))}
             </div>
+
+            {/* Nút phải */}
+            <button
+              onClick={() => document.getElementById("category-list").scrollBy({ left: 180, behavior: "smooth" })}
+              className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white shadow hover:bg-gray-100 items-center justify-center"
+            >
+              <MdArrowForwardIos className="text-gray-600" />
+            </button>
           </div>
+
 
         </section>
 
         {/* Sale 1 */}
-        <section className="mt-12 bg-gray-100 rounded-2xl px-3 sm:px-4 lg:px-1 py-3">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch">
+        <section className="mt-10 bg-gray-50 rounded-2xl px-3 sm:px-4 lg:px-6 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 items-stretch">
             {/* 🎨 Banner bên trái */}
-            <div className="lg:col-span-1 rounded-2xl bg-gradient-to-br from-amber-300 to-emerald-300 p-6 flex flex-col justify-between relative overflow-hidden min-h-[200px] sm:min-h-[380px]">
-              <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
+            <div className="lg:col-span-1 rounded-2xl bg-gradient-to-br from-amber-300 to-emerald-300 p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden min-h-[220px] sm:min-h-[360px]">
+              <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px]" />
               <div className="relative z-10">
-                <h3 className="text-lg sm:text-2xl font-semibold leading-snug text-emerald-900">
-                  Bán chạy nhất hàng ngày
+                <h3 className="text-lg sm:text-2xl font-semibold leading-snug text-emerald-900 drop-shadow-sm">
+                  Bán chạy nhất hôm nay
                 </h3>
                 <p className="mt-2 sm:mt-3 text-emerald-900 text-sm sm:text-base">
                   Ưu đãi độc quyền - Giảm giá 20%
                 </p>
-                <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-emerald-900/80 max-w-xs">
-                  Mua sắm thoải mái chỉ từ 20.000 VNĐ. Chỉ trong tuần này, đừng
-                  bỏ lỡ.
+                <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-emerald-900/80 max-w-[220px]">
+                  Mua sắm thoải mái chỉ từ 20.000₫. Chỉ trong tuần này – đừng bỏ lỡ!
                 </p>
               </div>
               <button className="relative z-10 self-start mt-5 sm:mt-6 rounded-full bg-white text-emerald-700 px-5 py-2 text-sm sm:text-base font-medium shadow hover:scale-105 hover:shadow-lg transition">
@@ -259,14 +255,11 @@ const Home = () => {
               {/* Mobile: scroll ngang */}
               <div className="lg:hidden">
                 <div
-                  className="flex gap-3 sm:gap-6 overflow-x-auto scroll-smooth pb-2 scrollbar-hide"
+                  className="flex gap-3 sm:gap-5 overflow-x-auto scroll-smooth pb-2 scrollbar-hide"
                   style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                 >
                   {productNew.map((product) => (
-                    <div
-                      key={product.id}
-                      className="min-w-[170px] sm:min-w-[210px]"
-                    >
+                    <div key={product.id} className="min-w-[160px] sm:min-w-[200px]">
                       <ProductItem product={product} />
                     </div>
                   ))}
@@ -274,7 +267,7 @@ const Home = () => {
               </div>
 
               {/* Laptop: dạng grid */}
-              <div className="hidden lg:grid grid-cols-3 xl:grid-cols-4 gap-3">
+              <div className="hidden lg:grid grid-cols-3 xl:grid-cols-4 gap-4">
                 {productNew.slice(0, 8).map((product) => (
                   <ProductItem key={product.id} product={product} />
                 ))}
@@ -283,14 +276,15 @@ const Home = () => {
               {/* Nút xem tất cả */}
               <div className="text-center mt-6">
                 <Link to="/products">
-                  <button className="bg-white px-4 sm:px-5 py-1.5 rounded-2xl border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition text-sm sm:text-base flex items-center justify-center gap-1 mx-auto">
-                    Xem tất cả <span>→</span>
+                  <button className="bg-white px-4 sm:px-5 py-1.5 rounded-2xl border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition text-sm sm:text-base flex items-center justify-center gap-1 mx-auto shadow-sm hover:shadow-md">
+                    Xem tất cả
                   </button>
                 </Link>
               </div>
             </div>
           </div>
         </section>
+
 
         {/* Banner */}
         <section className="mt-8 px-2 sm:px-0">
@@ -375,109 +369,119 @@ const Home = () => {
         </section>
 
         {/* Sale sản phẩm */}
-        <section className="mt-9">
-          <div className="rounded-lg shadow-md overflow-hidden border border-dashed border-green-800">
-            {/* Header */}
-            <div className="bg-green-700 text-white p-4 flex flex-col sm:flex-row justify-between items-center gap-2">
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold">
-                  Khuyến mãi đặc biệt ⚡
-                </h2>
-                <p className="text-xs sm:text-base">
-                  Đừng bỏ lỡ cơ hội giảm giá đặc biệt!
-                </p>
+        <section className="mt-10">
+          <div className="rounded-2xl shadow-lg overflow-hidden border border-green-300 bg-gradient-to-br from-white via-green-50 to-emerald-100">
+            {/* ===== Header ===== */}
+            <div className="bg-gradient-to-r from-green-600 to-emerald-500 text-white p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-3">
+              <div className="text-center sm:text-left flex items-center gap-2">
+                {/* ⚡ Icon rung */}
+                <span
+                  className="text-yellow-300 text-2xl sm:text-3xl drop-shadow-lg"
+                  style={{
+                    animation: "shake 0.5s infinite",
+                  }}
+                >
+                  ⚡
+                </span>
+
+
+
+
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">
+                    Khuyến mãi đặc biệt
+                  </h2>
+                  <p className="text-sm sm:text-base opacity-90 mt-1">
+                    Giảm giá hấp dẫn — Số lượng có hạn, nhanh tay kẻo lỡ!
+                  </p>
+                </div>
               </div>
 
               {/* Countdown */}
-              <div className="flex space-x-2 mt-2 sm:mt-0">
-                <span className="bg-white text-green-700 px-2 sm:px-3 py-1 rounded text-xs sm:text-base">
-                  {String(countdown.days).padStart(2, "0")} Ngày
-                </span>
-                <span className="bg-white text-green-700 px-2 sm:px-3 py-1 rounded text-xs sm:text-base">
-                  {String(countdown.hours).padStart(2, "0")} Giờ
-                </span>
-                <span className="bg-white text-green-700 px-2 sm:px-3 py-1 rounded text-xs sm:text-base">
-                  {String(countdown.minutes).padStart(2, "0")} Phút
-                </span>
-                <span className="bg-white text-green-700 px-2 sm:px-3 py-1 rounded text-xs sm:text-base">
-                  {String(countdown.seconds).padStart(2, "0")} Giây
-                </span>
+              <div className="flex flex-wrap justify-center sm:justify-end gap-2">
+                {[
+                  { label: "Ngày", value: countdown.days },
+                  { label: "Giờ", value: countdown.hours },
+                  { label: "Phút", value: countdown.minutes },
+                  { label: "Giây", value: countdown.seconds },
+                ].map((t, i) => (
+                  <div
+                    key={i}
+                    className="bg-white text-green-700 rounded-lg px-3 sm:px-4 py-1 sm:py-1.5 font-semibold text-sm sm:text-base shadow-md flex flex-col items-center"
+                  >
+                    <span className="text-lg sm:text-xl font-extrabold">
+                      {String(t.value).padStart(2, "0")}
+                    </span>
+                    <span className="text-xs font-medium opacity-80">{t.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* ===== Mobile layout (scroll ngang) ===== */}
-            <div className="p-4 md:hidden">
-              <div className="flex gap-4 overflow-x-auto scroll-smooth scrollbar-hide">
-                {saleProducts.slice(0, 6).map((product) => {
-                  const percent = product.discount_percent || 0;
-                  const soldPercent = product.stock
-                    ? Math.round((product.sold / product.stock) * 100)
+            {/* ===== MOBILE layout ===== */}
+            <div className="p-4 md:hidden bg-white">
+              <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2">
+                {saleProducts.slice(0, 6).map((p) => {
+                  const percent = p.discount_percent || 0;
+                  const soldPercent = p.stock
+                    ? Math.round((p.sold / p.stock) * 100)
                     : 0;
 
                   return (
                     <div
-                      key={product.id}
-                      className="flex-shrink-0 w-[75%] sm:w-[45%] border border-gray-200 rounded-lg p-3 shadow hover:shadow-lg transition bg-white"
+                      key={p.id}
+                      className="flex-shrink-0 w-[78%] sm:w-[48%] bg-white rounded-2xl border border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative"
                     >
-                      <div className="relative grid grid-cols-2 gap-3 h-full">
-                        <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10">
-                          -{percent}%
-                        </span>
+                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full shadow animate-pulse">
+                        -{percent}%
+                      </div>
 
-                        <div className="flex items-center justify-center">
+                      <Link to={`/product/${p.slug}`} className="block p-3">
+                        <img
+                          src={`${imageURL}/product/${p.thumbnail}`}
+                          alt={p.name}
+                          className="w-full h-28 object-contain mx-auto"
+                        />
+                      </Link>
 
+                      <div className="px-3 pb-3 space-y-1">
+                        <h3 className="font-semibold text-[13px] line-clamp-2">
+                          {p.name}
+                        </h3>
+                        <p className="text-[11px] text-gray-500 mt-1">
+                          Đã bán {p.sold}/{p.stock}{" "}
+                          <span className="text-green-600 font-semibold">
+                            {soldPercent}%
+                          </span>
+                        </p>
+                        <p className="text-gray-400 line-through text-[11px]">
+                          {p.price_root.toLocaleString()}₫
+                        </p>
+                        <p className="text-red-600 font-bold text-[13px]">
+                          {p.price_sale.toLocaleString()}₫
+                        </p>
 
-
-                          <Link to={`/product/${product.slug}`}>
-                            <img
-                              src={`${imageURL}/product/${product.thumbnail}`}
-                              alt={product.name}
-                              className="w-full h-24 object-contain"
-                            />
-                          </Link>
-
-
+                        {/* Progress */}
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                          <div
+                            className={`h-2 rounded-full transition-all ${soldPercent > 70
+                              ? "bg-red-500 animate-pulse"
+                              : "bg-green-500"
+                              }`}
+                            style={{ width: `${soldPercent}%` }}
+                          ></div>
                         </div>
 
-                        <div className="flex flex-col justify-between">
-                          <div>
-                            <h3 className="font-semibold text-xs line-clamp-2">
-                              {product.name}
-                            </h3>
-                            <p className="text-[11px] text-gray-500 mt-1">
-                              Đã bán: {product.sold}/{product.stock}{" "}
-                              <span className="text-green-600 font-semibold">
-                                {soldPercent}%
-                              </span>
-                            </p>
-                            <p className="text-gray-400 line-through text-[11px]">
-                              {product.price_root.toLocaleString()}₫
-                            </p>
-                            <p className="text-red-600 font-bold text-xs">
-                              {product.price_sale.toLocaleString()}₫
-                            </p>
-                          </div>
-
-                          <div>
-                            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                              <div
-                                className="bg-green-500 h-2 rounded-full"
-                                style={{ width: `${soldPercent}%` }}
-                              ></div>
-                            </div>
-                            <button
-                              onClick={() => handleAddToCart(product)}
-                              disabled={product.qty === 0}
-                              className={`w-full py-3 mt-4 rounded-2xl text-sm sm:text-base font-medium transition-colors duration-300 ${product.qty === 0
-                                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                                : "bg-green-600 text-white hover:bg-yellow-500"
-                                }`}
-                            >
-                              {product.qty === 0 ? "Hết hàng" : "Thêm vào giỏ"}
-                            </button>
-
-                          </div>
-                        </div>
+                        <button
+                          onClick={() => handleAddToCart(p)}
+                          disabled={p.qty === 0}
+                          className={`w-full py-2 mt-3 rounded-xl text-xs font-semibold transition-all ${p.qty === 0
+                            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                            : "bg-green-600 text-white hover:bg-yellow-500"
+                            }`}
+                        >
+                          {p.qty === 0 ? "Hết hàng" : "Thêm vào giỏ"}
+                        </button>
                       </div>
                     </div>
                   );
@@ -485,79 +489,86 @@ const Home = () => {
               </div>
             </div>
 
-            {/* ===== Laptop layout (3 cột) ===== */}
-            <div className="hidden md:grid grid-cols-3 gap-4 p-4">
-              {saleProducts.slice(0, 6).map((product) => {
-                const percent = product.discount_percent || 0;
-                const soldPercent = product.stock
-                  ? Math.round((product.sold / product.stock) * 100)
+            {/* ===== LAPTOP layout ===== */}
+            <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-6 p-6 bg-white">
+              {saleProducts.slice(0, 8).map((p) => {
+                const percent = p.discount_percent || 0;
+                const soldPercent = p.stock
+                  ? Math.round((p.sold / p.stock) * 100)
                   : 0;
 
                 return (
                   <div
-                    key={product.id}
-                    className="border border-gray-200 rounded-lg p-3 shadow hover:shadow-lg transition bg-white"
+                    key={p.id}
+                    className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative flex gap-2"
                   >
-                    <div className="relative grid grid-cols-2 gap-3 h-full">
-                      <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10">
+
+                    <div className="basis-5/12">
+                      <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full shadow animate-pulse">
                         -{percent}%
                       </span>
 
-                      <div className="flex items-center justify-center">
-                        <Link to={`/product/${product.slug}`}>
-                          <img
-                            src={`${imageURL}/product/${product.thumbnail}`}
-                            alt={product.name}
-                            className="w-full h-24 object-contain"
-                          />
-                        </Link>
-                      </div>
-
-                      <div className="flex flex-col justify-between">
-                        <div>
-                          <h3 className="font-semibold text-sm line-clamp-2">
-                            {product.name}
-                          </h3>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Đã bán: {product.sold}/{product.stock}{" "}
-                            <span className="text-green-600 font-semibold">
-                              {soldPercent}%
-                            </span>
-                          </p>
-                          <p className="text-gray-400 line-through text-xs">
-                            {product.price_root.toLocaleString()}₫
-                          </p>
-                          <p className="text-red-600 font-bold text-sm">
-                            {product.price_sale.toLocaleString()}₫
-                          </p>
-                        </div>
-
-                        <div>
-                          <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                            <div
-                              className="bg-green-500 h-2 rounded-full"
-                              style={{ width: `${soldPercent}%` }}
-                            ></div>
-                          </div>
-                          <button
-                            onClick={() => handleAddToCart(product)}
-                            disabled={product.qty === 0}
-                            className={`w-full py-2  mt-4 rounded-2xl text-sm sm:text-base font-medium transition-colors duration-300 ${product.qty === 0
-                              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                              : "bg-green-600 text-white hover:bg-yellow-500"
-                              }`}
-                          >
-                            {product.qty === 0 ? "Hết hàng" : "Thêm vào giỏ"}
-                          </button>
-                        </div>
-                      </div>
+                      <Link to={`/product/${p.slug}`}>
+                        <img
+                          src={`${imageURL}/product/${p.thumbnail}`}
+                          alt={p.name}
+                          className="w-full h-32 object-contain"
+                        />
+                      </Link>
                     </div>
+
+                    <div className="basis-7/12">
+                      <h3 className="font-semibold text-sm mt-3 line-clamp-2">
+                        {p.name}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Đã bán: {p.sold}/{p.stock}{" "}
+                        <span className="text-green-600 font-semibold">
+                          {soldPercent}%
+                        </span>
+                      </p>
+                      <p className="text-gray-400 line-through text-xs">
+                        {p.price_root.toLocaleString()}₫
+                      </p>
+                      <p className="text-red-600 font-bold text-sm">
+                        {p.price_sale.toLocaleString()}₫
+                      </p>
+
+                      {/* Progress */}
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div
+                          className={`h-2 rounded-full transition-all ${soldPercent > 70
+                            ? "bg-red-500 animate-pulse"
+                            : "bg-green-500"
+                            }`}
+                          style={{ width: `${soldPercent}%` }}
+                        ></div>
+                      </div>
+
+                      <button
+                        onClick={() => handleAddToCart(p)}
+                        disabled={p.qty === 0}
+                        className={`w-full py-2 mt-3 rounded-lg text-sm font-semibold transition-all ${p.qty === 0
+                          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                          : "bg-green-600 text-white hover:bg-yellow-500"
+                          }`}
+                      >
+                        {p.qty === 0 ? "Hết hàng" : "Thêm vào giỏ"}
+                      </button>
+                    </div>
+
+
+
+
                   </div>
                 );
               })}
             </div>
           </div>
         </section>
+
+
+
 
         {/* Video hướng dẫn */}
         <section className="bg-gray-100 p-4 sm:p-6 rounded-2xl mt-10">

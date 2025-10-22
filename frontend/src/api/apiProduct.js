@@ -53,6 +53,17 @@ const apiProduct = {
 
   //
 
+
+
+ getRelatedProducts: async (category_id) => {
+    const res = await axiosInstance.get(`/product/related/${category_id}`);
+    return res.data;
+  },
+
+
+
+
+  //
   AddProduct: async (formData) => {
     axiosInstance.enableUploadFile(); // chuyển sang multipart/form-data
     const res = await axiosInstance.post("/product", formData);
@@ -80,10 +91,13 @@ const apiProduct = {
   },
 
   //
+
   getByCategorySlug: async (slug) => {
     const res = await axiosInstance.get(`/product/category/slug/${slug}`);
     return res.data;
   },
+
+
   delete: async (id) => {
     const res = await axiosInstance.get(`/product/delete/${id}`); // dùng GET như route
     return res.data;
@@ -123,8 +137,6 @@ const apiProduct = {
     const res = await axiosInstance.get(`/product/category`);
     return res.data;
   }
-
-
 
 
 

@@ -14,6 +14,7 @@ use App\Models\Category;
 use App\Models\Brand;
 use App\Models\OrderDetail;
 use App\Models\StockMovement;
+
 class ProductController extends Controller
 {
     public function index(Request $request)
@@ -203,62 +204,62 @@ class ProductController extends Controller
         ]);
     }
 
-   public function update(Request $request, string $id)
-{
-    $product = Product::find($id);
-    if (!$product) {
-        return response()->json(['status' => false, 'message' => 'Sản phẩm không tồn tại']);
-    }
+    public function update(Request $request, string $id)
+    {
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['status' => false, 'message' => 'Sản phẩm không tồn tại']);
+        }
 
-    $oldQty = $product->qty; // lưu số lượng cũ
+        $oldQty = $product->qty; // lưu số lượng cũ
 
-    // Cập nhật các trường cơ bản
-    $product->name = $request->name;
-    $product->slug = Str::of($request->name)->slug('-');
-    $product->detail = $request->detail;
-    $product->price_root = $request->price_root;
-    $product->price_sale = $request->price_sale;
-    $product->qty = $request->qty;
-    $product->description = $request->description;
-    $product->status = $request->status;
-    $product->category_id = $request->category_id;
-    $product->brand_id = $request->brand_id;
-    $product->created_by = Auth::id() ?? 1;
+        // Cập nhật các trường cơ bản
+        $product->name = $request->name;
+        $product->slug = Str::of($request->name)->slug('-');
+        $product->detail = $request->detail;
+        $product->price_root = $request->price_root;
+        $product->price_sale = $request->price_sale;
+        $product->qty = $request->qty;
+        $product->description = $request->description;
+        $product->status = $request->status;
+        $product->category_id = $request->category_id;
+        $product->brand_id = $request->brand_id;
+        $product->created_by = Auth::id() ?? 1;
 
-    // Upload hình ảnh (nếu có)
-    if ($request->hasFile('thumbnail')) {
-        $file = $request->file('thumbnail');
-        $extension = $file->getClientOriginalExtension();
-        $filename = $product->slug . '.' . $extension;
-        $file->move(public_path('assets/images/product'), $filename);
-        $product->thumbnail = $filename;
-    }
+        // Upload hình ảnh (nếu có)
+        if ($request->hasFile('thumbnail')) {
+            $file = $request->file('thumbnail');
+            $extension = $file->getClientOriginalExtension();
+            $filename = $product->slug . '.' . $extension;
+            $file->move(public_path('assets/images/product'), $filename);
+            $product->thumbnail = $filename;
+        }
 
-    $product->save();
+        $product->save();
 
-    // 🔹 Ghi lịch sử tồn kho
-    if ($oldQty != $product->qty) {
-        $change = $product->qty - $oldQty;
-        $type = $change > 0 ? 'import' : 'adjustment';
-        $note = $change > 0 ? 'Nhập thủ công bởi Admin' : 'Giảm tồn kho (điều chỉnh)';
+        // 🔹 Ghi lịch sử tồn kho
+        if ($oldQty != $product->qty) {
+            $change = $product->qty - $oldQty;
+            $type = $change > 0 ? 'import' : 'adjustment';
+            $note = $change > 0 ? 'Nhập thủ công bởi Admin' : 'Giảm tồn kho (điều chỉnh)';
 
-        StockMovement::create([
-            'product_id' => $product->id,
-            'product_name' => $product->name,
-            'type' => $type,
-            'quantity_change' => $change,
-            'qty_after' => $product->qty,
-            'note' => $note,
-            'user_id' => Auth::id() ?? null,
+            StockMovement::create([
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'type' => $type,
+                'quantity_change' => $change,
+                'qty_after' => $product->qty,
+                'note' => $note,
+                'user_id' => Auth::id() ?? null,
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => "Cập nhật sản phẩm {$product->name} thành công",
+            'data' => $product
         ]);
     }
-
-    return response()->json([
-        'status' => true,
-        'message' => "Cập nhật sản phẩm {$product->name} thành công",
-        'data' => $product
-    ]);
-}
 
 
 
@@ -314,7 +315,7 @@ class ProductController extends Controller
             ->whereNotNull('price_root')
             ->where('price_root', '>', 0)
             ->orderByDesc('discount_percent') // sắp theo % giảm cao nhất
-            ->take(6)
+            ->take(8)
             ->get();
 
         return response()->json([
@@ -339,6 +340,7 @@ class ProductController extends Controller
             'product.price_root as price_root',
             'product.price_sale as price_sale',
             'category.name as category_name',
+            'category.id as category_id',
             'brand.name as brand_name'
 
         )
@@ -582,6 +584,27 @@ class ProductController extends Controller
             'status' => true,
             'message' => 'Danh mục chọn lọc cùng sản phẩm',
             'data' => $categories
+        ]);
+    }
+
+
+    public function related($categoryId, Request $request)
+    {
+        $excludeId = $request->query('exclude'); // id sản phẩm đang xem
+        $limit = $request->query('limit', 5); // số lượng muốn lấy
+
+        $products = Product::where('category_id', $categoryId)
+            ->when($excludeId, fn($q) => $q->where('id', '<>', $excludeId))
+            ->where('status', 1)
+            // ->orderByDesc('created_at')
+             ->inRandomOrder() // ✅ Random ngẫu nhiên mỗi lần gọi
+            ->take($limit)
+            ->get(['id', 'name', 'slug', 'thumbnail', 'price_root', 'price_sale','qty']);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Danh sách sản phẩm liên quan',
+            'data' => $products
         ]);
     }
 }
