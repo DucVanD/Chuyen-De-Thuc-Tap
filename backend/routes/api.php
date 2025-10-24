@@ -16,8 +16,24 @@ use App\Http\Controllers\Api\{
     BannerController,
     AuthController,
     DashboardController,
-    StockController
+    StockController,
+    VnpayController
 };
+
+
+Route::post('/vnpay/create', [VnpayController::class, 'createPayment']);
+Route::get('/vnpay/return', [VnpayController::class, 'vnpayReturn']);
+
+
+// routes/api.php
+Route::put('/orders/{order}/cancel', function ($orderId) {
+    $order = \App\Models\Order::where('order_code', $orderId)->first();
+    if ($order) {
+        $order->update(['status' => 7]);
+        return response()->json(['status' => true, 'message' => 'Đơn hàng đã được hủy']);
+    }
+    return response()->json(['status' => false, 'message' => 'Không tìm thấy đơn hàng'], 404);
+});
 
 /*
 |--------------------------------------------------------------------------

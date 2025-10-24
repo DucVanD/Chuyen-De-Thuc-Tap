@@ -1,4 +1,3 @@
-// src/pages/user/Checkout.jsx
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +6,7 @@ import { clearCart } from "../../Redux/cartSlice";
 import { imageURL } from "../../api/config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 const provinces = ["---", "Hà Nội", "Hồ Chí Minh"];
 
 const districts = {
@@ -30,13 +30,11 @@ const wards = {
   "Bình Thạnh": ["Phường 19", "Phường 22"],
 };
 
-
-
 const Checkout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const cartItems = useSelector((state) => state.cart.items);
-  const user = useSelector((state) => state.auth.user); // user login
+  const user = useSelector((state) => state.auth.user);
 
   const [form, setForm] = useState({
     email: "",
@@ -55,7 +53,7 @@ const Checkout = () => {
   const [selectedWard, setSelectedWard] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Tự động điền thông tin user khi có user login
+  // ✅ Tự động điền thông tin user khi login
   useEffect(() => {
     if (user) {
       setForm((prev) => ({
@@ -86,25 +84,30 @@ const Checkout = () => {
     }
   };
 
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + (item.price_sale || item.price_root) * item.qty,
+    0
+  );
+
+  const formatPrice = (price) =>
+    new Intl.NumberFormat("vi-VN").format(price) + "₫";
+
   const handleCheckout = async () => {
     if (loading) return;
     setLoading(true);
 
-    // Kiểm tra giỏ hàng
     if (!cartItems.length) {
       toast.error("Giỏ hàng trống!");
       setLoading(false);
       return;
     }
 
-    // Kiểm tra thông tin bắt buộc
     if (!form.name || !form.email || !form.phone) {
       toast.warning("Vui lòng điền họ tên, email và số điện thoại!");
       setLoading(false);
       return;
     }
 
-    // 🔥 Kiểm tra địa chỉ đầy đủ
     if (
       !form.address.trim() ||
       form.province === "---" ||
@@ -128,6 +131,13 @@ const Checkout = () => {
     try {
       const res = await apiOrder.checkout(orderData);
 
+      // ✅ Nếu thanh toán là VNPAY → chuyển hướng sang trang thanh toán
+      if (form.payment === "vnpay" && res?.payment_url) {
+        window.location.href = res.payment_url;
+        return;
+      }
+
+      // ✅ Nếu thanh toán COD hoặc BANK
       if (res.status) {
         toast.success("Đặt hàng thành công!");
         dispatch(clearCart());
@@ -138,7 +148,6 @@ const Checkout = () => {
     } catch (err) {
       console.error(err);
 
-      // Nếu backend trả lỗi 422 (Laravel validation)
       if (err.response && err.response.status === 422) {
         const errors = err.response.data.errors || {};
         const firstError = Object.values(errors)[0]?.[0] || "Thông tin không hợp lệ!";
@@ -150,15 +159,6 @@ const Checkout = () => {
 
     setLoading(false);
   };
-
-
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + (item.price_sale || item.price_root) * item.qty,
-    0
-  );
-
-  const formatPrice = (price) =>
-    new Intl.NumberFormat("vi-VN").format(price) + "₫";
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
@@ -248,20 +248,11 @@ const Checkout = () => {
           />
         </div>
 
+        {/* PAYMENT METHOD */}
         <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100">
           <h2 className="text-lg font-semibold mb-4">Phương thức thanh toán</h2>
+
           <label className="block mb-2 text-sm">
-            <input
-              type="radio"
-              name="payment"
-              value="bank"
-              checked={form.payment === "bank"}
-              onChange={handleChange}
-              className="mr-2"
-            />
-            Chuyển khoản
-          </label>
-          <label className="block text-sm">
             <input
               type="radio"
               name="payment"
@@ -271,6 +262,30 @@ const Checkout = () => {
               className="mr-2"
             />
             Thanh toán khi nhận hàng (COD)
+          </label>
+
+          <label className="block mb-2 text-sm">
+            <input
+              type="radio"
+              name="payment"
+              value="bank"
+              checked={form.payment === "bank"}
+              onChange={handleChange}
+              className="mr-2"
+            />
+            Chuyển khoản ngân hàng
+          </label>
+
+          <label className="block text-sm">
+            <input
+              type="radio"
+              name="payment"
+              value="vnpay"
+              checked={form.payment === "vnpay"}
+              onChange={handleChange}
+              className="mr-2"
+            />
+            Thanh toán qua VNPAY
           </label>
         </div>
       </div>
@@ -315,6 +330,7 @@ const Checkout = () => {
           {loading ? "Đang xử lý..." : "ĐẶT HÀNG"}
         </button>
       </div>
+      <ToastContainer />
     </div>
   );
 };

@@ -40,6 +40,21 @@ const apiOrder = {
   },
 
 
+  createVnpayPayment: async (amount) => {
+    const token = localStorage.getItem("token");
+    const res = await axiosInstance.post(
+      "/vnpay/create",
+      { amount },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return res.data;
+  },
+
+
 };
 
 export default apiOrder;

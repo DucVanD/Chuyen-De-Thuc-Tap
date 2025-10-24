@@ -12,6 +12,8 @@ import Checkout from "../pages/user/Checkout.jsx";
 import ProductByCat from "../pages/user/ProductByCat.jsx";
 import Profile from "../pages/user/Profile.jsx";
 import HistoryBought from "../pages/user/HistoryBought.jsx";
+import PaymentSuccess from "../pages/user/PaymentSuccess.jsx";
+
 const Userroute = [
   { path: "", component: Home },
   { path: "/products", component: Products },
@@ -29,6 +31,8 @@ const Userroute = [
   { path: "/category/:slug", component: Products },
   { path: "/profile", component: Profile },
   { path: "/history-bought/:page?", component: HistoryBought },
+  { path: "/payment-success", component: PaymentSuccess },
+
 ];
 
 export default Userroute;
