@@ -1,8 +1,7 @@
 @import "tailwindcss";
 
-@keyframes zoomInOut {
-  0%{
-   
+/* @keyframes zoomInOut {
+  0% {
     padding-left: 10px;
     padding-right: 10px;
     background-color: red;
@@ -10,22 +9,64 @@
   100% {
     background-color: orangered;
   }
-
 }
 
 .animate-zoom {
   animation: zoomInOut 1.3s ease-in-out infinite;
-}
-
+} */
 
 @keyframes flash-fast {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.3; transform: scale(1.2); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.2);
+  }
 }
 
-
 @keyframes shake {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  75% {
+    transform: rotate(-5deg);
+  }
+}
+
+/*  */
+/* Fade in nhẹ cho popup */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 220ms ease-out both;
+}
+
+/* Wobble (lúc lắc) nhẹ cho nút Liên hệ khi menu đang đóng */
+/* Icon lắc nhanh bên trong nút Liên hệ */
+@keyframes iconWobble {
   0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(5deg); }
-  75% { transform: rotate(-5deg); }
+  20% { transform: rotate(-12deg); }
+  40% { transform: rotate(12deg); }
+  60% { transform: rotate(-8deg); }
+  80% { transform: rotate(8deg); }
+}
+
+.animate-iconWobble {
+  animation: iconWobble 0.7s ease-in-out infinite; /* tốc độ nhanh, chỉ icon rung */
+  transform-origin: center;
 }
