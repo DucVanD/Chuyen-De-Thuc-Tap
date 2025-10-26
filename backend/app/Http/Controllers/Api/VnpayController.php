@@ -145,7 +145,7 @@ class VnpayController extends Controller
                 // Order::where('order_code', $vnp_TxnRef)->update(['status' => '7']);
                 Order::where('order_code', $vnp_TxnRef)->update([
                     'payment_status' => 'failed',
-                    'status' => 3, // ví dụ: 3 = thanh toán thất bại
+                    'status' => 7, // ví dụ: 3 = thanh toán thất bại
                 ]);
 
                 $orderDetails = OrderDetail::where('order_id', $order->id)->get();

@@ -16,18 +16,6 @@ import AdminLogin from "./pages/admin/AdminLogin"; // 👈 THÊM DÒNG NÀY
 function App() {
   return (
     <Provider store={store}>
-   <ToastContainer
-  position="top-right"
-  autoClose={300} // thông báo chỉ hiện 1.5 giây
-  hideProgressBar={false}
-  newestOnTop={false}
-  closeOnClick
-  pauseOnHover={true}
-  draggable
-  // theme="colored"
-/>
-
-
       <BrowserRouter>
         <Routes>
           {/* USER */}
@@ -38,10 +26,10 @@ function App() {
             })}
           </Route>
 
-          {/* ✅ ADMIN LOGIN (Public) */}
+          {/* ADMIN LOGIN (Public) */}
           <Route path="/admin/login" element={<AdminLogin />} />
 
-          {/* ✅ ADMIN (Protected) */}
+          {/* ADMIN (Protected) */}
           <Route
             path="/admin"
             element={
@@ -56,9 +44,23 @@ function App() {
             })}
           </Route>
         </Routes>
+
+        {/* ✅ ToastContainer đặt sau BrowserRouter để hoạt động toàn cục */}
+        <ToastContainer
+          position="top-right"
+          autoClose={800} // thời gian toast hiển thị 0.8s
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="light"
+        />
       </BrowserRouter>
     </Provider>
   );
 }
 
 export default App;
+
+

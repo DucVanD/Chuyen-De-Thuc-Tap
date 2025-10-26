@@ -231,7 +231,7 @@ const Products = () => {
 
                 >
 
-                    <h2 className="font-bold text-green-700 mb-3">DANH MỤC SẢN PHẨM</h2>
+                    <h2 className="font-bold text-emerald-600 mb-3">DANH MỤC SẢN PHẨM</h2>
 
                     <ul className="space-y-2 max-h-40 overflow-y-auto scrollbar-hide">
 
@@ -257,7 +257,7 @@ const Products = () => {
 
                     <div className="mt-6">
 
-                        <h2 className="font-bold text-green-700 mb-3">BỘ LỌC SẢN PHẨM</h2>
+                        <h2 className="font-bold text-emerald-600 mb-3">BỘ LỌC SẢN PHẨM</h2>
 
                         <h3 className="font-semibold">Chọn mức giá</h3>
 
@@ -301,7 +301,7 @@ const Products = () => {
 
                         </div>
 
-                        <h3 className="font-semibold mt-4 uppercase">Thương hiệu</h3>
+                        <h3 className="font-semibold mt-4 uppercase text-emerald-600">Thương hiệu</h3>
 
                         <div className="flex flex-col gap-2 mt-2 text-sm">
 

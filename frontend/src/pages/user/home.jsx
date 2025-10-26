@@ -47,40 +47,26 @@ const Home = () => {
   const [categorys, setcategorys] = useState([]);
   const [productNew, setProductNew] = useState([]);
   const [saleProducts, setProductSale] = useState([]);
-  const [producsCat, setProductsCat] = useState([]);
-  const [Brands, setBrands] = useState([]);
   const navigate = useNavigate();
   const handleAddToCart = useAddToCart();
-
-  // ✅ GỘP TOÀN BỘ CÁC API VỀ MỘT LẦN GỌI
   useEffect(() => {
-    const fetchAllData = async () => {
-      try {
-        const [resNewest, resCategory, resSale, resCategoryHome, resBrand] =
-          await Promise.all([
-            apiProduct.getNewest(),
-            apiCategory.getAll(),
-            apiProduct.getSaleDiscount(),
-            apiProduct.categoryhome(),
-            apiBrand.getAll(),
-          ]);
-
-        setProductNew(resNewest.data || []);
-        setcategorys(resCategory.data.data || []);
-        setProductSale(resSale.data || []);
-        setProductsCat(resCategoryHome.data || []);
-        setBrands(resBrand.data.data || []);
-
-        console.log("✅ Dữ liệu trang Home đã tải xong");
-      } catch (error) {
-        console.error("❌ Lỗi khi tải dữ liệu trang Home:", error);
-      }
-    };
-
-    fetchAllData();
+    apiProduct
+      .getNewest()
+      .then((res) => setProductNew(res.data || []))
+      .catch((err) => console.error("Lỗi khi lấy sản phẩm mới:", err));
   }, []);
 
-  // ✅ Đồng hồ đếm ngược
+  useEffect(() => {
+    apiCategory
+      .getAll()
+      .then((res) => setcategorys(res.data.data || []))
+      .catch((err) => console.error("Lỗi khi lấy danh muc:", err));
+  }, []);
+
+  useEffect(() => {
+    apiProduct.getSaleDiscount().then((res) => setProductSale(res.data || []));
+  }, []);
+
   const [countdown, setCountdown] = useState({
     days: 5,
     hours: 2,
@@ -89,6 +75,7 @@ const Home = () => {
   });
 
   useEffect(() => {
+    // Thời gian kết thúc (99 ngày + 2 giờ + 33 phút + 35 giây từ lúc load trang)
     const end = new Date(
       Date.now() +
       5 * 24 * 3600 * 1000 +
@@ -113,15 +100,45 @@ const Home = () => {
     }, 1000);
 
     return () => clearInterval(timer);
+
+
   }, []);
 
+  const [producsCat, setProductsCat] = useState([]);
+
+  useEffect(() => {
+    const fetchProductsByCategory = async () => {
+      try {
+        const res = await apiProduct.categoryhome();
+        console.log("Data từ API:", res.data);
+        setProductsCat(res.data || []);
+      } catch (err) {
+        console.error("Lỗi khi lấy sản phẩm theo danh mục:", err);
+      }
+    };
+
+    fetchProductsByCategory();
+  }, []); // ⚠️ RẤT QUAN TRỌNG: [] để chỉ chạy 1 lần
+
+  const [Brands, setBrands] = useState([]);
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const res = await apiBrand.getAll();
+        setBrands(res.data.data || []);
+      } catch (err) {
+        console.error("Lỗi khi lấy thương hiệu:", err);
+      }
+    };
+    fetchBrands();
+  }, []);
 
 
 
 
   return (
     <div>
-      <main className="max-w-7xl mx-auto py-10 px-2 sm:px-0">
+      <main className="max-w-7xl mx-auto pt-10 px-2 sm:px-0">
         {/* Slide */}
         <section className="slide flex justify-center mt-3 px-0">
           <img
@@ -132,59 +149,74 @@ const Home = () => {
           />
         </section>
 
-        {/* Danh mục nổi bật */}
+
+        {/* 🌿 Danh mục nổi bật */}
         <section className="mt-10">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-4 px-2 sm:px-0">
-            <div>
-              <Link className="text-[22px] sm:text-[25px] font-medium">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4 px-2 sm:px-0">
+            <div className="flex items-center gap-2">
+              <span
+                className="text-yellow-400 text-2xl sm:text-3xl drop-shadow-lg"
+                style={{ animation: "shake 0.5s infinite" }}
+              >
+                🛒
+              </span>
+              <h2 className="text-[22px] sm:text-[26px] font-extrabold text-emerald-600 tracking-tight">
                 Danh mục nổi bật
-              </Link>
+              </h2>
             </div>
-            <div className="flex gap-2 sm:gap-4 overflow-x-auto">
+
+            {/* Link nhóm danh mục */}
+            <div className="flex gap-2 sm:gap-4 overflow-x-auto scrollbar-hide">
               <Link
-                to="/products"
+                to="/products?category=trai-cay"
                 state={{ categorySlug: "trai-cay", categoryName: "Trái cây" }}
-                className="whitespace-nowrap text-sm sm:text-base"
+                className="whitespace-nowrap text-sm sm:text-base text-emerald-700 hover:text-yellow-600 transition font-medium"
               >
                 Trái cây
               </Link>
 
               <Link
-                to="/products"
+                to="/products?category=rau-cu-qua"
                 state={{
                   categorySlug: "rau-cu-qua",
                   categoryName: "Rau củ quả",
                 }}
-                className="whitespace-nowrap text-sm sm:text-base"
+                className="whitespace-nowrap text-sm sm:text-base text-emerald-700 hover:text-yellow-600 transition font-medium"
               >
                 Rau củ quả
               </Link>
 
               <Link
-                to="/products"
+                to="/products?category=thit"
                 state={{
-                  categorySlug: "thuc-pham-tuoi-song",
-                  categoryName: "Thực phẩm tươi sống",
+                  categorySlug: "thit",
+                  categoryName: "Thịt",
                 }}
-                className="whitespace-nowrap text-sm sm:text-base"
+                className="whitespace-nowrap text-sm sm:text-base text-emerald-700 hover:text-yellow-600 transition font-medium"
               >
-                Thực phẩm tươi sống
+                Thịt
               </Link>
             </div>
-
-
           </div>
+
+          {/* Danh sách danh mục */}
           <div className="relative">
             {/* Nút trái */}
             <button
-              onClick={() => document.getElementById("category-list").scrollBy({ left: -180, behavior: "smooth" })}
+              onClick={() =>
+                document
+                  .getElementById("category-list")
+                  .scrollBy({ left: -180, behavior: "smooth" })
+              }
               className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white shadow hover:bg-gray-100 items-center justify-center"
             >
               <MdArrowBackIos className="text-gray-600" />
             </button>
+
             <div
               id="category-list"
-              className="flex gap-3 sm:gap-5 overflow-x-auto scroll-smooth pb-2 scrollbar-hide px-2 sm:px-0 relative "
+              className="flex gap-3 sm:gap-5 overflow-x-auto scroll-smooth pb-2 scrollbar-hide px-2 sm:px-0 relative"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {categorys
@@ -197,19 +229,21 @@ const Home = () => {
                         state: { categoryName: category.name },
                       })
                     }
-                    className="h-44 w-40 flex-shrink-0 rounded-xl flex flex-col items-center justify-center 
-          p-3 cursor-pointer bg-white border border-gray-100 shadow-sm hover:shadow-lg 
-          hover:border-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-yellow-50 
-          transition-all duration-300 hover:-translate-y-1 mt-4"
+                    className="h-44 w-40 flex-shrink-0 rounded-2xl flex flex-col items-center justify-center 
+            p-3 cursor-pointer bg-gradient-to-br from-white via-green-50 to-emerald-50 border border-green-100 
+            shadow-sm hover:shadow-lg hover:border-green-400 hover:-translate-y-1 transition-all duration-300 mt-4"
                   >
+                    {/* Ảnh danh mục */}
                     <div className="w-full h-28 sm:h-32 flex items-center justify-center">
                       <img
                         src={`${imageURL}/category/${category.image}`}
                         alt={category.name}
-                        className="h-full w-full object-contain transition-transform duration-300 hover:scale-110"
+                        className="h-full w-full object-contain transition-transform duration-500 hover:scale-110"
                       />
                     </div>
-                    <h3 className="text-sm sm:text-base font-medium text-gray-800 text-center mt-2 hover:text-green-700 transition-colors">
+
+                    {/* Tên danh mục */}
+                    <h3 className="text-sm sm:text-base font-semibold text-gray-800 text-center mt-2 hover:text-green-700 transition-colors">
                       {category.name}
                     </h3>
                   </div>
@@ -218,15 +252,18 @@ const Home = () => {
 
             {/* Nút phải */}
             <button
-              onClick={() => document.getElementById("category-list").scrollBy({ left: 180, behavior: "smooth" })}
+              onClick={() =>
+                document
+                  .getElementById("category-list")
+                  .scrollBy({ left: 180, behavior: "smooth" })
+              }
               className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white shadow hover:bg-gray-100 items-center justify-center"
             >
               <MdArrowForwardIos className="text-gray-600" />
             </button>
           </div>
-
-
         </section>
+
 
         {/* Sale 1 */}
         <section className="mt-10 bg-gray-50 rounded-2xl px-3 sm:px-4 lg:px-6 py-6">
@@ -266,12 +303,13 @@ const Home = () => {
                 </div>
               </div>
 
-              {/* Laptop: dạng grid */}
-              <div className="hidden lg:grid grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* Laptop: dạng grid full chuẩn */}
+              <div className="hidden lg:grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {productNew.slice(0, 8).map((product) => (
                   <ProductItem key={product.id} product={product} />
                 ))}
               </div>
+
 
               {/* Nút xem tất cả */}
               <div className="text-center mt-6">
@@ -384,9 +422,6 @@ const Home = () => {
                   ⚡
                 </span>
 
-
-
-
                 <div>
                   <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">
                     Khuyến mãi đặc biệt
@@ -432,9 +467,22 @@ const Home = () => {
                       key={p.id}
                       className="flex-shrink-0 w-[78%] sm:w-[48%] bg-white rounded-2xl border border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative"
                     >
-                      <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full shadow animate-pulse">
-                        -{percent}%
-                      </div>
+                      {/* Badge giảm giá */}
+                      {percent > 0 && (
+                        <div
+                          className="absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 shadow-md animate-pulse badge-shake"
+                          style={{
+                            background:
+                              "linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%)",
+                            borderTopLeftRadius: "4px",
+                            borderBottomLeftRadius: "4px",
+                            borderTopRightRadius: "12px",
+                            borderBottomRightRadius: "12px",
+                          }}
+                        >
+                          -{percent}%
+                        </div>
+                      )}
 
                       <Link to={`/product/${p.slug}`} className="block p-3">
                         <img
@@ -445,9 +493,12 @@ const Home = () => {
                       </Link>
 
                       <div className="px-3 pb-3 space-y-1">
-                        <h3 className="font-semibold text-[13px] line-clamp-2">
+                        <Link
+                          to={`/product/${p.slug}`}
+                          className="text-base sm:text-lg font-semibold text-gray-800 line-clamp-2 leading-snug hover:text-green-700 transition-colors"
+                        >
                           {p.name}
-                        </h3>
+                        </Link>
                         <p className="text-[11px] text-gray-500 mt-1">
                           Đã bán {p.sold}/{p.stock}{" "}
                           <span className="text-green-600 font-semibold">
@@ -502,12 +553,24 @@ const Home = () => {
                     key={p.id}
                     className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative flex gap-2"
                   >
+                    {/* Badge giảm giá */}
+                    {percent > 0 && (
+                      <div
+                        className="absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 shadow-md animate-pulse badge-shake"
+                        style={{
+                          background:
+                            "linear-gradient(90deg, #ff416c 0%, #ff4b2b 100%)",
+                          borderTopLeftRadius: "4px",
+                          borderBottomLeftRadius: "4px",
+                          borderTopRightRadius: "12px",
+                          borderBottomRightRadius: "12px",
+                        }}
+                      >
+                        -{percent}%
+                      </div>
+                    )}
 
                     <div className="basis-5/12">
-                      <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full shadow animate-pulse">
-                        -{percent}%
-                      </span>
-
                       <Link to={`/product/${p.slug}`}>
                         <img
                           src={`${imageURL}/product/${p.thumbnail}`}
@@ -518,9 +581,12 @@ const Home = () => {
                     </div>
 
                     <div className="basis-7/12">
-                      <h3 className="font-semibold text-sm mt-3 line-clamp-2">
+                      <Link
+                        to={`/product/${p.slug}`}
+                        className="text-base sm:text-lg font-semibold text-gray-800 line-clamp-2 leading-snug hover:text-green-700 transition-colors"
+                      >
                         {p.name}
-                      </h3>
+                      </Link>
                       <p className="text-xs text-gray-500 mt-1">
                         Đã bán: {p.sold}/{p.stock}{" "}
                         <span className="text-green-600 font-semibold">
@@ -556,10 +622,6 @@ const Home = () => {
                         {p.qty === 0 ? "Hết hàng" : "Thêm vào giỏ"}
                       </button>
                     </div>
-
-
-
-
                   </div>
                 );
               })}
@@ -570,34 +632,58 @@ const Home = () => {
 
 
 
-        {/* Video hướng dẫn */}
-        <section className="bg-gray-100 p-4 sm:p-6 rounded-2xl mt-10">
-          <h2 className="text-lg sm:text-2xl font-bold mb-5">Video hướng dẫn</h2>
 
-          {/* Scroll ngang ở mobile, grid khi desktop */}
+        {/* Video hướng dẫn */}
+
+        <section className="bg-gradient-to-br from-white via-green-50 to-emerald-100 border border-green-200 shadow-lg p-4 sm:p-6 rounded-2xl mt-10">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <span
+                className="text-yellow-400 text-2xl sm:text-3xl drop-shadow-lg"
+                style={{ animation: "shake 0.5s infinite" }}
+              >
+                🎬
+              </span>
+              <h2 className="text-lg sm:text-2xl font-extrabold text-emerald-600 tracking-tight">
+                Video hướng dẫn
+              </h2>
+            </div>
+            <button
+              onClick={() => navigate("/videos")}
+              className="hidden sm:inline-flex px-4 sm:px-6 py-2 border border-green-600 text-green-700 rounded-full hover:bg-green-600 hover:text-white transition text-sm sm:text-base font-medium shadow-sm hover:shadow-md"
+            >
+              Xem tất cả
+            </button>
+          </div>
+
+          {/* Scroll ngang ở mobile / Grid ở desktop */}
           <div className="flex md:grid md:grid-cols-4 gap-3 sm:gap-4 overflow-x-auto md:overflow-visible scroll-smooth pb-2 scrollbar-hide rounded-lg">
             {videos.map((v, i) => (
               <div
                 key={i}
-                className="min-w-[60%] xs:min-w-[50%] sm:min-w-0 bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-300 flex-shrink-0"
+                className="min-w-[60%] xs:min-w-[50%] sm:min-w-0 bg-white rounded-2xl border border-gray-200 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex-shrink-0 overflow-hidden"
               >
-                <div className="relative overflow-hidden rounded-t-lg">
+                {/* Thumbnail */}
+                <div className="relative group">
                   <img
                     src={v.thumbnail}
                     alt={v.title}
-                    className="w-full h-50 sm:h-48 object-cover transform transition-transform duration-500 hover:scale-110"
+                    className="w-full h-44 sm:h-48 object-cover transform transition-transform duration-500 group-hover:scale-110"
                   />
                   <a
                     href={v.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
+                    className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <Play className="text-white w-10 h-10 sm:w-12 sm:h-12" />
+                    <Play className="text-white w-10 h-10 sm:w-12 sm:h-12 drop-shadow-lg" />
                   </a>
                 </div>
+
+                {/* Tiêu đề video */}
                 <div className="p-3">
-                  <p className="text-xs sm:text-sm font-medium text-gray-700 line-clamp-2">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-800 line-clamp-2 hover:text-green-700 transition-colors">
                     {v.title}
                   </p>
                 </div>
@@ -605,11 +691,11 @@ const Home = () => {
             ))}
           </div>
 
-          {/* Nút xem tất cả */}
-          <div className="text-center mt-5">
+          {/* Nút xem tất cả (mobile) */}
+          <div className="text-center mt-6 sm:hidden">
             <button
               onClick={() => navigate("/videos")}
-              className="px-4 sm:px-6 py-2 border border-green-600 text-green-600 rounded-full hover:bg-green-600 hover:text-white transition text-xs sm:text-base"
+              className="px-4 sm:px-6 py-2 border border-green-600 text-green-700 rounded-full hover:bg-green-600 hover:text-white transition text-sm sm:text-base font-medium shadow-sm hover:shadow-md"
             >
               Xem tất cả
             </button>
@@ -622,7 +708,7 @@ const Home = () => {
         <section className="mt-12 px-2 sm:px-0">
           <div className="overflow-hidden rounded-lg mb-3">
             <img
-              className="w-full h-32 sm:h-full object-cover transform transition-transform duration-600 ease-in-out hover:scale-110"
+              className="w-full h-32 sm:h-full object-cover transform transition-transform duration-700 ease-in-out hover:scale-110"
               src={bannerproduct5}
               alt=""
             />
@@ -634,23 +720,30 @@ const Home = () => {
           {producsCat.map((cat) => (
             <div
               key={cat.id}
-              className="rounded-2xl border border-gray-200 bg-white p-4"
+              className="rounded-2xl border border-green-300  shadow-lg hover:shadow-xl transition-all duration-300 p-4"
             >
+              {/* Tiêu đề danh mục */}
               <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold text-gray-800">{cat.name}</h4>
-                <a
-                  href={`/category/${cat.slug}`}
+                <h4 className="font-extrabold text-emerald-600 text-lg tracking-tight">
+                  {cat.name}
+                </h4>
+
+
+                <Link
+                  to={`/products?category=${cat.slug}`} // ✅ Sửa 'href' thành 'to' và đổi URL
+                  state={{ categoryName: cat.name }}     // ✅ Thêm 'state' để trang kia biết tên
                   className="text-emerald-700 text-xs hover:underline"
                 >
                   Xem thêm »
-                </a>
+                </Link>
               </div>
 
+              {/* Danh sách sản phẩm */}
               <div className="flex flex-col gap-3">
                 {cat.products.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center gap-4 border border-gray-200 p-3 rounded-xl hover:shadow-md transition bg-white relative"
+                    className="flex items-center gap-4 border border-gray-200 bg-white p-3 rounded-xl hover:-translate-y-1 hover:shadow-md transition-all duration-300 relative"
                   >
                     {/* Ảnh sản phẩm */}
                     <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 relative">
@@ -658,14 +751,13 @@ const Home = () => {
                         <img
                           src={`${imageURL}/product/${p.thumbnail}`}
                           alt={p.name}
-                          className="object-cover w-full h-full rounded-lg"
+                          className="object-contain w-full h-full rounded-lg"
                         />
-
-
                       </Link>
-                      {/* Góc hiển thị % giảm giá */}
+
+                      {/* Badge giảm giá */}
                       {p.discount_percent > 0 && (
-                        <div className="absolute top-0 left-0 bg-rose-500 text-white text-xs sm:text-sm font-semibold px-1 rounded-tr-lg rounded-bl-lg shadow-md">
+                        <div className="absolute top-1 left-1 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[11px] sm:text-xs font-bold px-1.5 py-0.5 rounded-tr-lg rounded-bl-lg shadow animate-pulse">
                           -{p.discount_percent}%
                         </div>
                       )}
@@ -673,44 +765,77 @@ const Home = () => {
 
                     {/* Thông tin sản phẩm */}
                     <div className="flex-1">
-                      <p className="text-base sm:text-lg font-semibold text-gray-800 line-clamp-1">
+                      <Link
+                        to={`/product/${p.slug}`}
+                        className="text-base sm:text-lg font-semibold text-gray-800 line-clamp-2 leading-snug hover:text-green-700 transition-colors"
+                      >
                         {p.name}
-                      </p>
-                      <div className="flex items-center gap-2 text-sm sm:text-base">
-                        <span className="text-rose-600 font-bold">
-                          {p.price_sale.toLocaleString()}₫
-                        </span>
-                        <span className="text-gray-400 line-through text-xs sm:text-sm">
-                          {p.price_root.toLocaleString()}₫
-                        </span>
+                      </Link>
+
+                      {/* Giá hiển thị logic giống phần khuyến mãi */}
+                      <div className="flex items-center gap-2 mt-1 text-sm sm:text-base">
+                        {p.price_sale > 0 ? (
+                          <>
+                            <span className="text-red-600 font-bold">
+                              {p.price_sale.toLocaleString()}₫
+                            </span>
+                            <span className="text-gray-400 line-through text-xs sm:text-sm">
+                              {p.price_root.toLocaleString()}₫
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-red-600 font-bold">
+                            {p.price_root.toLocaleString()}₫
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-
-
-
             </div>
           ))}
         </section>
 
 
-        {/* Đối tác */}
-        <section className="mt-12 px-2 sm:px-0">
-          <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-4">
-            <h3 className="text-base sm:text-lg font-semibold mb-4">
-              Đối tác của chúng tôi
-            </h3>
 
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 items-center">
+        <section className="mt-12 px-2 sm:px-0">
+          <div className="rounded-2xl border border-green-200  shadow-lg p-4 sm:p-6">
+            {/* Header */}
+            <div className="flex items-center gap-2 mb-4">
+              <span
+                className="text-yellow-400 text-2xl sm:text-3xl drop-shadow-lg"
+                style={{ animation: "shake 0.5s infinite" }}
+              >
+                🤝
+              </span>
+              <h3 className="text-lg sm:text-2xl font-extrabold text-emerald-600 tracking-tight">
+                Đối tác của chúng tôi
+              </h3>
+            </div>
+
+            {/* Danh sách đối tác */}
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 sm:gap-4 items-center">
               {Brands.length > 0 ? (
                 Brands.map((brand, i) => (
                   <div
                     key={i}
-                    className="h-10 sm:h-12 rounded-md border flex items-center justify-center text-xs sm:text-sm text-gray-600 bg-gray-50"
+                    className="bg-white rounded-xl border border-green-100 p-3 sm:p-4 flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
                   >
-                    {brand.name}
+                    {brand.image ? (
+                      <img
+                        src={`${imageURL}/brand/${brand.image}`}
+                        alt={brand.name}
+                        className="w-14 h-14 sm:w-16 sm:h-16 object-contain grayscale hover:grayscale-0 transition duration-300"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-gray-400 text-xs border border-gray-200 rounded-full">
+                        No Image
+                      </div>
+                    )}
+                    <p className="text-xs sm:text-sm font-medium text-gray-700 mt-2 text-center hover:text-green-700 transition">
+                      {brand.name}
+                    </p>
                   </div>
                 ))
               ) : (
@@ -723,8 +848,9 @@ const Home = () => {
         </section>
 
 
+
         {/* Service badges */}
-        <section className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 px-2 sm:px-0">
+        <section className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 px-2 sm:px-0 ">
           {[
             { t: "Vận chuyển miễn phí", s: "Hóa đơn trên 3 triệu" },
             { t: "Đổi trả miễn phí", s: "Trong vòng 7 ngày" },

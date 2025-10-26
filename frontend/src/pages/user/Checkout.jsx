@@ -132,17 +132,38 @@ const Checkout = () => {
       const res = await apiOrder.checkout(orderData);
 
       // ✅ Nếu thanh toán là VNPAY → chuyển hướng sang trang thanh toán
+      // if (form.payment === "vnpay" && res?.payment_url) {
+      //   // window.location.href = res.payment_url;
+
+      //   return;
+      // }
+
       if (form.payment === "vnpay" && res?.payment_url) {
-        window.location.href = res.payment_url;
+        toast.info("🔁 Đang chuyển hướng đến cổng thanh toán...", {
+          autoClose: 800,
+          onClose: () => {
+            window.location.href = res.payment_url;
+          },
+        });
         return;
       }
 
       // ✅ Nếu thanh toán COD hoặc BANK
       if (res.status) {
-        toast.success("Đặt hàng thành công!");
-        dispatch(clearCart());
-        navigate("/");
-      } else {
+        // toast.success("Đặt hàng thành công!");
+        // dispatch(clearCart());
+        // navigate("/");
+        toast.success("Đặt hàng thành công!", {
+          onClose: () => {
+            dispatch(clearCart());
+            navigate("/");
+          },
+          autoClose: 800,
+        });
+
+      }
+
+      else {
         toast.error("Lỗi: " + (res.message || "Không thể đặt hàng"));
       }
     } catch (err) {
@@ -330,7 +351,7 @@ const Checkout = () => {
           {loading ? "Đang xử lý..." : "ĐẶT HÀNG"}
         </button>
       </div>
-      <ToastContainer />
+     
     </div>
   );
 };

@@ -24,7 +24,7 @@ function ProductItem({ product }) {
           {/* Lớp phủ khi hover */}
           <div className="absolute inset-0 flex items-center justify-center  group-hover:opacity-100 transition-opacity duration-300">
             {/* <FaEye className="text-white text-xl sm:text-2xl drop-shadow-md opacity-50" /> */}
-{/* bg-black/10 opacity-0 */}
+            {/* bg-black/10 opacity-0 */}
 
           </div>
         </Link>
@@ -42,7 +42,7 @@ function ProductItem({ product }) {
         {/* Tên sản phẩm */}
         <Link
           to={`/product/${product.slug}`}
-          className="text-[14px] sm:text-[15px] font-semibold text-gray-800 line-clamp-2 leading-snug hover:text-green-700 transition-colors"
+          className="text-base sm:text-lg font-semibold text-gray-800 line-clamp-2 leading-snug hover:text-green-700 transition-colors"
         >
           {product.name}
         </Link>
@@ -51,7 +51,7 @@ function ProductItem({ product }) {
         <div className="mt-2">
           {product.price_sale && product.price_sale > 0 ? (
             <>
-              <p className="text-red-500 font-semibold text-[15px] sm:text-[16px]">
+              <p className="text-red-600 font-bold text-[15px] sm:text-[16px]">
                 {product.price_sale?.toLocaleString()}₫
               </p>
               <p className="text-gray-400 text-xs line-through">
@@ -59,7 +59,7 @@ function ProductItem({ product }) {
               </p>
             </>
           ) : (
-            <p className="text-red-500 font-semibold text-[15px] sm:text-[16px]">
+            <p className="text-red-600 font-bold text-[15px] sm:text-[16px]">
               {product.price_root?.toLocaleString()}₫
             </p>
           )}
@@ -70,8 +70,8 @@ function ProductItem({ product }) {
           onClick={() => handleAddToCart(product)}
           disabled={product.qty === 0}
           className={`w-full py-2 mt-3 rounded-xl text-sm font-medium shadow transition-all duration-300 ${product.qty === 0
-              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-              : "bg-gradient-to-r from-green-600 to-yellow-500 text-white hover:from-green-500 hover:to-yellow-400 hover:shadow-lg"
+            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+            : "bg-gradient-to-r from-green-600 to-yellow-500 text-white hover:from-green-500 hover:to-yellow-400 hover:shadow-lg"
             }`}
         >
           {product.qty === 0 ? "Hết hàng" : "Thêm vào giỏ"}

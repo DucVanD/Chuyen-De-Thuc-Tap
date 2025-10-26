@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "/src/assets/images/logo.png";
 import { CiSearch } from "react-icons/ci";
 import { SiHomeassistantcommunitystore } from "react-icons/si";
@@ -25,6 +25,7 @@ const HeaderUser = () => {
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Load danh mục
   useEffect(() => {
@@ -47,30 +48,34 @@ const HeaderUser = () => {
     }
   };
 
+  // Tìm hàm này trong file HeaderUser.js (dòng 53)
   const handleCategoryClick = (slug, name) => {
-    navigate("/products", {
+
+
+    navigate(`/products?category=${slug}`, {
       state: { categorySlug: slug, categoryName: name },
     });
+
     setShowDropdown(false);
   };
 
   const handleLogout = () => {
-  // Hộp thoại xác nhận
-  const confirmLogout = window.confirm("Bạn có chắc muốn đăng xuất không?");
-  if (confirmLogout) {
-    dispatch(logout());
-    toast.success("Đăng xuất thành công!", {
-      position: "top-right",
-      autoClose: 1500,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: true,
-      theme: "colored",
-    });
-    navigate("/");
-  }
-};
+    // Hộp thoại xác nhận
+    const confirmLogout = window.confirm("Bạn có chắc muốn đăng xuất không?");
+    if (confirmLogout) {
+      dispatch(logout());
+      toast.success("Đăng xuất thành công!", {
+        position: "top-right",
+        autoClose: 1500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        theme: "colored",
+      });
+      navigate("/");
+    }
+  };
 
 
 
@@ -116,11 +121,46 @@ const HeaderUser = () => {
     },
   ];
 
+  //
+  // Danh sách câu placeholder ngẫu nhiên
+  const placeholders = [
+    "Bạn muốn tìm gì?",
+    "Trái cây",
+    "Thực phẩm sạch",
+  ];
+
+  // State hiển thị placeholder động
+  const [currentPlaceholder, setCurrentPlaceholder] = useState("");
+  const [index, setIndex] = useState(0);
+  const [typing, setTyping] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    let typingSpeed = isDeleting ? 100 : 100; // tốc độ gõ nhanh hơn khi xóa
+    const currentText = placeholders[index];
+    const handleTyping = () => {
+      if (!isDeleting && typing.length < currentText.length) {
+        setTyping(currentText.substring(0, typing.length + 1));
+      } else if (isDeleting && typing.length > 0) {
+        setTyping(currentText.substring(0, typing.length - 1));
+      } else if (!isDeleting && typing.length === currentText.length) {
+        // Dừng 2 giây trước khi xóa
+        setTimeout(() => setIsDeleting(true), 1500);
+      } else if (isDeleting && typing.length === 0) {
+        setIsDeleting(false);
+        setIndex((prev) => (prev + 1) % placeholders.length);
+      }
+    };
+    const timer = setTimeout(handleTyping, typingSpeed);
+    return () => clearTimeout(timer);
+  }, [typing, isDeleting, index]);
+
+
   return (
     <header className="w-full bg-gray-100 shadow">
       {/* --- TOP BAR --- */}
       {/* 🔹 Desktop */}
-      <div className="hidden md:flex h-[35px] bg-green-700 text-gray-50 justify-between items-center px-4 md:px-20 text-sm">
+      <div className="hidden md:flex h-[35px] bg-emerald-600 text-gray-50 justify-between items-center px-4 md:px-20 text-sm">
         <h4 className="truncate">Chào mừng bạn đến với Bean Farm!</h4>
 
         <div className="flex gap-6 text-xs md:text-sm">
@@ -159,7 +199,7 @@ const HeaderUser = () => {
       </div>
 
       {/* 🔹 Mobile */}
-      <div className="flex md:hidden h-[35px] bg-green-700 text-gray-50 justify-center px-4 text-sm gap-10 relative">
+      <div className="flex md:hidden h-[35px] bg-emerald-600 text-gray-50 justify-center px-4 text-sm gap-10 relative">
         {/* Tài khoản */}
         <div className="flex items-center gap-1 relative">
           <FaUser />
@@ -229,7 +269,7 @@ const HeaderUser = () => {
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Tìm sản phẩm..."
+              placeholder={typing}
               className="w-full rounded-full border border-gray-300 pl-4 pr-10 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none"
             />
             <button type="submit">
@@ -258,7 +298,7 @@ const HeaderUser = () => {
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Tìm sản phẩm..."
+              placeholder={typing}
               className="w-full rounded-full border border-gray-200 bg-gray-50 pl-4 pr-10 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
             />
             <button type="submit">
@@ -268,25 +308,36 @@ const HeaderUser = () => {
         </div>
 
         <div className="flex gap-4 w-6/12 justify-end">
-          {menuItems.map((item, i) => (
-            <Link
-              key={i}
-              to={item.href}
-              className="relative flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 bg-white text-green-700 font-medium hover:bg-amber-300 transition text-sm"
-            >
-              <div className="relative">
-                {item.icon}
-                {item.count > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {item.count}
-                  </span>
-                )}
-              </div>
-              <span>{item.label}</span>
-            </Link>
-          ))}
+          {menuItems.map((item, i) => {
+            const isActive = location.pathname === item.href;
+
+            return (
+              <Link
+                key={i}
+                to={item.href}
+                className={`relative flex items-center gap-2 px-3 py-2 rounded-full border font-medium text-sm transition
+        ${isActive
+                    ? "bg-amber-300 border-amber-400 text-green-800 shadow" // ✅ giữ màu amber khi active
+                    : "bg-white border-gray-200 text-green-700 hover:bg-amber-300 hover:text-green-800"
+                  }`}
+              >
+                <div className="relative">
+                  {item.icon}
+                  {item.count > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {item.count}
+                    </span>
+                  )}
+                </div>
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+
+
         </div>
       </div>
+
 
       {/* --- DESKTOP NAVIGATION --- */}
       <nav className="hidden md:flex items-center justify-between px-10 py-2 bg-gray-100 border-b border-gray-300 shadow-md gap-2 relative">
@@ -298,124 +349,167 @@ const HeaderUser = () => {
           <span>Danh mục sản phẩm</span>
         </button>
 
+        {/* UL Nút điều hướng đã đồng bộ */}
         <ul className="flex flex-wrap justify-center gap-2 items-center">
-          <li>
-            <Link
-              to="/"
-              className="bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-700 transition"
-            >
-              Trang chủ
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/about"
-              className="bg-gray-200 py-2 px-4 rounded-full hover:bg-green-600 hover:text-white transition"
-            >
-              Giới thiệu
-            </Link>
-          </li>
-          <li
-            className="relative group"
-            onMouseEnter={() => setShowDropdown(true)}
-            onMouseLeave={() => setShowDropdown(false)}
-          >
-            <Link
-              to="/products"
-              className={`py-2 px-4 rounded-full transition flex items-center gap-1 ${showDropdown
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-200 text-gray-800 hover:bg-green-600 hover:text-white"
-                }`}
-            >
-              Sản phẩm
-              <FaSortDown
-                className={`transition-transform duration-300 ${showDropdown ? "rotate-180" : ""
-                  }`}
-              />
-            </Link>
+          {/* Hàm kiểm tra active */}
+          {(() => {
+            const isActive = (path) => {
+              if (path === "/products" && location.pathname.startsWith("/products"))
+                return true;
+              return location.pathname === path;
+            };
 
-            {/* Dropdown */}
-            {showDropdown && (
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-[700px] bg-white shadow-lg border border-gray-300 rounded-xl p-6 grid grid-cols-3 gap-4 z-50 animate-fadeIn">
-                {categories.length > 0 ? (
-                  categories.map((cat) => (
-                    <div key={cat.id}>
-                      <button
-                        onClick={() => handleCategoryClick(cat.slug, cat.name)}
-                        className="flex items-center gap-3 mb-2 hover:text-green-600 transition"
-                      >
-                        <img
-                          src={`${imageURL}/category/${cat.image}`}
-                          alt={cat.name}
-                          className="w-10 h-10 object-cover rounded-full border border-gray-200"
-                        />
-                        <span className="font-semibold text-green-700 text-left">
-                          {cat.name}
-                        </span>
-                      </button>
-                      <ul className="ml-12 space-y-1 text-sm">
-                        {cat.children?.length ? (
-                          cat.children.map((child) => (
-                            <li key={child.id}>
-                              <button
-                                onClick={() =>
-                                  handleCategoryClick(child.slug, child.name)
-                                }
-                                className="text-gray-600 hover:text-green-600 transition w-full text-left"
-                              >
-                                {child.name}
-                              </button>
-                            </li>
-                          ))
-                        ) : (
-                          <li className="text-gray-400 italic">
-                            Đang cập nhật
-                          </li>
-                        )}
-                      </ul>
+            return (
+              <>
+                {/* Trang chủ */}
+                <li>
+                  <Link
+                    to="/"
+                    className={`py-2 px-4 rounded-full transition focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isActive("/")
+                      ? "bg-emerald-700 text-white"
+                      : "bg-gray-200 text-gray-800 hover:bg-emerald-700 hover:text-white"
+                      }`}
+                  >
+                    Trang chủ
+                  </Link>
+                </li>
+
+                {/* Giới thiệu */}
+                <li>
+                  <Link
+                    to="/about"
+                    className={`py-2 px-4 rounded-full transition focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isActive("/about")
+                      ? "bg-emerald-700 text-white"
+                      : "bg-gray-200 text-gray-800 hover:bg-emerald-700 hover:text-white"
+                      }`}
+                  >
+                    Giới thiệu
+                  </Link>
+                </li>
+
+                {/* Sản phẩm (Dropdown) */}
+                <li
+                  className="relative group"
+                  onMouseEnter={() => setShowDropdown(true)}
+                  onMouseLeave={() => setShowDropdown(false)}
+                >
+                  <Link
+                    to="/products"
+                    className={`py-2 px-4 rounded-full transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isActive("/products") || showDropdown
+                      ? "bg-emerald-700 text-white hover:bg-emerald-600"
+                      : "bg-gray-200 text-gray-800 hover:bg-emerald-700 hover:text-white"
+                      }`}
+                  >
+                    Sản phẩm
+                    <FaSortDown
+                      className={`transition-transform duration-300 ${showDropdown ? "rotate-180" : ""
+                        }`}
+                    />
+                  </Link>
+
+                  {/* Dropdown */}
+                  {showDropdown && (
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-[700px] bg-white shadow-lg border border-gray-300 rounded-xl p-6 grid grid-cols-3 gap-4 z-50 animate-fadeIn">
+                      {categories.length > 0 ? (
+                        categories.map((cat) => (
+                          <div key={cat.id}>
+                            <button
+                              onClick={() => handleCategoryClick(cat.slug, cat.name)}
+                              className="flex items-center gap-3 mb-2 hover:text-green-600 transition"
+                            >
+                              <img
+                                src={`${imageURL}/category/${cat.image}`}
+                                alt={cat.name}
+                                className="w-10 h-10 object-cover rounded-full border border-gray-200"
+                              />
+                              <span className="font-semibold text-green-700 text-left">
+                                {cat.name}
+                              </span>
+                            </button>
+                            <ul className="ml-12 space-y-1 text-sm">
+                              {cat.children?.length ? (
+                                cat.children.map((child) => (
+                                  <li key={child.id}>
+                                    <button
+                                      onClick={() =>
+                                        handleCategoryClick(child.slug, child.name)
+                                      }
+                                      className="text-gray-600 hover:text-green-600 transition w-full text-left"
+                                    >
+                                      {child.name}
+                                    </button>
+                                  </li>
+                                ))
+                              ) : (
+                                <li className="text-gray-400 italic">
+                                  Đang cập nhật
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="col-span-full text-center text-gray-500">
+                          Đang tải danh mục...
+                        </p>
+                      )}
                     </div>
-                  ))
-                ) : (
-                  <p className="col-span-full text-center text-gray-500">
-                    Đang tải danh mục...
-                  </p>
-                )}
-              </div>
-            )}
-          </li>
-          <li>
-            <Link
-              to="/request"
-              className="bg-gray-200 py-2 px-4 rounded-full hover:bg-green-600 hover:text-white transition"
-            >
-              Câu hỏi thường gặp
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/posts"
-              className="bg-gray-200 py-2 px-4 rounded-full hover:bg-green-600 hover:text-white transition"
-            >
-              Tin tức
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/contact"
-              className="bg-gray-200 py-2 px-4 rounded-full hover:bg-green-600 hover:text-white transition"
-            >
-              Liên hệ
-            </Link>
-          </li>
+                  )}
+                </li>
+
+                {/* Câu hỏi */}
+                <li>
+                  <Link
+                    to="/request"
+                    className={`py-2 px-4 rounded-full transition focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isActive("/request")
+                      ? "bg-emerald-700 text-white"
+                      : "bg-gray-200 text-gray-800 hover:bg-emerald-700 hover:text-white"
+                      }`}
+                  >
+                    Câu hỏi thường gặp
+                  </Link>
+                </li>
+
+                {/* Tin tức */}
+                <li>
+                  <Link
+                    to="/posts"
+                    className={`py-2 px-4 rounded-full transition focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isActive("/posts")
+                      ? "bg-emerald-700 text-white"
+                      : "bg-gray-200 text-gray-800 hover:bg-emerald-700 hover:text-white"
+                      }`}
+                  >
+                    Tin tức
+                  </Link>
+                </li>
+
+                {/* Liên hệ */}
+                <li>
+                  <Link
+                    to="/contact"
+                    className={`py-2 px-4 rounded-full transition focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isActive("/contact")
+                      ? "bg-emerald-700 text-white"
+                      : "bg-gray-200 text-gray-800 hover:bg-emerald-700 hover:text-white"
+                      }`}
+                  >
+                    Liên hệ
+                  </Link>
+                </li>
+              </>
+            );
+          })()}
         </ul>
 
+        {/* Nút Thanh toán nhanh */}
         <button
           onClick={handleQuickCheckout}
-          className="bg-red-600 py-2 px-5 rounded-full text-white font-medium shadow hover:bg-red-700 transition animate-bounce" style={{ animationDuration: "0.7s" }}
+          className="bg-red-600 py-2 px-5 rounded-full text-white font-medium shadow hover:bg-red-700 transition animate-bounce"
+          style={{ animationDuration: "0.7s" }}
         >
           Thanh toán nhanh
         </button>
       </nav>
+
 
       {/* --- MOBILE SIDEBAR --- */}
       {openMenu && (
