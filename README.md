@@ -58,7 +58,7 @@ npm run dev
 Laravel • MySQL • React • Vite • Tailwind • Axios • Render • Railway • Vercel
 
 👨‍💻 Tác giả
-Nguyễn Văn Văn (DucVanD)
+Văn Văn (DucVanD)
 📅 03/2025 – 10/2025
 🔗 github.com/DucVanD
 
