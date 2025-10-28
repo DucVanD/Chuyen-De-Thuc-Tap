@@ -153,7 +153,7 @@ const ListInventory = () => {
         <table className="w-full text-sm">
           <thead className="bg-indigo-50 text-indigo-800">
             <tr>
-              <th className="p-3 text-left">#</th>
+              <th className="p-3 text-left">STT</th>
               <th className="p-3 text-left">Loại</th>
               <th className="p-3 text-left">Mã SP</th>
               <th className="p-3 text-left">Tên sản phẩm</th>
@@ -172,7 +172,7 @@ const ListInventory = () => {
                     key={item.id}
                     className="hover:bg-gray-50 border-t border-gray-100 transition"
                   >
-                    <td className="p-3">{i + 1}</td>
+                    <td className="p-3">{item.id}</td>
                     <td className={`p-3 font-medium ${typeData.color}`}>
                       {typeData.emoji} {typeData.text}
                     </td>

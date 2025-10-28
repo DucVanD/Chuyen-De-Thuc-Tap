@@ -7,7 +7,7 @@ import {
   FaEdit,
   FaSearch,
 } from "react-icons/fa";
-
+import { toast } from "react-toastify";
 const ListOrder = () => {
   const { page } = useParams();
   const navigate = useNavigate();
@@ -75,8 +75,30 @@ const ListOrder = () => {
   // Xóa đơn hàng
   const deleteOrder = async (id) => {
     if (window.confirm("Bạn có chắc muốn xóa đơn hàng này không?")) {
-      const res = await apiOrder.delete(id);
-      if (res.status) fetchOrders(currentPage);
+      try {
+        const res = await apiOrder.delete(id);
+
+        if (res.status === true) {
+          // ✅ Xóa thành công
+          toast.success("✅ Đã xóa đơn hàng thành công!");
+
+          // Reload lại danh sách sau 1s
+          setTimeout(() => fetchOrders(currentPage), 1000);
+        } else {
+          // ⚠️ API trả về lỗi logic (ví dụ chưa đủ điều kiện xóa)
+          toast.warning(res.message || "Không thể xóa đơn hàng này!");
+        }
+
+      } catch (error) {
+        // ❌ Bắt lỗi từ backend (400, 500, v.v.)
+        // console.error("Lỗi khi xóa đơn hàng:", error);
+
+        const message =
+          error.response?.data?.message ||
+          "Đã xảy ra lỗi. Không thể xóa đơn hàng.";
+
+        toast.error("⚠️ " + message);
+      }
     }
   };
 
@@ -244,8 +266,8 @@ const ListOrder = () => {
               key={i}
               onClick={() => goToPage(i + 1)}
               className={`px-3 py-1 rounded ${currentPage === i + 1
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
+                ? "bg-indigo-600 text-white"
+                : "bg-gray-200 hover:bg-gray-300"
                 }`}
             >
               {i + 1}

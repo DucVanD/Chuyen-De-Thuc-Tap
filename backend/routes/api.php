@@ -112,7 +112,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/order/checkout', [OrderController::class, 'checkout']);
     Route::get('user/{id}/purchaseHistory', [UserController::class, 'purchaseHistory']);
-
 });
 
 /* ------------------ USER ------------------ */
@@ -137,6 +136,7 @@ Route::get('/product/all', [ProductController::class, 'getAllProductUser']);
 Route::post('/product/filter', [ProductController::class, 'filter']);
 Route::get('/product/category', [ProductController::class, 'categoryhome']);
 Route::get('/product/related/{categoryId}', [ProductController::class, 'related']);
+Route::get('/product/lowstock', [ProductController::class, 'lowstock']);
 Route::prefix('product')->group(function () {
     Route::get('trash', [ProductController::class, 'trash'])->name('product.trash');
     Route::get('delete/{product}', [ProductController::class, 'delete'])->name('product.delete');
@@ -168,6 +168,9 @@ Route::prefix('contact')->group(function () {
 Route::resource('contact', ContactController::class);
 
 /* ------------------ POST ------------------ */
+Route::get('/post/slug/{slug}', [PostController::class, 'getPostSlug']);
+Route::get('/post/newest', [PostController::class, 'newest']);
+
 Route::get('/post/all', [PostController::class, 'getAll']);
 Route::prefix('post')->group(function () {
     Route::get('trash', [PostController::class, 'trash'])->name('post.trash');

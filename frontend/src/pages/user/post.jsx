@@ -13,6 +13,8 @@ import { imageURL } from "../../api/config";
 
 const Post = () => {
   const [posts, setPosts] = useState([]);
+  const [postNew, setPostNew] = useState(null);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -44,6 +46,13 @@ const Post = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    apiPost
+      .getNewest()
+      .then((res) => setPostNew(res.data || []))
+      .catch((err) => console.error("Lỗi khi lấy bài viết mới:", err));
+  }, []);
 
   // ✅ Khi URL thay đổi (/posts/2, /posts/3,...), gọi lại fetchPosts
   useEffect(() => {
@@ -115,7 +124,7 @@ const Post = () => {
                       </div>
 
                       <h2 className="text-xl font-bold text-gray-800 mb-3 hover:text-green-600 transition-colors">
-                        <Link to={`/post/${post.id}`}>{post.title}</Link>
+                        <Link to={`/post/${post.slug}`}>{post.title}</Link>
                       </h2>
 
                       <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">
@@ -167,11 +176,10 @@ const Post = () => {
                 <button
                   key={i}
                   onClick={() => goToPage(i + 1)}
-                  className={`px-3 py-1 rounded ${
-                    currentPage === i + 1
-                      ? "bg-green-600 text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
+                  className={`px-3 py-1 rounded ${currentPage === i + 1
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                    }`}
                 >
                   {i + 1}
                 </button>
@@ -213,8 +221,8 @@ const Post = () => {
               <h3 className="font-semibold">BÀI VIẾT MỚI</h3>
             </div>
             <div className="p-4 space-y-3">
-              {Array.isArray(posts) && posts.length > 0 ? (
-                posts.slice(0, 5).map((post, index) => (
+              {Array.isArray(postNew) && postNew.length > 0 ? (
+                postNew.slice(0, 5).map((post, index) => (
                   <div
                     key={index}
                     className="flex gap-3 hover:bg-gray-50 p-2 rounded transition-colors"
@@ -230,7 +238,7 @@ const Post = () => {
                     />
                     <div className="flex-1">
                       <Link
-                        to={`/post/${post.id}`}
+                        to={`/post/${post.slug}`}
                         className="text-sm font-medium text-gray-800 hover:text-green-600 transition-colors line-clamp-2"
                       >
                         {post.title}

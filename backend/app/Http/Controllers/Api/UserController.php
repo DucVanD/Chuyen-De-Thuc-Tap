@@ -302,13 +302,35 @@ class UserController extends Controller
     {
         $request->validate([
             'fullName' => 'required|string|max:255',
-            'email' => 'required|email|unique:user,email',
+            'email' => 'required|email:rfc,dns|unique:user,email', // ✅ kiểm tra email thật
             'password' => 'required|string|min:6|confirmed',
-            'phone' => 'nullable|string|unique:user,phone',
+            'phone' => 'required|string|regex:/^0\d{9}$/|unique:user,phone',
             'username' => 'nullable|string|max:255|unique:user,username',
             'address' => 'nullable|string|max:1000',
-            'avatar' => 'nullable|string|max:255', // người dùng có thể upload sau
+            'avatar' => 'nullable|string|max:255',
+        ], [
+            'fullName.required' => 'Họ và tên không được để trống.',
+            'fullName.max' => 'Họ và tên không được vượt quá 255 ký tự.',
+
+            'email.required' => 'Email là bắt buộc.',
+            'email.email' => 'Email không hợp lệ hoặc không tồn tại.',
+            'email.unique' => 'Email này đã được sử dụng.',
+
+            'password.required' => 'Mật khẩu là bắt buộc.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+
+            'phone.required' => 'Số điện thoại là bắt buộc.',
+            'phone.regex' => 'Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0.',
+            'phone.unique' => 'Số điện thoại này đã được đăng ký.',
+
+            'username.unique' => 'Tên đăng nhập đã tồn tại.',
+            'username.max' => 'Tên đăng nhập không được vượt quá 255 ký tự.',
+
+            'address.max' => 'Địa chỉ không được vượt quá 1000 ký tự.',
+            'avatar.max' => 'Tên ảnh đại diện không được vượt quá 255 ký tự.',
         ]);
+
 
         // Tự động sinh username nếu trống
         $username = $request->username;

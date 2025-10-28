@@ -137,7 +137,7 @@ const Registered = () => {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none pr-8"
                       placeholder="Nhập họ và tên"
-                      required
+                      
                     />
                     {formData.fullName && (
                       <FaTimesCircle
@@ -181,7 +181,7 @@ const Registered = () => {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none pr-8"
                   placeholder="Nhập email của bạn"
-                  required
+                  
                 />
                 {formData.email && (
                   <FaTimesCircle
@@ -203,7 +203,7 @@ const Registered = () => {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none pr-16"
                   placeholder="Nhập mật khẩu"
-                  required
+                  
                 />
                 {formData.password && (
                   <div className="absolute right-3 top-9 flex items-center gap-2">
@@ -239,7 +239,7 @@ const Registered = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border rounded-md text-sm border-gray-300 focus:ring-2 focus:ring-green-400 focus:outline-none pr-16"
                     placeholder="Nhập lại mật khẩu"
-                    required
+                    
                   />
                   {formData.confirmPassword && (
                     <div className="absolute right-3 top-9 flex items-center gap-2">

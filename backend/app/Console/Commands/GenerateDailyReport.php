@@ -58,7 +58,7 @@ class GenerateDailyReport extends Command
             ]);
 
         // 7. Sản phẩm sắp hết hàng
-        $lowStockProducts = Product::where('qty', '<=', 10)->get(['id', 'name', 'qty']);
+        $lowStockProducts = Product::where('qty', '<=', 20)->get(['id', 'name', 'qty'])->take(5);
 
         //        8. Tổng sản phẩm
         $totalProducts = Product::count();

@@ -2,6 +2,8 @@ import Home from "../pages/user/home.jsx";
 import ProductDetail from "../pages/user/Detail.jsx";
 import Products from "../pages/user/Products.jsx";
 import Posts from "../pages/user/post.jsx";
+import PostDetail from "../pages/user/PostDetail.jsx";
+
 import Registered from "../pages/user/Registered.jsx";
 import Contact from "../pages/user/Contact.jsx";
 import About from "../pages/user/About.jsx";
@@ -22,6 +24,8 @@ const Userroute = [
   { path: "product/:slug", component: ProductDetail },
   { path: "/registered", component: Registered },
   { path: "/posts/:page?", component: Posts },
+  { path: "/post/:slug", component: PostDetail },
+
   { path: "/contact", component: Contact },
   { path: "/about", component: About },
   { path: "/cart", component: Cart },

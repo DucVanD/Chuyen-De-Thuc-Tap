@@ -188,7 +188,7 @@ const FooterUser = () => {
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition"
                   >
-                    <span className="bg-blue-500 text-white p-2 rounded-full">
+                    <span className="bg-blue-500 text-white p-2 rounded-full ">
                       <SiZalo size={14} />
                     </span>
                     <span className="font-medium">Chat với chúng tôi qua Zalo</span>
@@ -222,16 +222,16 @@ const FooterUser = () => {
           {/* Nút Liên hệ (tròn, icon lắc bên trong) */}
           <button
             onClick={() => setShowContactMenu(!showContactMenu)}
-            className={`relative w-12 h-12 flex flex-col items-center justify-center rounded-full shadow-xl text-white transition-all duration-300
+            className={`  relative w-12 h-12 flex flex-col items-center justify-center rounded-full shadow-xl text-white transition-all duration-300
     ${showContactMenu ? "bg-green-700" : "bg-green-600 hover:bg-green-700"}`}
             aria-label="Mở menu liên hệ"
           >
             {/* Icon: 💬 -> ❌ khi mở menu */}
             <span
-              className={`flex items-center justify-center ${!showContactMenu ? "animate-iconWobble" : ""
+              className={`  flex items-center justify-center ${!showContactMenu ? "animate-iconWobble" : ""
                 }`}
             >
-              {showContactMenu ? <FaTimes size={20} /> : <FaComments size={20} />}
+              {showContactMenu ? <FaTimes size={20} /> : <FaComments className="" size={20} />}
             </span>
 
             {/* Chữ Liên hệ, chỉ hiển thị khi menu chưa mở */}

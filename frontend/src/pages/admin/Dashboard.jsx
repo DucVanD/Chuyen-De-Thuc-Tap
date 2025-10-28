@@ -195,7 +195,7 @@ const Dashboard = () => {
             <div>
               <h3 className="text-lg font-semibold">Sản phẩm sắp hết</h3>
               <p className="text-sm text-gray-500">
-                {lowStockList.length} sản phẩm (ngưỡng ≤ 10)
+                {lowStockList.length} sản phẩm (ngưỡng ≤ 20)
               </p>
             </div>
             <div className="p-2 rounded-full bg-yellow-100 text-yellow-800">

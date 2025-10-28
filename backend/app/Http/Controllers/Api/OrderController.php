@@ -319,4 +319,40 @@ class OrderController extends Controller
         $pdf = Pdf::loadView('pdf.invoice', ['order' => $order])->setPaper('a4');
         return $pdf->download('HoaDon_' . $order->id . '.pdf');
     }
+
+
+
+    public function delete($id)
+    {
+        $order = Order::with('orderDetails')->find($id);
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Không tìm thấy đơn hàng cần xóa'
+            ], 404);
+        }
+
+        // 🔒 Chỉ cho phép xóa khi status = 5 (đã giao) hoặc 7 (đã hủy)
+        if (!in_array($order->status, [5, 7])) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Chỉ có thể xóa đơn hàng đã hoàn tất hoặc đã hủy'
+            ], 400);
+        }
+
+        // 🧹 Xóa các chi tiết đơn hàng
+        foreach ($order->orderDetails as $detail) {
+            $detail->delete();
+        }
+
+        // ✅ Xóa đơn hàng chính
+        $order->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Đã xóa đơn hàng và các chi tiết liên quan thành công'
+        ]);
+    }
+
 }

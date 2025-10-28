@@ -25,6 +25,12 @@ const apiProduct = {
     return res.data;
   },
 
+  //
+    lowstock: async () => {
+    const res = await axiosInstance.get("/product/lowstock");
+    return res.data;
+  },
+
 
 
 

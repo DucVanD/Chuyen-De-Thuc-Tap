@@ -31,7 +31,7 @@ function ProductItem({ product }) {
 
         {/* Góc hiển thị % giảm giá */}
         {product.discount_percent > 0 && (
-          <div className="absolute top-2 left-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[11px] sm:text-xs font-bold px-1.5 py-0.5 rounded-tr-lg rounded-bl-lg shadow">
+          <div className="absolute top-2 left-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[11px] sm:text-xs font-bold px-1.5 py-0.5 rounded-tr-lg rounded-bl-lg shadow animate-pulse">
             -{product.discount_percent}%
           </div>
         )}

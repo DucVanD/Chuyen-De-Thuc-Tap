@@ -48,7 +48,7 @@ function App() {
         {/* ✅ ToastContainer đặt sau BrowserRouter để hoạt động toàn cục */}
         <ToastContainer
           position="top-right"
-          autoClose={800} // thời gian toast hiển thị 0.8s
+          autoClose={1500} // thời gian toast hiển thị 0.8s
           hideProgressBar={false}
           newestOnTop={false}
           closeOnClick

@@ -55,6 +55,15 @@ const apiOrder = {
   },
 
 
+  delete: async (id) => {
+    const res = await axiosInstance.get(`/order/delete/${id}`); // dùng GET như route
+    return res.data;
+  },
+
+
+
+
+
 };
 
 export default apiOrder;

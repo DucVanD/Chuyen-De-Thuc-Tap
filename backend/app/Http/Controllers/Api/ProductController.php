@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use App\Http\Requests\StoreProductRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\Category;
 use App\Models\Brand;
@@ -262,9 +261,6 @@ class ProductController extends Controller
     }
 
 
-
-
-
     public function newest()
     {
         $products = Product::orderBy('created_at', 'desc')
@@ -290,7 +286,7 @@ class ProductController extends Controller
 
 
 
-    // san pham giam gia cao
+
     // Sản phẩm giảm giá cao nhất
     public function salediscount()
     {
@@ -597,13 +593,36 @@ class ProductController extends Controller
             ->when($excludeId, fn($q) => $q->where('id', '<>', $excludeId))
             ->where('status', 1)
             // ->orderByDesc('created_at')
-             ->inRandomOrder() // ✅ Random ngẫu nhiên mỗi lần gọi
+            ->inRandomOrder() // ✅ Random ngẫu nhiên mỗi lần gọi
             ->take($limit)
-            ->get(['id', 'name', 'slug', 'thumbnail', 'price_root', 'price_sale','qty']);
+            ->get(['id', 'name', 'slug', 'thumbnail', 'price_root', 'price_sale', 'qty']);
 
         return response()->json([
             'status' => true,
             'message' => 'Danh sách sản phẩm liên quan',
+            'data' => $products
+        ]);
+    }
+
+
+
+    public function lowstock()
+    {
+        // Lấy các sản phẩm có số lượng tồn kho <= 10 (hoặc mức bạn muốn)
+        $products = Product::select(
+            'product.id',
+            'product.name',
+            'product.qty',
+        )
+            ->where('product.qty', '<=', 20)       // 🎯 điều kiện tồn kho thấp
+            ->where('product.status', 1)           // chỉ lấy sản phẩm đang hoạt động
+            ->orderBy('product.qty', 'asc')        // sản phẩm sắp hết xếp trên đầu
+            ->take(10)                             // giới hạn 10 sản phẩm đầu tiên
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Danh sách sản phẩm sắp hết hàng',
             'data' => $products
         ]);
     }
