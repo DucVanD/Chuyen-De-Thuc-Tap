@@ -69,7 +69,7 @@ class OrderController extends Controller
                 'total_amount' => $order->total_amount,
                 'payment' => $order->payment ?? 'Chưa chọn',
                 'status' => $order->status,
-
+                'note' => $order->note,
                 'created_at' => $order->created_at,
                 'updated_at' => $order->updated_at,
                 'order_code' => $order->order_code,
@@ -355,4 +355,48 @@ class OrderController extends Controller
         ]);
     }
 
+
+    public function cancel(Request $request, $id)
+    {
+        $order = Order::with('orderDetails.product')->find($id);
+        if (!$order) {
+            return response()->json(['status' => false, 'message' => 'Đơn hàng không tồn tại'], 404);
+        }
+
+        if (!in_array($order->status, [1, 2])) {
+            return response()->json(['status' => false, 'message' => 'Chỉ có thể hủy khi đơn đang chờ hoặc đã xác nhận.']);
+        }
+
+        DB::beginTransaction();
+        try {
+            $order->status = 7; // Đã hủy
+            $order->note = $request->reason ?? 'Không rõ lý do';
+            $order->save();
+
+            // ✅ Trả lại kho
+            foreach ($order->orderDetails as $detail) {
+                $product = $detail->product;
+                if ($product) {
+                    $product->qty += $detail->qty;
+                    $product->save();
+
+                    StockMovement::create([
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'type' => 'return',
+                        'quantity_change' => $detail->qty,
+                        'qty_after' => $product->qty,
+                        'note' => "Hủy đơn hàng #{$order->order_code}",
+                        'user_id' => $order->user_id,
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return response()->json(['status' => true, 'message' => 'Đã hủy đơn hàng thành công.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => $e->getMessage()]);
+        }
+    }
 }

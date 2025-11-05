@@ -191,6 +191,7 @@ Route::prefix('topic')->group(function () {
 Route::resource('topic', TopicController::class);
 
 /* ------------------ ORDER ------------------ */
+Route::post('/order/{id}/cancel', [OrderController::class, 'cancel']);
 Route::get('/orders/{id}/invoice', [OrderController::class, 'exportInvoice']);
 Route::prefix('order')->group(function () {
     Route::get('trash', [OrderController::class, 'trash'])->name('order.trash');

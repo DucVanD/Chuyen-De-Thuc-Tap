@@ -59,7 +59,19 @@ const apiOrder = {
     const res = await axiosInstance.get(`/order/delete/${id}`); // dùng GET như route
     return res.data;
   },
+//  
+cancelOrder: async (id, reason) => {
+  const res = await axiosInstance.post(`/order/${id}/cancel`, { reason });
+  return res.data;
+},
 
+// cancelOrder: async (id, reason) => {
+//   const res = await axiosInstance.put(`/order/${id}`, {
+//     status: 7, // Đã hủy
+//     note: reason,
+//   });
+//   return res.data;
+// },
 
 
 
