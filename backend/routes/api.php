@@ -112,6 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/order/checkout', [OrderController::class, 'checkout']);
     Route::get('user/{id}/purchaseHistory', [UserController::class, 'purchaseHistory']);
+    Route::put('/user/profile', [UserController::class, 'updateProfile']);
 });
 
 /* ------------------ USER ------------------ */

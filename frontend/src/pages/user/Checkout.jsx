@@ -7,27 +7,32 @@ import { imageURL } from "../../api/config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const provinces = ["---", "Hà Nội", "Hồ Chí Minh"];
-
 const districts = {
-  "Hà Nội": ["Ba Đình", "Hoàn Kiếm", "Cầu Giấy", "Đống Đa", "Hai Bà Trưng"],
-  "Hồ Chí Minh": ["Quận 1", "Quận 3", "Quận 7", "Quận 5", "Bình Thạnh"],
+  "Hồ Chí Minh": [
+    "Quận 1",
+    "Quận 3",
+    "Quận 5",
+    "Quận 7",
+    "Quận 10",
+    "Bình Thạnh",
+    "Gò Vấp",
+    "Tân Bình",
+    "Tân Phú",
+    "Thủ Đức",
+  ],
 };
 
 const wards = {
-  // Hà Nội
-  "Ba Đình": ["Phúc Xá", "Trúc Bạch"],
-  "Hoàn Kiếm": ["Chương Dương", "Hàng Bạc"],
-  "Cầu Giấy": ["Dịch Vọng", "Nghĩa Đô"],
-  "Đống Đa": ["Văn Chương", "Phương Liên"],
-  "Hai Bà Trưng": ["Bách Khoa", "Đồng Nhân"],
-
-  // Hồ Chí Minh
   "Quận 1": ["Bến Nghé", "Bến Thành"],
   "Quận 3": ["Phường 1", "Phường 2"],
-  "Quận 7": ["Tân Phú", "Tân Thuận Đông"],
   "Quận 5": ["Phường 8", "Phường 11"],
+  "Quận 7": ["Tân Phú", "Tân Thuận Đông"],
+  "Quận 10": ["Phường 1", "Phường 5"],
   "Bình Thạnh": ["Phường 19", "Phường 22"],
+  "Gò Vấp": ["Phường 5", "Phường 8"],
+  "Tân Bình": ["Phường 4", "Phường 6"],
+  "Tân Phú": ["Phú Thọ Hòa", "Phú Trung"],
+  "Thủ Đức": ["Linh Trung", "Hiệp Bình Chánh"],
 };
 
 const Checkout = () => {
@@ -41,16 +46,13 @@ const Checkout = () => {
     name: "",
     phone: "",
     address: "",
-    province: "---",
+    province: "Hồ Chí Minh", // ✅ mặc định HCM
     district: "",
     ward: "",
     note: "",
     payment: "cod",
   });
 
-  const [selectedProvince, setSelectedProvince] = useState("---");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedWard, setSelectedWard] = useState("");
   const [loading, setLoading] = useState(false);
 
   // ✅ Tự động điền thông tin user khi login
@@ -68,19 +70,18 @@ const Checkout = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
 
-    if (name === "province") {
-      setSelectedProvince(value);
-      setSelectedDistrict("");
-      setSelectedWard("");
-    }
     if (name === "district") {
-      setSelectedDistrict(value);
-      setSelectedWard("");
-    }
-    if (name === "ward") {
-      setSelectedWard(value);
+      setForm({
+        ...form,
+        district: value,
+        ward: "", // reset phường khi đổi quận
+      });
+    } else {
+      setForm({
+        ...form,
+        [name]: value,
+      });
     }
   };
 
@@ -108,13 +109,8 @@ const Checkout = () => {
       return;
     }
 
-    if (
-      !form.address.trim() ||
-      form.province === "---" ||
-      !form.district ||
-      !form.ward
-    ) {
-      toast.warning("Vui lòng nhập đầy đủ địa chỉ, tỉnh/thành, quận/huyện và phường/xã!");
+    if (!form.address.trim() || !form.district || !form.ward) {
+      toast.warning("Vui lòng nhập đầy đủ địa chỉ, quận/huyện và phường/xã!");
       setLoading(false);
       return;
     }
@@ -131,13 +127,6 @@ const Checkout = () => {
     try {
       const res = await apiOrder.checkout(orderData);
 
-      // ✅ Nếu thanh toán là VNPAY → chuyển hướng sang trang thanh toán
-      // if (form.payment === "vnpay" && res?.payment_url) {
-      //   // window.location.href = res.payment_url;
-
-      //   return;
-      // }
-
       if (form.payment === "vnpay" && res?.payment_url) {
         toast.info("🔁 Đang chuyển hướng đến cổng thanh toán...", {
           autoClose: 800,
@@ -148,11 +137,7 @@ const Checkout = () => {
         return;
       }
 
-      // ✅ Nếu thanh toán COD hoặc BANK
       if (res.status) {
-        // toast.success("Đặt hàng thành công!");
-        // dispatch(clearCart());
-        // navigate("/");
         toast.success("Đặt hàng thành công!", {
           onClose: () => {
             dispatch(clearCart());
@@ -160,18 +145,15 @@ const Checkout = () => {
           },
           autoClose: 800,
         });
-
-      }
-
-      else {
+      } else {
         toast.error("Lỗi: " + (res.message || "Không thể đặt hàng"));
       }
     } catch (err) {
       console.error(err);
-
       if (err.response && err.response.status === 422) {
         const errors = err.response.data.errors || {};
-        const firstError = Object.values(errors)[0]?.[0] || "Thông tin không hợp lệ!";
+        const firstError =
+          Object.values(errors)[0]?.[0] || "Thông tin không hợp lệ!";
         toast.error(firstError);
       } else {
         toast.error("Lỗi khi đặt hàng!");
@@ -211,34 +193,21 @@ const Checkout = () => {
           />
           <input
             name="address"
-            placeholder="Địa chỉ"
+            placeholder="Địa chỉ (số nhà, tên đường)"
             value={form.address}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md p-2 mb-3 text-sm"
           />
 
-          <select
-            name="province"
-            value={selectedProvince}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2 mb-3 text-sm"
-          >
-            {provinces.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-
+          {/* ✅ Chỉ còn chọn Quận & Phường */}
           <select
             name="district"
-            value={selectedDistrict}
+            value={form.district}
             onChange={handleChange}
-            disabled={selectedProvince === "---"}
             className="w-full border border-gray-300 rounded-md p-2 mb-3 text-sm"
           >
-            <option value="">Quận/huyện</option>
-            {(districts[selectedProvince] || []).map((d) => (
+            <option value="">Chọn quận/huyện</option>
+            {districts["Hồ Chí Minh"].map((d) => (
               <option key={d} value={d}>
                 {d}
               </option>
@@ -247,13 +216,13 @@ const Checkout = () => {
 
           <select
             name="ward"
-            value={selectedWard}
+            value={form.ward}
             onChange={handleChange}
-            disabled={!selectedDistrict}
+            disabled={!form.district}
             className="w-full border border-gray-300 rounded-md p-2 mb-3 text-sm"
           >
-            <option value="">Phường/xã</option>
-            {(wards[selectedDistrict] || []).map((w) => (
+            <option value="">Chọn phường/xã</option>
+            {(wards[form.district] || []).map((w) => (
               <option key={w} value={w}>
                 {w}
               </option>
@@ -271,7 +240,9 @@ const Checkout = () => {
 
         {/* PAYMENT METHOD */}
         <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100">
-          <h2 className="text-lg font-semibold mb-4">Phương thức thanh toán</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            Phương thức thanh toán
+          </h2>
 
           <label className="block mb-2 text-sm">
             <input
@@ -351,7 +322,6 @@ const Checkout = () => {
           {loading ? "Đang xử lý..." : "ĐẶT HÀNG"}
         </button>
       </div>
-     
     </div>
   );
 };

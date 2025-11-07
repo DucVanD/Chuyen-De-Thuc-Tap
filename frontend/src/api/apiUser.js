@@ -63,6 +63,16 @@ const apiUser = {
   },
 
 
+ updateProfile: async (data) => {
+  const formData = new FormData();
+  for (const key in data) formData.append(key, data[key]);
+  formData.append("_method", "PUT"); // ✅ Laravel hiểu là PUT
+
+  const res = await axiosInstance.post("/user/profile", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+},
 
 
 

@@ -8,8 +8,21 @@ const axiosInstance = axios.create({
   timeout: 20000, // tăng lên 20s vì Render cold-start chậm
   headers: {
     "Content-Type": "application/json",
+    Accept: "application/json",
   },
 });
+
+// ✅ Interceptor: tự động gắn Bearer Token từ localStorage
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // === Chế độ upload ===
 axiosInstance.enableUploadFile = () => {

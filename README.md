@@ -1,7 +1,7 @@
 # 🛒 Chuyên Đề Thực Tập – Website Siêu Thị Mini
 
 ## 🌱 Giới thiệu
-Dự án xây dựng **website siêu thị mini trực tuyến (Bean Farm / MiniMart)** với mô hình **Full-Stack 3 lớp**:
+Dự án xây dựng **website siêu thị mini trực tuyến Bean Farm ** với mô hình **Full-Stack 3 lớp**:
 - **Frontend:** React + Vite + Tailwind CSS  
 - **Backend:** Laravel 10 (API)  
 - **Database:** MySQL (Railway)
@@ -9,7 +9,7 @@ Dự án xây dựng **website siêu thị mini trực tuyến (Bean Farm / Mini
 Triển khai thực tế:
 | Thành phần | Nền tảng | Link |
 |-------------|-----------|------|
-| 🖥️ Frontend | **Vercel** | [Xem trang web](https://chuyen-de-thuc-tap-46dg-dvanduws-projects.vercel.app) |
+| 🖥️ Frontend | **Vercel** | [Xem trang web](https://sieuthimini.vercel.app/) |
 | ⚙️ Backend | **Render** | *(API chạy nền, kết nối DB)* |
 | 🗄️ Database | **Railway** | *(MySQL Cloud)* |
 

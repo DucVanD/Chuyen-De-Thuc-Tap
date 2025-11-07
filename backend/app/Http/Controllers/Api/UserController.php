@@ -72,7 +72,7 @@ class UserController extends Controller
         $maxTotal = $request->input('max_total');
         $perPage = $request->input('limit', 3);
 
-        $user = \App\Models\User::find($id);
+        $user = User::find($id);
         if (!$user) {
             return response()->json([
                 'status' => false,
@@ -81,7 +81,7 @@ class UserController extends Controller
         }
 
         // 🔹 Lọc đơn hàng theo các tiêu chí + phân trang
-        $orders = \App\Models\Order::with(['orderDetails.product'])
+        $orders = Order::with(['orderDetails.product'])
             ->withCount('orderDetails')
             ->where('user_id', $id)
             // 📅 Lọc ngày
@@ -100,14 +100,14 @@ class UserController extends Controller
             ->paginate($perPage);
 
         // 🔹 Thống kê toàn bộ user
-        $totalOrders = \App\Models\Order::where('user_id', $id)->count();
-        $totalProducts = \App\Models\OrderDetail::whereIn(
+        $totalOrders = Order::where('user_id', $id)->count();
+        $totalProducts = OrderDetail::whereIn(
             'order_id',
-            \App\Models\Order::where('user_id', $id)->pluck('id')
+            Order::where('user_id', $id)->pluck('id')
         )->sum('qty');
 
         // 🔹 Thống kê trạng thái đơn hàng
-        $statusStats = \App\Models\Order::where('user_id', $id)
+        $statusStats = Order::where('user_id', $id)
             ->selectRaw('
             SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as pending,
             SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as confirmed,
@@ -416,6 +416,43 @@ class UserController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Đăng xuất thành công'
+        ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        // ✅ Không validate avatar là image nếu không upload mới
+        $rules = [
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:1000',
+        ];
+
+        if ($request->hasFile('avatar')) {
+            $rules['avatar'] = 'image|mimes:jpg,jpeg,png|max:2048';
+        }
+
+        $request->validate($rules);
+
+        // ✅ Nếu có file avatar mới thì lưu file mới
+        if ($request->hasFile('avatar')) {
+            $filename = time() . '_' . $request->file('avatar')->getClientOriginalName();
+            $request->file('avatar')->move(public_path('assets/images/avatar'), $filename);
+            $user->avatar = $filename;
+        }
+
+        // ✅ Nếu không có ảnh mới, giữ nguyên ảnh cũ
+        $user->name = $request->name;
+        $user->phone = $request->phone;
+        $user->address = $request->address;
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Cập nhật thành công',
+            'data' => $user
         ]);
     }
 }

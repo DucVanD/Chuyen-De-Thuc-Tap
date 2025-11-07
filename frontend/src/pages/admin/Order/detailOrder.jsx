@@ -125,6 +125,14 @@ const DetailOrder = () => {
                     {order.ward}, {order.district}, {order.province}
                   </p>
                 </div>
+                {/* note */}
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-4">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-1">
+                    Ghi chú đơn hàng
+                  </h3>
+                  <p className="text-red-600 leading-relaxed text-sm">  {order.note ? order.note : "Không có ghi chú"}</p>
+
+                </div>
 
                 {/* Payment section */}
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-4">
@@ -140,6 +148,8 @@ const DetailOrder = () => {
                       : "Chuyển khoản ngân hàng"}
                   </p>
                 </div>
+
+
 
                 {/* Status */}
                 <div className="flex justify-center mt-3">

@@ -13,6 +13,8 @@ import { logout } from "../Redux/authSlice";
 import { toast } from "react-toastify";
 import { TbBrandShopee } from "react-icons/tb";
 import { HiOutlineClipboardDocumentCheck } from "react-icons/hi2";
+
+
 const HeaderUser = () => {
   const [openMenu, setOpenMenu] = useState(false); // Menu mobile
   const [showDropdown, setShowDropdown] = useState(false); // Dropdown desktop
@@ -185,6 +187,7 @@ const HeaderUser = () => {
               <Link to="/registered" className="hover:text-amber-400">
                 Tài khoản
               </Link>
+
             )}
           </div>
 
