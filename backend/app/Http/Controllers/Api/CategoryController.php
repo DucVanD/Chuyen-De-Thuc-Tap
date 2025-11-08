@@ -46,24 +46,52 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
+        // 🧩 Bước 1: Validate dữ liệu đầu vào
+        $request->validate([
+            'name' => 'required|string|max:255|unique:category,name',
+            'description' => 'nullable|string|max:1000',
+            'sort_order' => 'required|integer|min:0', // ✅ bắt buộc nhập và >= 0
+            'parent_id' => 'nullable|integer|min:0|exists:category,id',
+            'status' => 'required|in:0,1',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            // 🔹 Tên danh mục
+            'name.required' => 'Tên danh mục không được để trống.',
+            'name.unique' => 'Tên danh mục đã tồn tại.',
+            'name.max' => 'Tên danh mục không được vượt quá 255 ký tự.',
 
+            // 🔹 Thứ tự
+            'sort_order.required' => 'Bạn phải nhập thứ tự sắp xếp.',
+            'sort_order.integer' => 'Thứ tự sắp xếp phải là số nguyên.',
+            'sort_order.min' => 'Thứ tự sắp xếp không được nhỏ hơn 0.',
+
+            // 🔹 Danh mục cha
+            'parent_id.required' => 'Vui lòng chọn danh mục cha.',
+            'parent_id.exists' => 'Danh mục cha không hợp lệ.',
+            'parent_id.integer' => 'Danh mục cha phải là số.',
+
+            // 🔹 Trạng thái
+            'status.required' => 'Trạng thái là bắt buộc.',
+            'status.in' => 'Trạng thái chỉ được là 0 hoặc 1.',
+
+            // 🔹 Ảnh
+            'image.file' => 'Tệp tải lên phải là hình ảnh.',
+            'image.mimes' => 'Ảnh phải có định dạng jpg, jpeg, png hoặc webp.',
+            'image.max' => 'Kích thước ảnh tối đa là 2MB.',
+        ]);
+
+        // 🧩 Bước 2: Tạo mới Category
         $category = new Category();
         $category->name = $request->name;
-
-        //
-
         $category->slug = Str::of($request->name)->slug('-');
-        //
-
-        $category->sort_order = $request->sort_order;
-        $category->parent_id = $request->parent_id;
-        // Upload file
-
-
         $category->description = $request->description;
-
-
+        $category->sort_order = $request->sort_order;
+        $category->parent_id = $request->parent_id ?? 0;
         $category->status = $request->status;
+        $category->created_at = now();
+        $category->created_by = Auth::id() ?? 1;
+
+        // 🧩 Bước 3: Upload ảnh (nếu có)
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $extension = $file->getClientOriginalExtension();
@@ -71,19 +99,16 @@ class CategoryController extends Controller
             $file->move(public_path('assets/images/category'), $filename);
             $category->image = $filename;
         }
-        $category->created_at = now();
-        $category->created_by = Auth::id() ?? 1;
-
-
 
         $category->save();
-        // echo ($category);
+
         return response()->json([
             'status' => true,
-            'message' => 'Thêm danh mục thành công',
+            'message' => '✅ Thêm danh mục thành công!',
             'data' => $category
         ]);
     }
+
 
 
     /**
@@ -113,20 +138,52 @@ class CategoryController extends Controller
     public function update(Request $request, string $id)
     {
         $category = Category::find($id);
-        if ($category == null) {
-            return redirect()->route('category.index')->with('error', 'Danh mục không tồn tại');
+        if (!$category) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Danh mục không tồn tại'
+            ], 404);
         }
-        $category->name = $request->name;
 
+        // 🧩 Validate dữ liệu đầu vào
+        $request->validate([
+            'name' => 'required|string|max:255|unique:category,name,' . $id,
+            'description' => 'nullable|string|max:1000',
+            'sort_order' => 'nullable|integer|min:0',
+            'parent_id' => 'nullable|exists:category,id|not_in:' . $id, // tránh chọn chính nó làm cha
+            'status' => 'required|in:0,1',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'name.required' => 'Tên danh mục không được để trống.',
+            'name.string' => 'Tên danh mục phải là chuỗi ký tự.',
+            'name.max' => 'Tên danh mục không được vượt quá 255 ký tự.',
+            'name.unique' => 'Tên danh mục đã tồn tại trong hệ thống.',
+
+            'sort_order.integer' => 'Thứ tự sắp xếp phải là số nguyên.',
+            'sort_order.min' => 'Thứ tự sắp xếp không được nhỏ hơn 0.',
+
+            'parent_id.exists' => 'Danh mục cha không hợp lệ.',
+            'parent_id.not_in' => 'Danh mục cha không được là chính nó.',
+
+            'status.required' => 'Trạng thái là bắt buộc.',
+            'status.in' => 'Trạng thái chỉ được là 0 hoặc 1.',
+
+            'image.file' => 'Tệp tải lên phải là hình ảnh.',
+            'image.mimes' => 'Ảnh phải có định dạng jpg, jpeg, png hoặc webp.',
+            'image.max' => 'Kích thước ảnh tối đa là 2MB.',
+        ]);
+
+        // 🧩 Cập nhật thông tin
+        $category->name = $request->name;
         $category->slug = Str::of($request->name)->slug('-');
-        //
+        $category->description = $request->description;
         $category->sort_order = $request->sort_order;
         $category->parent_id = $request->parent_id;
-        // Upload file
-        $category->description = $request->description;
-
-
         $category->status = $request->status;
+        $category->created_by = Auth::id() ?? 1;
+        $category->created_at = now();
+
+        // 🧩 Upload ảnh mới (nếu có)
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $extension = $file->getClientOriginalExtension();
@@ -134,19 +191,16 @@ class CategoryController extends Controller
             $file->move(public_path('assets/images/category'), $filename);
             $category->image = $filename;
         }
-        $category->created_at = now();
-        $category->created_by = Auth::id() ?? 1;
-
-
 
         $category->save();
-        // echo ($category);
+
         return response()->json([
             'status' => true,
             'message' => 'Cập nhật danh mục thành công',
             'data' => $category
         ]);
     }
+
 
     /**
      * Remove the specified resource from storage.

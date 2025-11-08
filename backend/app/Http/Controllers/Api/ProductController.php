@@ -13,6 +13,7 @@ use App\Models\Category;
 use App\Models\Brand;
 use App\Models\OrderDetail;
 use App\Models\StockMovement;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -114,39 +115,90 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(Request  $request)
+    public function store(Request $request)
     {
+        // 🧩 Bước 1: Validate dữ liệu đầu vào
+        $request->validate([
+            'name' => 'required|string|max:255|unique:product,name',
+            'price_root' => 'required|numeric|min:0',
+            'price_sale' => 'nullable|numeric|min:0',
+            'qty' => 'required|integer|min:0',
+            'status' => 'required|in:0,1',
+            'category_id' => 'required|exists:category,id',
+            'brand_id' => 'nullable|exists:brand,id',
+            'description' => 'nullable|string|max:1000',
+            'detail' => 'nullable|string',
+            'thumbnail' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            // 🔹 Tên sản phẩm
+            'name.required' => 'Tên sản phẩm không được để trống.',
+            'name.string' => 'Tên sản phẩm phải là chuỗi ký tự.',
+            'name.max' => 'Tên sản phẩm không được vượt quá 255 ký tự.',
+            'name.unique' => 'Tên sản phẩm đã tồn tại trong hệ thống.',
 
+            // 🔹 Giá
+            'price_root.required' => 'Giá gốc là bắt buộc.',
+            'price_root.numeric' => 'Giá gốc phải là số.',
+            'price_root.min' => 'Giá gốc không được nhỏ hơn 0.',
+            'price_sale.numeric' => 'Giá khuyến mãi phải là số.',
+            'price_sale.min' => 'Giá khuyến mãi không được nhỏ hơn 0.',
+
+            // 🔹 Số lượng
+            'qty.required' => 'Số lượng là bắt buộc.',
+            'qty.integer' => 'Số lượng phải là số nguyên.',
+            'qty.min' => 'Số lượng không được nhỏ hơn 0.',
+
+            // 🔹 Trạng thái
+            'status.required' => 'Trạng thái sản phẩm là bắt buộc.',
+            'status.in' => 'Trạng thái chỉ được là 0 (không xuất bản) hoặc 1 (xuất bản).',
+
+            // 🔹 Danh mục & thương hiệu
+            'category_id.required' => 'Danh mục là bắt buộc.',
+            'category_id.exists' => 'Danh mục không hợp lệ.',
+            'brand_id.exists' => 'Thương hiệu không hợp lệ.',
+
+            // 🔹 Mô tả & chi tiết
+            'description.string' => 'Mô tả phải là chuỗi ký tự.',
+            'description.max' => 'Mô tả không được vượt quá 1000 ký tự.',
+            'detail.string' => 'Chi tiết sản phẩm phải là chuỗi ký tự.',
+
+            // 🔹 Hình ảnh
+            'thumbnail.file' => 'Ảnh đại diện phải là tệp hợp lệ.',
+            'thumbnail.mimes' => 'Ảnh phải có định dạng jpg, jpeg, png hoặc webp.',
+            'thumbnail.max' => 'Kích thước ảnh tối đa là 2MB.',
+        ]);
+
+        // 🧩 Bước 2: Tạo mới sản phẩm
         $product = new Product();
         $product->name = $request->name;
-
-
         $product->slug = Str::of($request->name)->slug('-');
         $product->detail = $request->detail;
         $product->price_root = $request->price_root;
-        $product->price_sale = $request->price_sale;
+        $product->price_sale = $request->price_sale ?? 0;
         $product->qty = $request->qty;
         $product->description = $request->description;
-        // Upload filex
+        $product->status = $request->status;
+        $product->created_by = Auth::id() ?? 1;
+        $product->created_at = now();
+        $product->category_id = $request->category_id;
+        $product->brand_id = $request->brand_id;
+
+        // 🧩 Bước 3: Upload ảnh (nếu có)
         if ($request->hasFile('thumbnail')) {
             $file = $request->file('thumbnail');
             $extension = $file->getClientOriginalExtension();
             $filename = $product->slug . '.' . $extension;
             $file->move(public_path('assets/images/product'), $filename);
-            $product->thumbnail =  $filename; // Lưu đường dẫn chính xác
+            $product->thumbnail = $filename;
         }
 
-
-        $product->status = $request->status;
-        $product->created_at = now();
-        $product->created_by = Auth::id() ?? 1;
-        $product->category_id = $request->category_id;
-        $product->brand_id = $request->brand_id;
-
+        // 🧩 Bước 4: Lưu sản phẩm
         $product->save();
+
+        // 🧩 Bước 5: Trả kết quả
         return response()->json([
             'status' => true,
-            'message' => "Thêm sản phẩm $product->name thành công",
+            'message' => "Thêm sản phẩm {$product->name} thành công.",
             'data' => $product
         ]);
     }
@@ -205,14 +257,67 @@ class ProductController extends Controller
 
     public function update(Request $request, string $id)
     {
+        // ✅ Bước 1: Kiểm tra dữ liệu đầu vào
+        $request->validate([
+            'name' => 'required|string|max:255|unique:product,name,' . $id,
+            'price_root' => 'required|numeric|min:0',
+            'price_sale' => 'nullable|numeric|min:0',
+            'qty' => 'required|integer|min:0',
+            'status' => 'required|in:0,1',
+            'category_id' => 'required|exists:category,id',
+            'brand_id' => 'nullable|exists:brand,id',
+            'description' => 'nullable|string|max:1000',
+            'detail' => 'nullable|string',
+            'thumbnail' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048', // tối đa 2MB
+        ], [
+            // 🔹 Tên sản phẩm
+            'name.required' => 'Tên sản phẩm không được để trống.',
+            'name.string' => 'Tên sản phẩm phải là chuỗi ký tự.',
+            'name.max' => 'Tên sản phẩm không được vượt quá 255 ký tự.',
+            'name.unique' => 'Tên sản phẩm đã tồn tại trong hệ thống.',
+
+            // 🔹 Giá gốc & giá khuyến mãi
+            'price_root.required' => 'Giá gốc là bắt buộc.',
+            'price_root.numeric' => 'Giá gốc phải là số.',
+            'price_root.min' => 'Giá gốc không được nhỏ hơn 0.',
+            'price_sale.numeric' => 'Giá khuyến mãi phải là số.',
+            'price_sale.min' => 'Giá khuyến mãi không được nhỏ hơn 0.',
+
+            // 🔹 Số lượng
+            'qty.required' => 'Số lượng là bắt buộc.',
+            'qty.integer' => 'Số lượng phải là số nguyên.',
+            'qty.min' => 'Số lượng không được nhỏ hơn 0.',
+
+            // 🔹 Trạng thái
+            'status.required' => 'Trạng thái sản phẩm là bắt buộc.',
+            'status.in' => 'Trạng thái chỉ được là 0 (không xuất bản) hoặc 1 (xuất bản).',
+
+            // 🔹 Danh mục & thương hiệu
+            'category_id.required' => 'Danh mục là bắt buộc.',
+            'category_id.exists' => 'Danh mục không hợp lệ.',
+            'brand_id.exists' => 'Thương hiệu không hợp lệ.',
+
+            // 🔹 Mô tả & chi tiết
+            'description.string' => 'Mô tả phải là chuỗi ký tự.',
+            'description.max' => 'Mô tả không được vượt quá 1000 ký tự.',
+            'detail.string' => 'Chi tiết sản phẩm phải là chuỗi ký tự.',
+
+            // 🔹 Hình ảnh
+            'thumbnail.file' => 'Ảnh đại diện phải là tệp hợp lệ.',
+            'thumbnail.mimes' => 'Ảnh phải có định dạng jpg, jpeg, png hoặc webp.',
+            'thumbnail.max' => 'Kích thước ảnh tối đa là 2MB.',
+        ]);
+
+
+        // ✅ Bước 2: Tìm sản phẩm cần cập nhật
         $product = Product::find($id);
         if (!$product) {
             return response()->json(['status' => false, 'message' => 'Sản phẩm không tồn tại']);
         }
 
-        $oldQty = $product->qty; // lưu số lượng cũ
+        $oldQty = $product->qty;
 
-        // Cập nhật các trường cơ bản
+        // ✅ Bước 3: Cập nhật dữ liệu sản phẩm
         $product->name = $request->name;
         $product->slug = Str::of($request->name)->slug('-');
         $product->detail = $request->detail;
@@ -225,7 +330,7 @@ class ProductController extends Controller
         $product->brand_id = $request->brand_id;
         $product->created_by = Auth::id() ?? 1;
 
-        // Upload hình ảnh (nếu có)
+        // ✅ Bước 4: Upload ảnh (nếu có)
         if ($request->hasFile('thumbnail')) {
             $file = $request->file('thumbnail');
             $extension = $file->getClientOriginalExtension();
@@ -236,7 +341,7 @@ class ProductController extends Controller
 
         $product->save();
 
-        // 🔹 Ghi lịch sử tồn kho
+        // ✅ Bước 5: Ghi lịch sử tồn kho nếu thay đổi số lượng
         if ($oldQty != $product->qty) {
             $change = $product->qty - $oldQty;
             $type = $change > 0 ? 'import' : 'adjustment';
@@ -430,21 +535,22 @@ class ProductController extends Controller
             ], 404);
         }
 
-        // Kiểm tra sản phẩm có trong đơn hàng không
-        $hasOrder = OrderDetail::where('product_id', $product->id)->exists();
-        if ($hasOrder) {
+        // Kiểm tra sản phẩm có trong đơn hàng
+        if (OrderDetail::where('product_id', $product->id)->exists()) {
             return response()->json([
                 'status' => false,
                 'message' => 'Sản phẩm đang được đặt, không thể xóa'
             ], 400);
         }
 
-        $product->delete(); // soft delete
+        $product->delete();
+
         return response()->json([
             'status' => true,
             'message' => 'Xóa sản phẩm thành công'
-        ]);
+        ],); // ✅ thêm HTTP status code rõ ràng
     }
+
 
     // Xóa vĩnh viễn từ Trash
     public function destroy($id)
@@ -465,8 +571,8 @@ class ProductController extends Controller
         $product->forceDelete(); // xóa vĩnh viễn
         return response()->json([
             'status' => true,
-            'message' => 'Xóa sản phẩm vĩnh viễn thành công'
-        ]);
+            'message' => 'Xóa sản phẩm thành công'
+        ], 200);
     }
 
     // Khôi phục sản phẩm từ Trash
