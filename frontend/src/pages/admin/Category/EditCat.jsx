@@ -17,11 +17,11 @@ const EditCat = () => {
     image: "",
   });
 
-  const [preview, setPreview] = useState(null); // để hiển thị ảnh preview
-  const [imageFile, setImageFile] = useState(null); // lưu file ảnh mới
+  const [preview, setPreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Lấy thông tin danh mục theo id
+  // 🔹 Lấy thông tin danh mục hiện tại
   useEffect(() => {
     const fetchCategory = async () => {
       try {
@@ -33,9 +33,12 @@ const EditCat = () => {
               ? `${imageURL}/category/${res.data.data.image}?v=${Date.now()}`
               : null
           );
+        } else {
+          alert("⚠️ Không tìm thấy danh mục này!");
         }
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu danh mục:", error);
+        alert("❌ Không thể tải dữ liệu danh mục.");
       } finally {
         setLoading(false);
       }
@@ -43,66 +46,70 @@ const EditCat = () => {
     fetchCategory();
   }, [id]);
 
-  // Lấy danh sách tất cả categories để chọn danh mục cha
+  // 🔹 Lấy danh sách danh mục cha
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await apiCategory.getAll();
         if (res.data.status) {
           setCategories(res.data.data);
-        } else {
-          console.warn("API trả về status = false:", res.data.message);
         }
       } catch (error) {
-        console.error("Lỗi khi gọi API categories:", error);
+        alert("❌ Không thể tải danh mục cha!");
       }
     };
     fetchCategories();
   }, []);
 
-  // Xử lý thay đổi input
+  // 🔹 Xử lý input thay đổi
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCategory({ ...category, [name]: value });
   };
 
-  // Xử lý upload file
+  // 🔹 Upload file ảnh mới
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImageFile(file); // lưu file mới
-      setPreview(URL.createObjectURL(file)); // hiển thị ảnh mới
+      setImageFile(file);
+      setPreview(URL.createObjectURL(file));
     }
   };
 
-  // Submit form
+  // 🔹 Gửi form cập nhật
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const formData = new FormData();
-      formData.append("name", category.name);
-      formData.append("description", category.description);
-      formData.append("status", category.status);
-      formData.append("parent_id", category.parent_id);
-      formData.append("sort_order", category.sort_order);
-
-      if (imageFile) {
-        formData.append("image", imageFile);
-      }
+      Object.entries(category).forEach(([key, value]) =>
+        formData.append(key, value ?? "")
+      );
+      if (imageFile) formData.append("image", imageFile);
 
       const res = await apiCategory.editCategory(id, formData);
 
-      if (res.status || res.data?.status) {
-        alert("Cập nhật thành công!");
+      if (res.data?.status) {
+        alert("✅ Cập nhật danh mục thành công!");
         const page = localStorage.getItem("currentCategoryPage") || 1;
         navigate(`/admin/categories/${page}`);
       } else {
-        alert("Có lỗi xảy ra khi cập nhật!");
+        alert("❌ Cập nhật thất bại. Vui lòng thử lại!");
       }
     } catch (error) {
       console.error("Lỗi khi cập nhật danh mục:", error);
-      alert("Không thể cập nhật danh mục.");
+
+      if (error.response?.data?.errors) {
+        const firstError = Object.values(error.response.data.errors)[0]?.[0];
+        alert(firstError || "⚠️ Dữ liệu không hợp lệ!");
+      } else {
+        alert(
+          error.response?.data?.message || "❌ Lỗi server. Không thể cập nhật!"
+        );
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,7 +123,7 @@ const EditCat = () => {
           Chỉnh sửa danh mục
         </h3>
         <button
-          onClick={() => navigate("/admin/category")}
+          onClick={() => navigate("/admin/categories/1")}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded inline-flex items-center transition duration-200"
         >
           <i className="fas fa-arrow-left mr-2"></i> Về danh sách
@@ -143,7 +150,7 @@ const EditCat = () => {
                     name="name"
                     value={category.name}
                     onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full p-2.5 border border-gray-300 rounded-md"
                     placeholder="Nhập tên danh mục"
                   />
                 </div>
@@ -157,7 +164,7 @@ const EditCat = () => {
                     value={category.description}
                     onChange={handleChange}
                     rows="3"
-                    className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full p-2.5 border border-gray-300 rounded-md"
                     placeholder="Nhập mô tả danh mục"
                   ></textarea>
                 </div>
@@ -170,7 +177,7 @@ const EditCat = () => {
                     name="status"
                     value={category.status}
                     onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full p-2.5 border border-gray-300 rounded-md"
                   >
                     <option value="1">Xuất bản</option>
                     <option value="0">Không xuất bản</option>
@@ -179,7 +186,7 @@ const EditCat = () => {
               </div>
             </div>
 
-            {/* Phân loại & Hình ảnh */}
+            {/* Phân loại & hình ảnh */}
             <div className="lg:w-1/2">
               <div className="bg-indigo-50 p-6 rounded-lg shadow-sm mb-6">
                 <h4 className="text-lg font-semibold text-indigo-700 mb-4 pb-2 border-b border-indigo-200">
@@ -194,7 +201,7 @@ const EditCat = () => {
                     name="parent_id"
                     value={category.parent_id || 0}
                     onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full p-2.5 border border-gray-300 rounded-md"
                   >
                     <option value="0">Chọn danh mục cha</option>
                     {categories
@@ -216,7 +223,7 @@ const EditCat = () => {
                     name="sort_order"
                     value={category.sort_order}
                     onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full p-2.5 border border-gray-300 rounded-md"
                     placeholder="Nhập thứ tự sắp xếp"
                   />
                 </div>
@@ -233,7 +240,7 @@ const EditCat = () => {
                     <img
                       src={preview || "https://via.placeholder.com/150"}
                       alt="Preview"
-                      className="w-full h-full object-cover rounded-md border-2 border-gray-200"
+                      className="w-full h-full object-cover rounded-md border"
                     />
                   </div>
 
@@ -247,9 +254,11 @@ const EditCat = () => {
 
                 <button
                   type="submit"
+                  disabled={loading}
                   className="w-full bg-indigo-600 text-white py-2.5 px-4 rounded-md hover:bg-indigo-700 transition duration-200 flex items-center justify-center"
                 >
-                  <i className="fas fa-save mr-2"></i> Lưu thay đổi
+                  <i className="fas fa-save mr-2"></i>
+                  {loading ? "Đang lưu..." : "Lưu thay đổi"}
                 </button>
               </div>
             </div>

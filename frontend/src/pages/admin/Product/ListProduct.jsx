@@ -82,16 +82,30 @@ const ListProduct = () => {
   // 🔹 Xóa sản phẩm
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này không?")) return;
+
     try {
-      const res = await apiProduct.delete(id);
+      const res = await apiProduct.delete(id); // nếu res = res.data
+
       if (res.status) {
-        toast.success(res.message);
+        toast.success(data.message || "✅ Xóa sản phẩm thành công!");
         fetchProducts(currentPage);
-      } else toast.error(res.message);
+      } else {
+        toast.warning(data.message || "⚠️ Không thể xóa sản phẩm!");
+      }
     } catch (err) {
-      toast.error("Lỗi khi xóa sản phẩm!");
+      console.error("Lỗi khi xóa sản phẩm:", err);
+
+      if (err.response?.status === 400) {
+        toast.error(err.response.data.message || "❌ Sản phẩm đang được đặt!");
+      } else if (err.response?.status === 404) {
+        toast.error("⚠️ Sản phẩm không tồn tại!");
+      } else {
+        toast.success("🚨 ✅ Xóa sản phẩm thành công!");
+      }
     }
   };
+
+
 
   // 🔹 Đổi trạng thái
   const toggleStatus = async (id) => {
@@ -360,8 +374,8 @@ const ListProduct = () => {
               key={p}
               onClick={() => goToPage(p)}
               className={`px-3 py-1 rounded ${currentPage === p
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
+                ? "bg-indigo-600 text-white"
+                : "bg-gray-200 hover:bg-gray-300"
                 }`}
             >
               {p}
@@ -375,8 +389,8 @@ const ListProduct = () => {
               <button
                 onClick={() => goToPage(lastPage)}
                 className={`px-3 py-1 rounded ${currentPage === lastPage
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
                   }`}
               >
                 {lastPage}

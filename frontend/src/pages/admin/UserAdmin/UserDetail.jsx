@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import apiUser from "../../../api/apiUser";
 import { FaEdit, FaTrash, FaArrowLeft } from "react-icons/fa";
+import { imageURL } from "../../../api/config";
 
 const UserDetail = () => {
   const { id } = useParams();
@@ -44,7 +45,7 @@ const UserDetail = () => {
   const currentPage = pagination.current_page;
   const lastPage = pagination.last_page;
 
-   const statusLabels = {
+  const statusLabels = {
     1: { text: "Đang chờ xác nhận", color: "bg-yellow-200 text-yellow-800" },
     2: { text: "Đã xác nhận", color: "bg-blue-200 text-blue-800" },
     3: { text: "Đang đóng gói", color: "bg-orange-200 text-orange-800" },
@@ -90,13 +91,10 @@ const UserDetail = () => {
             <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
               <div className="flex justify-center mb-4">
                 <img
-                  src={
-                    user.avatar
-                      ? `/uploads/avatar/${user.avatar}`
-                      : "/default-avatar.png"
-                  }
+                  className="h-40 w-40 object-cover rounded-full border border-gray-200"
+                  src={`${imageURL}/avatar/${user.avatar}?v=${user.updated_at || Date.now()
+                    }`}
                   alt={user.name}
-                  className="w-40 h-40 object-cover rounded-full border-4 border-blue-200"
                 />
               </div>
               <div className="text-center">
@@ -203,6 +201,7 @@ const UserDetail = () => {
 
                 {/* Pagination */}
                 <div className="flex justify-center mt-4 space-x-2">
+                  {/* Nút Trước */}
                   <button
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage === 1}
@@ -211,19 +210,86 @@ const UserDetail = () => {
                     Trước
                   </button>
 
-                  {Array.from({ length: lastPage }, (_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => goToPage(i + 1)}
-                      className={`px-3 py-1 rounded ${currentPage === i + 1
-                          ? "bg-indigo-600 text-white"
-                          : "bg-gray-200 hover:bg-gray-300"
-                        }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                  {/* Hiển thị trang */}
+                  {(() => {
+                    const pages = [];
+                    const maxPagesToShow = 5; // Hiển thị 5 trang giữa
+                    let start = Math.max(1, currentPage - 2);
+                    let end = Math.min(lastPage, start + maxPagesToShow - 1);
 
+                    // Nếu gần cuối thì lùi về cho đủ 5 trang
+                    if (end - start < maxPagesToShow - 1) {
+                      start = Math.max(1, end - maxPagesToShow + 1);
+                    }
+
+                    // Trang đầu
+                    if (start > 1) {
+                      pages.push(
+                        <button
+                          key={1}
+                          onClick={() => goToPage(1)}
+                          className={`px-3 py-1 rounded ${currentPage === 1
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-200 hover:bg-gray-300"
+                            }`}
+                        >
+                          1
+                        </button>
+                      );
+
+                      if (start > 2) {
+                        pages.push(
+                          <span key="dots-start" className="px-2 text-gray-500">
+                            ...
+                          </span>
+                        );
+                      }
+                    }
+
+                    // Các trang ở giữa
+                    for (let i = start; i <= end; i++) {
+                      pages.push(
+                        <button
+                          key={i}
+                          onClick={() => goToPage(i)}
+                          className={`px-3 py-1 rounded ${currentPage === i
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-200 hover:bg-gray-300"
+                            }`}
+                        >
+                          {i}
+                        </button>
+                      );
+                    }
+
+                    // Trang cuối
+                    if (end < lastPage) {
+                      if (end < lastPage - 1) {
+                        pages.push(
+                          <span key="dots-end" className="px-2 text-gray-500">
+                            ...
+                          </span>
+                        );
+                      }
+
+                      pages.push(
+                        <button
+                          key={lastPage}
+                          onClick={() => goToPage(lastPage)}
+                          className={`px-3 py-1 rounded ${currentPage === lastPage
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-200 hover:bg-gray-300"
+                            }`}
+                        >
+                          {lastPage}
+                        </button>
+                      );
+                    }
+
+                    return pages;
+                  })()}
+
+                  {/* Nút Sau */}
                   <button
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === lastPage}
@@ -232,6 +298,7 @@ const UserDetail = () => {
                     Sau
                   </button>
                 </div>
+
               </>
             ) : (
               <p className="text-gray-600 italic">Khách này chưa có đơn hàng nào.</p>

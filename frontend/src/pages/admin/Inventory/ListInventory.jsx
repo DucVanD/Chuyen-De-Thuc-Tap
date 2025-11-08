@@ -208,6 +208,7 @@ const ListInventory = () => {
       {/* --- Phân trang --- */}
       {lastPage > 1 && (
         <div className="flex justify-center mt-6 space-x-2">
+          {/* Nút Trước */}
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage === 1}
@@ -215,18 +216,86 @@ const ListInventory = () => {
           >
             <FaArrowLeft /> Trước
           </button>
-          {Array.from({ length: lastPage }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => goToPage(i + 1)}
-              className={`px-3 py-1 rounded-full transition ${currentPage === i + 1
-                ? "bg-indigo-600 text-white shadow"
-                : "bg-gray-200 hover:bg-gray-300"
-                }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+
+          {/* Hiển thị trang có dấu ... */}
+          {(() => {
+            const pages = [];
+            const maxPagesToShow = 5;
+            let start = Math.max(1, currentPage - 2);
+            let end = Math.min(lastPage, start + maxPagesToShow - 1);
+
+            if (end - start < maxPagesToShow - 1) {
+              start = Math.max(1, end - maxPagesToShow + 1);
+            }
+
+            // Trang đầu
+            if (start > 1) {
+              pages.push(
+                <button
+                  key={1}
+                  onClick={() => goToPage(1)}
+                  className={`px-3 py-1 rounded-full transition ${currentPage === 1
+                      ? "bg-indigo-600 text-white shadow"
+                      : "bg-gray-200 hover:bg-gray-300"
+                    }`}
+                >
+                  1
+                </button>
+              );
+
+              if (start > 2) {
+                pages.push(
+                  <span key="dots-start" className="px-2 text-gray-500">
+                    ...
+                  </span>
+                );
+              }
+            }
+
+            // Các trang ở giữa
+            for (let i = start; i <= end; i++) {
+              pages.push(
+                <button
+                  key={i}
+                  onClick={() => goToPage(i)}
+                  className={`px-3 py-1 rounded-full transition ${currentPage === i
+                      ? "bg-indigo-600 text-white shadow"
+                      : "bg-gray-200 hover:bg-gray-300"
+                    }`}
+                >
+                  {i}
+                </button>
+              );
+            }
+
+            // Trang cuối
+            if (end < lastPage) {
+              if (end < lastPage - 1) {
+                pages.push(
+                  <span key="dots-end" className="px-2 text-gray-500">
+                    ...
+                  </span>
+                );
+              }
+
+              pages.push(
+                <button
+                  key={lastPage}
+                  onClick={() => goToPage(lastPage)}
+                  className={`px-3 py-1 rounded-full transition ${currentPage === lastPage
+                      ? "bg-indigo-600 text-white shadow"
+                      : "bg-gray-200 hover:bg-gray-300"
+                    }`}
+                >
+                  {lastPage}
+                </button>
+              );
+            }
+
+            return pages;
+          })()}
+
+          {/* Nút Sau */}
           <button
             onClick={() => goToPage(currentPage + 1)}
             disabled={currentPage === lastPage}
@@ -236,6 +305,7 @@ const ListInventory = () => {
           </button>
         </div>
       )}
+
     </div>
   );
 };

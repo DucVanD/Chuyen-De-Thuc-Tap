@@ -49,6 +49,8 @@ const EditProduct = () => {
     })();
   }, []);
 
+  console.log("Form Data:", formData);
+
   // Load chi tiết sản phẩm cần sửa
   useEffect(() => {
     const fetchProduct = async () => {

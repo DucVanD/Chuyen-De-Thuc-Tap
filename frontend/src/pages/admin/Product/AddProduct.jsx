@@ -5,6 +5,8 @@ import { Editor } from "@tinymce/tinymce-react";
 import apiProduct from "../../../api/apiProduct";
 import apiCategory from "../../../api/apiCategory";
 import apiBrand from "../../../api/apiBrand";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -28,7 +30,7 @@ const AddProduct = () => {
     status: 1,
   });
 
-  // Load categories & brands
+  // 🔹 Load categories & brands
   useEffect(() => {
     (async () => {
       try {
@@ -44,7 +46,7 @@ const AddProduct = () => {
     })();
   }, []);
 
-  // Cleanup preview URL khi đổi ảnh
+  // 🔹 Cleanup preview URL khi đổi ảnh
   useEffect(() => {
     return () => {
       if (thumbPreview) URL.revokeObjectURL(thumbPreview);
@@ -66,6 +68,7 @@ const AddProduct = () => {
     setFormData((prev) => ({ ...prev, detail: content }));
   };
 
+  // 🔹 Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -86,11 +89,13 @@ const AddProduct = () => {
       if (thumbnail) data.append("thumbnail", thumbnail);
 
       const res = await apiProduct.AddProduct(data);
-      alert(res.message || "Thêm sản phẩm thành công");
-      navigate("/admin/products/1");
+      toast.success(res.message || "✅ Thêm sản phẩm thành công!");
+      setTimeout(() => navigate("/admin/products/1"), 1500);
     } catch (error) {
+      console.error("❌ Lỗi khi thêm sản phẩm:", error);
       if (error.response?.data?.errors) setErrors(error.response.data.errors);
-      alert(
+
+      toast.error(
         error.response?.data?.message ||
           `Lỗi từ server (status ${error.response?.status || "?"})`
       );
@@ -137,6 +142,11 @@ const AddProduct = () => {
                     className="w-full p-2.5 border rounded-md"
                     placeholder="Nhập tên sản phẩm"
                   />
+                  {errors.name && (
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.name[0]}
+                    </p>
+                  )}
                 </div>
 
                 {/* Mô tả ngắn */}
@@ -154,7 +164,7 @@ const AddProduct = () => {
                   ></textarea>
                 </div>
 
-                {/* Chi tiết sản phẩm với TinyMCE */}
+                {/* Chi tiết sản phẩm */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1">
                     Chi tiết sản phẩm
@@ -308,6 +318,9 @@ const AddProduct = () => {
           </div>
         </form>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );
 };
